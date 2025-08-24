@@ -170,3 +170,7 @@ See the detailed task breakdown in the project documentation.
 ## 📞 Support
 
 For questions or issues, please create an issue in the repository or contact the development team.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
