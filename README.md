@@ -4,12 +4,13 @@ A comprehensive web application for managing multidisciplinary student projects 
 
 ## 🚀 Tech Stack
 
--   **Backend**: Laravel 10 (PHP 8.1+)
--   **Frontend**: React 18 + Inertia.js
--   **Styling**: Tailwind CSS
+-   **Backend**: Laravel 12 (PHP 8.2+)
+-   **Frontend**: Laravel Blade Templates
+-   **Styling**: Tailwind CSS 4.0
 -   **Database**: MySQL/PostgreSQL
--   **Authentication**: Laravel Breeze + Sanctum
+-   **Authentication**: Laravel Breeze
 -   **Testing**: PHPUnit + Pest
+-   **Asset Compilation**: Vite
 
 ## 📋 Project Structure
 
@@ -17,10 +18,7 @@ A comprehensive web application for managing multidisciplinary student projects 
 innotrack-web/
 ├── app/
 │   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── Api/           # API Controllers
-│   │   │   ├── Admin/         # Admin Controllers
-│   │   │   └── Dashboard/     # Dashboard Controllers
+│   │   ├── Controllers/        # MVC Controllers
 │   │   ├── Requests/          # Form Requests
 │   │   └── Resources/         # API Resources
 │   ├── Models/                # Eloquent Models
@@ -31,13 +29,13 @@ innotrack-web/
 │   ├── seeders/               # Database Seeders
 │   └── factories/             # Model Factories
 ├── resources/
-│   └── js/
-│       ├── Components/        # Reusable React Components
-│       ├── Pages/             # Page Components
-│       ├── Layouts/           # Layout Components
-│       ├── Hooks/             # Custom React Hooks
-│       ├── Services/          # API Services
-│       └── Utils/             # Utility Functions
+│   ├── views/                 # Blade Templates
+│   │   ├── layouts/           # Layout Templates
+│   │   ├── components/        # Blade Components
+│   │   ├── pages/             # Page Templates
+│   │   └── partials/          # Reusable Template Parts
+│   ├── css/                   # Stylesheets
+│   └── js/                    # JavaScript Files
 └── tests/
     ├── Feature/               # Feature Tests
     ├── Unit/                  # Unit Tests
@@ -48,7 +46,7 @@ innotrack-web/
 
 ### Prerequisites
 
--   PHP 8.1+
+-   PHP 8.2+
 -   Composer
 -   Node.js 18+
 -   MySQL/PostgreSQL
@@ -89,13 +87,13 @@ innotrack-web/
     php artisan db:seed
     ```
 
-6. **Start development servers**
+6. **Start development server**
 
     ```bash
-    # Terminal 1: Laravel development server
+    # Start Laravel development server
     php artisan serve
 
-    # Terminal 2: Vite development server
+    # In another terminal, start Vite for asset compilation
     npm run dev
     ```
 
@@ -116,33 +114,33 @@ php artisan test --testsuite=Feature
 
 The API follows RESTful conventions and includes:
 
--   **Authentication**: Bearer token via Laravel Sanctum
+-   **Authentication**: Session-based authentication
 -   **Validation**: Form Request classes for input validation
 -   **Resources**: API Resources for consistent response formatting
 -   **Pagination**: Laravel's built-in pagination
 
 ### Core Endpoints
 
--   `GET /api/programs` - List all programs
--   `GET /api/facilities` - List all facilities
--   `GET /api/projects` - List all projects
--   `GET /api/participants` - List all participants
--   `POST /api/projects` - Create a new project
--   `PUT /api/projects/{id}` - Update a project
--   `DELETE /api/projects/{id}` - Delete a project
+-   `GET /programs` - List all programs
+-   `GET /facilities` - List all facilities
+-   `GET /projects` - List all projects
+-   `GET /participants` - List all participants
+-   `POST /projects` - Create a new project
+-   `PUT /projects/{id}` - Update a project
+-   `DELETE /projects/{id}` - Delete a project
 
 ## 🎯 Development Guidelines
 
 ### Code Style
 
 -   Follow PSR-12 for PHP code
--   Use ESLint and Prettier for JavaScript/React
+-   Use Laravel Pint for code formatting
 -   Write meaningful commit messages
 
 ### Testing Strategy
 
 -   Unit tests for models and services
--   Feature tests for API endpoints
+-   Feature tests for web routes
 -   Browser tests for critical user flows
 
 ### Git Workflow
@@ -156,7 +154,7 @@ The API follows RESTful conventions and includes:
 ### Month 1: Web Application (Weeks 1-4)
 
 -   **Weeks 1-2**: Core CRUD operations for all entities
--   **Weeks 3-4**: Testing, API documentation, and deployment
+-   **Weeks 3-4**: Testing, documentation, and deployment
 
 ### Month 2: Mobile Application (Weeks 5-8)
 
