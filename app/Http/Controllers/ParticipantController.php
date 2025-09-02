@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Participant;
+use App\Models\Project;
 use Illuminate\Http\Request;
 
 class ParticipantController extends Controller
@@ -48,7 +49,11 @@ class ParticipantController extends Controller
      */
     public function show(Participant $participant)
     {
-        return view('participants.show', compact('participant'));
+        $availableProjects = Project::whereDoesntHave('participants', function($query) use ($participant) {
+            $query->where('project_participants.participant_id', $participant->participant_id);
+        })->get();
+
+        return view('participants.show', compact('participant', 'availableProjects'));
     }
 
     /**
@@ -85,5 +90,36 @@ class ParticipantController extends Controller
     {
         $participant->delete();
         return redirect()->route('participants.index')->with('success', 'Participant deleted successfully');
+    }
+
+    /**
+     * Add project to participant.
+     */
+    public function addProject(Request $request, Participant $participant)
+    {
+        $validated = $request->validate([
+            'project_id' => 'required|exists:projects,project_id',
+            'role_on_project' => 'required|in:lead,member,consultant',
+            'skill_role' => 'required|in:software,hardware,business',
+        ]);
+
+        $participant->projects()->attach($validated['project_id'], [
+            'role_on_project' => $validated['role_on_project'],
+            'skill_role' => $validated['skill_role'],
+        ]);
+
+        return redirect()->route('participants.show', $participant->participant_id)
+            ->with('success', 'Project assigned successfully');
+    }
+
+    /**
+     * Remove project from participant.
+     */
+    public function removeProject(Participant $participant, $projectId)
+    {
+        $participant->projects()->detach($projectId);
+        
+        return redirect()->route('participants.show', $participant->participant_id)
+            ->with('success', 'Project removed successfully');
     }
 }

@@ -37,6 +37,10 @@ Route::middleware('auth')->group(function () {
 
     // ✅ Participant CRUD routes
     Route::resource('participants', ParticipantController::class);
+    Route::post('/participants/{participant}/projects', [ParticipantController::class, 'addProject'])
+        ->name('participants.add-project');
+    Route::delete('/participants/{participant}/projects/{project}', [ParticipantController::class, 'removeProject'])
+        ->name('participants.remove-project');
 });
 
 require __DIR__.'/auth.php';
