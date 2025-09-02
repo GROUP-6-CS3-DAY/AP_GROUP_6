@@ -80,7 +80,7 @@ class EquipmentController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'facility_id' => 'required|exists:facilities,facility_id',
+                'facility_id' => 'required|exists:facilities,id',
                 'name' => 'required|string|max:255',
                 'capabilities' => 'required|array|min:1',
                 'capabilities.*' => 'string|max:255',
@@ -148,7 +148,7 @@ class EquipmentController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'facility_id' => 'sometimes|required|exists:facilities,facility_id',
+                'facility_id' => 'sometimes|required|exists:facilities,id',
                 'name' => 'sometimes|required|string|max:255',
                 'capabilities' => 'sometimes|required|array|min:1',
                 'capabilities.*' => 'string|max:255',

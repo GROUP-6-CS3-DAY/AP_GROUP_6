@@ -75,7 +75,7 @@ class ServiceController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'facility_id' => 'required|exists:facilities,facility_id',
+                'facility_id' => 'required|exists:facilities,id',
                 'name' => 'required|string|max:255',
                 'description' => 'required|string|max:2000',
                 'category' => [
@@ -151,7 +151,7 @@ class ServiceController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'facility_id' => 'sometimes|required|exists:facilities,facility_id',
+                'facility_id' => 'sometimes|required|exists:facilities,id',
                 'name' => 'sometimes|required|string|max:255',
                 'description' => 'sometimes|required|string|max:2000',
                 'category' => [
