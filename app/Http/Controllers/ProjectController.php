@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Models\Project;
+
 class ProjectController extends Controller
 {
     /**
@@ -11,7 +13,8 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        //
+        $projects = Project::all();
+        return view('projects.index', compact('projects'));
     }
 
     /**
@@ -19,7 +22,7 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        //
+        return view('projects.create');
     }
 
     /**
@@ -27,7 +30,21 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'program_ID' => 'required|exists:programs,program_ID',
+            'facility_ID' => 'required|exists:facilities,facility_ID',
+            'title' => 'required|string|max:255',
+            'nature_of_project' => 'required|string',
+            'description' => 'required|string',
+            'innovation_focus' => 'required|string',
+            'prototype_stage' => 'required|string',
+            'testing_requirements' => 'required|string',
+            'commercialization_plan' => 'required|string',
+        ]);
+
+        Project::create($validated);
+
+        return redirect()->route('projects.index')->with('success', 'Project created successfully');
     }
 
     /**
@@ -35,7 +52,8 @@ class ProjectController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $project = Project::findOrFail($id);
+        return view('projects.show', compact('project'));
     }
 
     /**
@@ -43,7 +61,8 @@ class ProjectController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $project = Project::findOrFail($id);
+        return view('projects.edit', compact('project'));
     }
 
     /**
@@ -51,7 +70,23 @@ class ProjectController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $project = Project::findOrFail($id);
+
+        $validated = $request->validate([
+            'program_ID' => 'required|exists:programs,program_ID',
+            'facility_ID' => 'required|exists:facilities,facility_ID',
+            'title' => 'required|string|max:255',
+            'nature_of_project' => 'required|string',
+            'description' => 'required|string',
+            'innovation_focus' => 'required|string',
+            'prototype_stage' => 'required|string',
+            'testing_requirements' => 'required|string',
+            'commercialization_plan' => 'required|string',
+        ]);
+
+        $project->update($validated);
+
+        return redirect()->route('projects.index')->with('success', 'Project updated successfully');
     }
 
     /**
@@ -59,6 +94,9 @@ class ProjectController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $project = Project::findOrFail($id);
+        $project->delete();
+
+        return redirect()->route('projects.index')->with('success', 'Project deleted successfully');
     }
 }
