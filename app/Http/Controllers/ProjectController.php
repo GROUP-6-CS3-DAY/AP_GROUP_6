@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Project;
+use App\Models\Program;
+use App\Models\Facility;
 
 class ProjectController extends Controller
 {
@@ -22,7 +24,9 @@ class ProjectController extends Controller
      */
     public function create()
     {
-        return view('projects.create');
+        $programs = Program::all();
+        $facilities = Facility::all();
+        return view('projects.create', compact('programs', 'facilities'));
     }
 
     /**
@@ -62,7 +66,9 @@ class ProjectController extends Controller
     public function edit(string $id)
     {
         $project = Project::findOrFail($id);
-        return view('projects.edit', compact('project'));
+        $programs = Program::all();
+        $facilities = Facility::all();
+        return view('projects.edit', compact('project', 'programs', 'facilities'));
     }
 
     /**

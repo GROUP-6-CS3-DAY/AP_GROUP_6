@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Program;
 use App\Models\Project;
 use App\Models\Facility;
+use App\Models\Equipment;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -32,6 +33,8 @@ class DatabaseSeeder extends Seeder
                 'program_ID' => Program::inRandomOrder()->first()->program_ID,
             ]);
         });
+
+        Equipment::factory(30)->create();
     }
     
 }

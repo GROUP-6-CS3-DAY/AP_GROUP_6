@@ -17,6 +17,7 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="{{ route('programs.index') }}">Programs</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('projects.index') }}">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('equipments.index') }}">Equipments</a></li>
                 </ul>
             </div>
         </div>

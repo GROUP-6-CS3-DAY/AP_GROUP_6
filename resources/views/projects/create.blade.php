@@ -9,13 +9,23 @@
         @csrf
 
         <div class="mb-3">
-            <label for="program_ID" class="form-label">Program ID</label>
-            <input type="number" class="form-control" id="program_ID" name="program_ID" value="{{ old('program_ID') }}" required>
+            <label for="program_ID" class="form-label">Program</label>
+            <select class="form-select" id="program_ID" name="program_ID" required>
+                <option value="">Select a program</option>
+                @foreach($programs as $program)
+                    <option value="{{ $program->program_ID }}" {{ old('program_ID') == $program->program_ID ? 'selected' : '' }}>{{ $program->name }}</option>
+                @endforeach
+            </select>
         </div>
 
         <div class="mb-3">
-            <label for="facility_ID" class="form-label">Facility ID</label>
-            <input type="number" class="form-control" id="facility_ID" name="facility_ID" value="{{ old('facility_ID') }}" required>
+            <label for="facility_ID" class="form-label">Facility</label>
+            <select class="form-select" id="facility_ID" name="facility_ID" required>
+                <option value="">Select a facility</option>
+                @foreach($facilities as $facility)
+                    <option value="{{ $facility->facility_ID }}" {{ old('facility_ID') == $facility->facility_ID ? 'selected' : '' }}>{{ $facility->name }}</option>
+                @endforeach
+            </select>
         </div>
 
         <div class="mb-3">
