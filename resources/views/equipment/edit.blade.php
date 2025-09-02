@@ -49,7 +49,7 @@
                                 id="facility_id" name="facility_id" required>
                                 <option value="">Select Facility</option>
                                 @foreach($facilities as $facility)
-                                <option value="{{ $facility->facility_id }}"
+                                <option value="{{ $facility->id }}"
                                     {{ old('facility_id', $equipment->facility_id) == $facility->facility_id ? 'selected' : '' }}>
                                     {{ $facility->name }} ({{ $facility->facility_type }})
                                 </option>

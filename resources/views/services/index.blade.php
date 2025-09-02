@@ -52,7 +52,7 @@
                 <select class="form-select" id="facility_id" name="facility_id">
                     <option value="">All Facilities</option>
                     @foreach($facilities as $facility)
-                    <option value="{{ $facility->facility_id }}" {{ request('facility_id') == $facility->facility_id ? 'selected' : '' }}>
+                    <option value="{{ $facility->id }}" {{ request('facility_id') == $facility->id ? 'selected' : '' }}>
                         {{ $facility->name }}
                     </option>
                     @endforeach
