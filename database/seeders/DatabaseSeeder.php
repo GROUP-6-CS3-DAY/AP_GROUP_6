@@ -7,6 +7,7 @@ use App\Models\Program;
 use App\Models\Project;
 use App\Models\Facility;
 use App\Models\Equipment;
+use App\Models\Outcome;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -35,6 +36,12 @@ class DatabaseSeeder extends Seeder
         });
 
         Equipment::factory(30)->create();
+
+        Project::all()->each(function ($project) {
+            Outcome::factory(rand(1, 3))->create([
+                'project_ID' => $project->project_ID,
+            ]);
+        });
     }
     
 }
