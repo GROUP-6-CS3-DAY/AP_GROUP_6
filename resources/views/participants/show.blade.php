@@ -98,7 +98,7 @@
                     </div>
                     
                     <!-- Existing Projects Card -->
-                    <div class="card shadow-sm" style="border: none; border-radius: 10px;">
+                    <div class="card shadow-sm" style="border: none; border-radius: 10px; padding-top: 20px;">
                         <div class="card-body p-4">
                             <h4 style="color: #48284A; font-weight: 600;">Assigned Projects</h4>
                             
@@ -128,7 +128,7 @@
                             <form action="{{ route('participants.add-project', $participant->participant_id) }}" 
                                   method="POST" class="mt-4">
                                 @csrf
-                                <div class="mb-3">
+                                <div class="mb-3" >
                                     <label class="form-label" style="color: #48284A;">Add to Project</label>
                                     <select name="project_id" class="form-select" required>
                                         @foreach($availableProjects as $project)
@@ -136,7 +136,7 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <div class="mb-3">
+                                <div class="mb-3" style="padding-top: 20px;">
                                     <label class="form-label" style="color: #48284A;">Role on Project</label>
                                     <select name="role_on_project" class="form-select" required>
                                         <option value="lead">Lead</option>
@@ -144,7 +144,7 @@
                                         <option value="consultant">Consultant</option>
                                     </select>
                                 </div>
-                                <div class="mb-3">
+                                <div class="mb-3" style="padding-top: 20px; padding-bottom: 20px;">
                                     <label class="form-label" style="color: #48284A;">Skill Role</label>
                                     <select name="skill_role" class="form-select" required>
                                         <option value="software">Software</option>
@@ -153,7 +153,7 @@
                                     </select>
                                 </div>
                                 <button type="submit" class="btn" 
-                                        style="background: #A1869E; color: white; border-radius: 5px;">
+                                        style="background: #A1869E; color: white; border-radius: 3px; border-width: 0cm;">
                                     Add to Project
                                 </button>
                             </form>
