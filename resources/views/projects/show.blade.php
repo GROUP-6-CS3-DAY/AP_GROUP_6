@@ -1,20 +1,24 @@
 @extends('layouts.app')
+
 @section('title', 'Project Details')
+
 @section('content')
-&lt;h1&gt;Project Details&lt;/h1&gt;
-&lt;div class="card"&gt;
-    &lt;div class="card-body"&gt;
-        &lt;h5 class="card-title"&gt;{{ $project-&gt;title }}&lt;/h5&gt;
-        &lt;p class="card-text"&gt;&lt;strong&gt;Program ID:&lt;/strong&gt; {{ $project-&gt;program_ID }}&lt;/p&gt;
-        &lt;p class="card-text"&gt;&lt;strong&gt;Facility ID:&lt;/strong&gt; {{ $project-&gt;facility_ID }}&lt;/p&gt;
-        &lt;p class="card-text"&gt;&lt;strong&gt;Nature of Project:&lt;/strong&gt; {{ $project-&gt;nature_of_project }}&lt;/p&gt;
-        &lt;p class="card-text"&gt;&lt;strong&gt;Description:&lt;/strong&gt; {{ $project-&gt;description }}&lt;/p&gt;
-        &lt;p class="card-text"&gt;&lt;strong&gt;Innovation Focus:&lt;/strong&gt; {{ $project-&gt;innovation_focus }}&lt;/p&gt;
-        &lt;p class="card-text"&gt;&lt;strong&gt;Prototype Stage:&lt;/strong&gt; {{ $project-&gt;prototype_stage }}&lt;/p&gt;
-        &lt;p class="card-text"&gt;&lt;strong&gt;Testing Requirements:&lt;/strong&gt; {{ $project-&gt;testing_requirements }}&lt;/p&gt;
-        &lt;p class="card-text"&gt;&lt;strong&gt;Commercialization Plan:&lt;/strong&gt; {{ $project-&gt;commercialization_plan }}&lt;/p&gt;
-    &lt;/div&gt;
-&lt;/div&gt;
-&lt;a href="{{ route('projects.edit', $project-&gt;id) }}" class="btn btn-warning mt-3"&gt;Edit&lt;/a&gt;
-&lt;a href="{{ route('projects.index') }}" class="btn btn-secondary mt-3"&gt;Back to List&lt;/a&gt;
+    <h1>Project Details</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ $project->title }}</h5>
+            <p class="card-text"><strong>Program ID:</strong> {{ $project->program_ID }}</p>
+            <p class="card-text"><strong>Facility ID:</strong> {{ $project->facility_ID }}</p>
+            <p class="card-text"><strong>Nature of Project:</strong> {{ $project->nature_of_project }}</p>
+            <p class="card-text"><strong>Description:</strong> {{ $project->description }}</p>
+            <p class="card-text"><strong>Innovation Focus:</strong> {{ $project->innovation_focus }}</p>
+            <p class="card-text"><strong>Prototype Stage:</strong> {{ $project->prototype_stage }}</p>
+            <p class="card-text"><strong>Testing Requirements:</strong> {{ $project->testing_requirements }}</p>
+            <p class="card-text"><strong>Commercialization Plan:</strong> {{ $project->commercialization_plan }}</p>
+        </div>
+    </div>
+
+    <a href="{{ route('projects.edit', $project->project_ID) }}" class="btn btn-warning mt-3">Edit</a>
+    <a href="{{ route('projects.index') }}" class="btn btn-secondary mt-3">Back to List</a>
 @endsection

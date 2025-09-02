@@ -1,27 +1,35 @@
-&lt;!DOCTYPE html&gt;
-&lt;html lang="en"&gt;
-&lt;head&gt;
-    &lt;meta charset="UTF-8"&gt;
-    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
-    &lt;title&gt;@yield('title', 'InnoTrack')&lt;/title&gt;
-    &lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"&gt;
-&lt;/head&gt;
-&lt;body&gt;
-    &lt;nav class="navbar navbar-expand-lg navbar-dark bg-primary"&gt;
-        &lt;div class="container"&gt;
-            &lt;a class="navbar-brand" href="/"&gt;InnoTrack&lt;/a&gt;
-            &lt;div class="navbar-nav"&gt;
-                &lt;a class="nav-link" href="{{ route('programs.index') }}"&gt;Programs&lt;/a&gt;
-                &lt;a class="nav-link" href="{{ route('projects.index') }}"&gt;Projects&lt;/a&gt;
-            &lt;/div&gt;
-        &lt;/div&gt;
-    &lt;/nav&gt;
-    &lt;div class="container mt-4"&gt;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'InnoTrack')</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url('/') }}">InnoTrack</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ route('programs.index') }}">Programs</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('projects.index') }}">Projects</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
         @if(session('success'))
-            &lt;div class="alert alert-success"&gt;{{ session('success') }}&lt;/div&gt;
+            <div class="alert alert-success">{{ session('success') }}</div>
         @endif
+
         @yield('content')
-    &lt;/div&gt;
-    &lt;script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"&gt;&lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

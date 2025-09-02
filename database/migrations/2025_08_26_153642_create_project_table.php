@@ -14,8 +14,8 @@ return new class extends Migration
 
         Schema::create('projects', function (Blueprint $table) {
             $table->id('project_ID');
-            $table->foreignID('program_ID')->constrained('program')->onDelete('cascade');
-            $table->foreignID('facility_ID')->constrained('facility')->onDelete('cascade');
+            $table->unsignedBigInteger('program_ID');
+            $table->unsignedBigInteger('facility_ID');
             $table->string('title');
             $table->string('nature_of_project');
             $table->text('description');
@@ -24,6 +24,9 @@ return new class extends Migration
             $table->string('testing_requirements');
             $table->string('commercialization_plan');
             $table->timestamps();
+            
+            $table->foreign('program_ID')->references('program_ID')->on('programs')->onDelete('cascade');
+            $table->foreign('facility_ID')->references('facility_ID')->on('facilities')->onDelete('cascade');
         });
 
     }
@@ -33,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('project');
+        Schema::dropIfExists('projects');
     }
 };
