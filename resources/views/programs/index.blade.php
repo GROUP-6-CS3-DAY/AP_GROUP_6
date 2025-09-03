@@ -24,9 +24,9 @@
                     <td>{{ $program->name }}</td>
                     <td>{{ $program->description }}</td>
                     <td>
-                        <a href="{{ route('programs.show', $program->program_ID) }}" class="btn btn-info btn-sm">View</a>
-                        <a href="{{ route('programs.edit', $program->program_ID) }}" class="btn btn-warning btn-sm">Edit</a>
-                        <form action="{{ route('programs.destroy', $program->program_ID) }}" method="POST" style="display:inline;">
+                        <a href="{{ route('programs.show', $program) }}" class="btn btn-info btn-sm">View</a>
+                        <a href="{{ route('programs.edit', $program) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <form action="{{ route('programs.destroy', $program) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>

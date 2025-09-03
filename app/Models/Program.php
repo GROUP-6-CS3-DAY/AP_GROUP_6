@@ -24,4 +24,9 @@ class Program extends Model
     {
         return $this->hasMany(Project::class, 'program_ID');
     }
+
+    public function getRouteKeyName()
+    {
+        return 'program_ID';
+    }
 }
