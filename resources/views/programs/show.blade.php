@@ -15,6 +15,6 @@
         </div>
     </div>
 
-    <a href="{{ route('programs.edit', $program->program_ID) }}" class="btn btn-warning mt-3">Edit</a>
+    <a href="{{ route('programs.edit', $program) }}" class="btn btn-warning mt-3">Edit</a>
     <a href="{{ route('programs.index') }}" class="btn btn-secondary mt-3">Back to List</a>
 @endsection

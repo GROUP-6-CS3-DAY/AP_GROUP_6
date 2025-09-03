@@ -5,7 +5,7 @@
 @section('content')
     <h1>Edit Program</h1>
 
-    <form action="{{ route('programs.update', $program->program_ID) }}" method="POST">
+    <form action="{{ route('programs.update', $program) }}" method="POST">
         @csrf
         @method('PUT')
 

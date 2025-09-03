@@ -9,8 +9,8 @@
         @csrf
 
         <div class="mb-3">
-            <label for="program_ID" class="form-label">Program ID</label>
-            <input type="number" class="form-control" id="program_ID" name="program_ID" value="{{ old('program_ID') }}" required>
+            <label for="program_id" class="form-label">Program ID</label>
+            <input type="number" class="form-control" id="program_id" name="program_id" value="{{ old('program_id') }}" required>
         </div>
 
         <div class="mb-3">
