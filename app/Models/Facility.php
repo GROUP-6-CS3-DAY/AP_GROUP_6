@@ -15,8 +15,6 @@ class Facility extends Model
      *
      * @var string
      */
-
-    protected $primaryKey = 'facility_ID';
     protected $table = 'facilities';
 
     /**

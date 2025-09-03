@@ -16,7 +16,6 @@ class Service extends Model
      * @var string
      */
     protected $table = 'services';
-    protected $primaryKey = 'service_ID';
 
     /**
      * The attributes that are mass assignable.
