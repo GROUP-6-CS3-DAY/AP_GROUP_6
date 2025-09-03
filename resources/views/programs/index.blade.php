@@ -20,7 +20,7 @@
         <tbody>
             @foreach($programs as $program)
                 <tr>
-                    <td>{{ $program->program_ID }}</td>
+                    <td>{{ $program->id }}</td>
                     <td>{{ $program->name }}</td>
                     <td>{{ $program->description }}</td>
                     <td>

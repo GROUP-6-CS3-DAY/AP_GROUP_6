@@ -9,10 +9,7 @@ class Program extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'program_ID';
-
     protected $fillable = [
-        'program_ID',
         'name',
         'description',
         'national_alignment',
@@ -22,11 +19,8 @@ class Program extends Model
 
     public function projects()
     {
-        return $this->hasMany(Project::class, 'program_ID');
+        return $this->hasMany(Project::class, 'program_id');
     }
 
-    public function getRouteKeyName()
-    {
-        return 'program_ID';
-    }
+    
 }

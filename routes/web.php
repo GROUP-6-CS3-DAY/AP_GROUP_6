@@ -5,6 +5,7 @@ use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProgramController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,26 +28,11 @@ Route::get('/dashboard', function () {
 })->name('dashboard.overview');
 
 // Project Routes
-Route::prefix('projects')->name('projects.')->group(function () {
-    Route::get('/', [ProjectController::class, 'index'])->name('index');
-    Route::get('/create', [ProjectController::class, 'create'])->name('create');
-    Route::post('/', [ProjectController::class, 'store'])->name('store');
-    Route::get('/{project}', [ProjectController::class, 'show'])->name('show');
-    Route::get('/{project}/edit', [ProjectController::class, 'edit'])->name('edit');
-    Route::put('/{project}', [ProjectController::class, 'update'])->name('update');
-    Route::delete('/{project}', [ProjectController::class, 'destroy'])->name('destroy');
-});
+Route::resource('projects', ProjectController::class);
+
 
 // Program Routes
-Route::prefix('programs')->name('programs.')->group(function () {
-    Route::get('/', [App\Http\Controllers\ProgramController::class, 'index'])->name('index');
-    Route::get('/create', [App\Http\Controllers\ProgramController::class, 'create'])->name('create');
-    Route::post('/', [App\Http\Controllers\ProgramController::class, 'store'])->name('store');
-    Route::get('/{program}', [App\Http\Controllers\ProgramController::class, 'show'])->name('show');
-    Route::get('/{program}/edit', [App\Http\Controllers\ProgramController::class, 'edit'])->name('edit');
-    Route::put('/{program}', [App\Http\Controllers\ProgramController::class, 'update'])->name('update');
-    Route::delete('/{program}', [App\Http\Controllers\ProgramController::class, 'destroy'])->name('destroy');
-});
+Route::resource('programs', ProgramController::class);
 
 // Facility Routes
 Route::prefix('facilities')->name('facilities.')->group(function () {
