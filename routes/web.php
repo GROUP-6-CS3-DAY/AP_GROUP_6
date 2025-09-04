@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\EquipmentController;
+use App\Models\Facility;
+use App\Models\Service;
+use App\Models\Equipment;
+use App\Models\Project;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +26,17 @@ Route::get('/', function () {
 
 // Dashboard
 Route::get('/dashboard', function () {
-    return view('dashboard.overview');
+    $facilitiesCount = Facility::count();
+    $servicesCount = Service::count();
+    $equipmentCount = Equipment::count();
+    $projectsCount = Project::count();
+
+    return view('dashboard.overview', compact(
+        'facilitiesCount',
+        'servicesCount',
+        'equipmentCount',
+        'projectsCount'
+    ));
 })->name('dashboard.overview');
 
 // Facility Routes
