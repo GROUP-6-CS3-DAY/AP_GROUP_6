@@ -194,8 +194,8 @@ php artisan test
 ## 📝 Git Workflow
 
 -   Feature branches off `main` (remote)
--   Local branch `ayman` tracks `origin/main`
-    -   Set up: `git branch --set-upstream-to=origin/main ayman`
+-   Local feature branches should track `origin/main`
+    -   Set up: `git branch --set-upstream-to=origin/main <your-branch-name>`
     -   Push: `git push`
     -   Pull: `git pull`
 
