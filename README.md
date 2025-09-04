@@ -1,6 +1,8 @@
 # InnoTrack Web - Innovation Tracking System
 
-A Laravel Blade MVC application for tracking innovation programs, facilities, services, equipment, projects, and outcomes.
+A comprehensive Laravel Blade MVC application enabling multidisciplinary student teams from Computer Science/Software Engineering and Engineering to collaborate on real-world projects carried out at government facilities. The system provides a unified platform to manage programs, facilities, services, equipment, projects, participants, and outcomes, ensuring that projects are well-organized, properly resourced, and aligned with Uganda's NDPIII, Digital Transformation Roadmap (2023–2028), and 4IR Strategy.
+
+Each project team consists of five students, ensuring diversity of skills and balanced workloads. For effective accountability and evaluation, teams are required to use project management tools such as ClickUp or GitHub Projects to track weekly contributions.
 
 ## 🚀 Tech Stack
 
@@ -51,6 +53,52 @@ innotrack-web/
     └── index.php
 ```
 
+## 🎯 Core Entities
+
+### Programs
+
+-   Collaboration umbrella under which projects run
+-   Links to NDPIII, Roadmap, or 4IR goals
+-   Focus areas: IoT, automation, renewable energy, cross-skilling, collaboration, technical skills, prototyping, commercialization
+
+### Facilities
+
+-   Government places where projects are executed
+-   Partner organizations: UniPod, UIRI, Lwera Lab, SCIT, CEDAT
+-   Types: Workshop, Testing Center, Laboratory, Maker Space, Innovation Hub, Research Center
+-   Capabilities: CNC machining, PCB fabrication, materials testing, 3D printing, welding, electronics testing, software development, IoT prototyping, renewable energy, automation
+
+### Services
+
+-   Types of work a facility can perform
+-   Categories: Machining, Testing, Training, Prototyping, Fabrication, Analysis, Consultation
+-   Skill types: Hardware, Software, Integration, Business, Research
+
+### Equipment
+
+-   Machinery/tools available at facilities
+-   Usage domains: Electronics, Mechanical, IoT
+-   Support phases: Training, Prototyping, Testing, Commercialization
+
+### Projects
+
+-   Work carried out by student teams
+-   Innovation focus: IoT devices, smart home, renewable energy
+-   Prototype stages: Concept, Prototype, MVP, Market Launch
+-   Commercialization plans and testing requirements
+
+### Participants
+
+-   Students, lecturers, and collaborators
+-   Affiliations: CS, SE, Engineering, Other
+-   Specializations: Software, hardware, business
+-   Cross-skill training tracking
+
+### Outcomes
+
+-   Project deliverables: CAD files, PCB designs, prototypes, reports, business plans
+-   Quality certifications and commercialization status tracking
+
 ## 🔀 Routes (high-level)
 
 -   `/` → `welcome`
@@ -79,7 +127,7 @@ If you need a clean slate:
 php artisan migrate:fresh
 ```
 
-## 🧭 Development Setup
+## 🛠️ Development Setup
 
 ### Prerequisites
 
@@ -145,11 +193,23 @@ php artisan test
 
 ## 📝 Git Workflow
 
--   Feature branches off `kiggundu` (remote)
--   Local branch `ayman` tracks `origin/kiggundu`
-    -   Set up: `git branch --set-upstream-to=origin/kiggundu ayman`
+-   Feature branches off `main` (remote)
+-   Local branch `ayman` tracks `origin/main`
+    -   Set up: `git branch --set-upstream-to=origin/main ayman`
     -   Push: `git push`
     -   Pull: `git pull`
+
+## 📅 Development Timeline
+
+### Month 1: Web Application (Weeks 1-4)
+
+-   **Weeks 1-2**: Core CRUD operations for all entities (Facilities, Services, Equipment, Projects, Participants, Outcomes)
+-   **Weeks 3-4**: Unit and integration testing, CI/CD setup
+
+### Month 2: Mobile Application (Weeks 5-8)
+
+-   **Weeks 5-6**: Cross-platform mobile app foundation and core features
+-   **Weeks 7-8**: Feature parity with web app and deployment
 
 ## 📧 Support
 
