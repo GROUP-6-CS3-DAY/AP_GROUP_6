@@ -1,176 +1,156 @@
 # InnoTrack Web - Innovation Tracking System
 
-A comprehensive web application for managing multidisciplinary student projects at government facilities, aligned with Uganda's NDPIII, Digital Transformation Roadmap, and 4IR Strategy.
+A Laravel Blade MVC application for tracking innovation programs, facilities, services, equipment, projects, and outcomes.
 
 ## 🚀 Tech Stack
 
--   **Backend**: Laravel 10 (PHP 8.1+)
--   **Frontend**: React 18 + Inertia.js
--   **Styling**: Tailwind CSS
--   **Database**: MySQL/PostgreSQL
--   **Authentication**: Laravel Breeze + Sanctum
--   **Testing**: PHPUnit + Pest
+-   **Framework**: Laravel 12 (PHP 8.2+)
+-   **Views**: Blade templates
+-   **Styling**: Bootstrap (plus Tailwind via CDN on some views)
+-   **Database**: MySQL (Eloquent ORM)
+-   **Auth**: Laravel session authentication (routes scaffold in `routes/web.php`)
+-   **Build tools**: None required for Blade-only views (optional Vite not used)
 
-## 📋 Project Structure
+## 📁 Project Structure (key directories)
 
 ```
 innotrack-web/
 ├── app/
 │   ├── Http/
 │   │   ├── Controllers/
-│   │   │   ├── Api/           # API Controllers
-│   │   │   ├── Admin/         # Admin Controllers
-│   │   │   └── Dashboard/     # Dashboard Controllers
-│   │   ├── Requests/          # Form Requests
-│   │   └── Resources/         # API Resources
-│   ├── Models/                # Eloquent Models
-│   ├── Services/              # Business Logic
-│   └── Policies/              # Authorization Policies
+│   │   │   ├── FacilityController.php
+│   │   │   ├── ServiceController.php
+│   │   │   └── EquipmentController.php
+│   │   └── Middleware/ ...
+│   └── Models/
+│       ├── Facility.php
+│       ├── Service.php
+│       ├── Equipment.php
+│       ├── Program.php
+│       ├── Project.php
+│       └── Outcome.php
 ├── database/
-│   ├── migrations/            # Database Migrations
-│   ├── seeders/               # Database Seeders
-│   └── factories/             # Model Factories
+│   └── migrations/
+│       ├── 2025_08_26_150736_create_program_table.php
+│       ├── 2025_08_26_160000_create_facilities_table.php
+│       ├── 2025_08_26_160100_create_project_table.php
+│       ├── 2025_08_26_160100_create_services_table.php
+│       └── 2025_08_26_160200_create_equipment_table.php
 ├── resources/
-│   └── js/
-│       ├── Components/        # Reusable React Components
-│       ├── Pages/             # Page Components
-│       ├── Layouts/           # Layout Components
-│       ├── Hooks/             # Custom React Hooks
-│       ├── Services/          # API Services
-│       └── Utils/             # Utility Functions
-└── tests/
-    ├── Feature/               # Feature Tests
-    ├── Unit/                  # Unit Tests
-    └── Browser/               # Browser Tests
+│   ├── views/
+│   │   ├── layouts/app.blade.php
+│   │   ├── welcome.blade.php
+│   │   ├── dashboard/overview.blade.php
+│   │   ├── facilities/ (index|create|edit|show).blade.php
+│   │   ├── services/ (index|create|edit|show).blade.php
+│   │   └── equipment/ (index|create|edit|show).blade.php
+│   └── js/ (bootstrap.js, app.jsx present but not required for Blade)
+├── routes/
+│   └── web.php
+└── public/
+    └── index.php
 ```
 
-## 🛠️ Setup Instructions
+## 🔀 Routes (high-level)
+
+-   `/` → `welcome`
+-   `/dashboard` → `dashboard.overview`
+-   `/facilities` → `FacilityController` (index, create, store, show, edit, update, destroy)
+-   `/services` → `ServiceController` (index, create, store, show, edit, update, destroy)
+-   `/equipment` → `EquipmentController` (index, create, store, show, edit, update, destroy)
+
+Counts on the dashboard are computed in the `/dashboard` route and passed to `resources/views/dashboard/overview.blade.php`.
+
+## 🧱 Database & Migrations
+
+-   All tables use `id` as the primary key.
+-   Foreign keys use `foreignId()->constrained('<table>')->onDelete('cascade')`.
+-   Fixes applied for FK order and table names (e.g., `projects` depends on `programs` and `facilities`).
+
+Run migrations:
+
+```bash
+php artisan migrate
+```
+
+If you need a clean slate:
+
+```bash
+php artisan migrate:fresh
+```
+
+## 🧭 Development Setup
 
 ### Prerequisites
 
--   PHP 8.1+
+-   PHP 8.2+
 -   Composer
--   Node.js 18+
--   MySQL/PostgreSQL
+-   MySQL
 -   Git
 
-### Installation
+### Install dependencies
 
-1. **Clone the repository**
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+```
 
-    ```bash
-    git clone <repository-url>
-    cd innotrack-web
-    ```
+Configure your `.env` database section, then run:
 
-2. **Install PHP dependencies**
+```bash
+php artisan migrate
+```
 
-    ```bash
-    composer install
-    ```
+### Running the app
 
-3. **Install Node.js dependencies**
+If you installed PHP 8.2 with MacPorts (path is `/opt/local/bin/php82`):
 
-    ```bash
-    npm install
-    ```
+```bash
+/opt/local/bin/php82 artisan serve --host=127.0.0.1 --port=8000
+```
 
-4. **Environment setup**
+If `php` already points to 8.2+:
 
-    ```bash
-    cp .env.example .env
-    php artisan key:generate
-    ```
+```bash
+php artisan serve --host=127.0.0.1 --port=8000
+```
 
-5. **Database setup**
+Note: If you see a Herd path error (e.g., `.../Herd/bin/php does not exist`), run the command using the full PHP 8.2 path (`/opt/local/bin/php82`) as shown above.
 
-    ```bash
-    php artisan migrate
-    php artisan db:seed
-    ```
+## ✅ Validation Highlights
 
-6. **Start development servers**
+-   Facilities
+    -   `name` unique across facilities (create/update)
+    -   `capabilities` accepted as array or JSON string (normalized in controller)
+-   Services
+    -   `name` unique per facility (can repeat across different facilities)
+    -   `facility_id` must exist in `facilities(id)`
 
-    ```bash
-    # Terminal 1: Laravel development server
-    php artisan serve
+## 🧩 Conventions
 
-    # Terminal 2: Vite development server
-    npm run dev
-    ```
+-   Blade-only UI (no Vite dev server required). Tailwind is used via CDN in `welcome` (optional).
+-   Eloquent relationships are defined in models (`Facility` ↔ `Service`/`Equipment`).
+-   Controllers handle filtering, validation, and pagination.
+
+## 🔒 Authentication
+
+Routes are currently public for development. If you enable auth, wrap resource routes in middleware and scaffold views accordingly.
 
 ## 🧪 Testing
 
 ```bash
-# Run all tests
 php artisan test
-
-# Run tests with coverage
-php artisan test --coverage
-
-# Run specific test suite
-php artisan test --testsuite=Feature
 ```
 
-## 📚 API Documentation
+## 📝 Git Workflow
 
-The API follows RESTful conventions and includes:
+-   Feature branches off `kiggundu` (remote)
+-   Local branch `ayman` tracks `origin/kiggundu`
+    -   Set up: `git branch --set-upstream-to=origin/kiggundu ayman`
+    -   Push: `git push`
+    -   Pull: `git pull`
 
--   **Authentication**: Bearer token via Laravel Sanctum
--   **Validation**: Form Request classes for input validation
--   **Resources**: API Resources for consistent response formatting
--   **Pagination**: Laravel's built-in pagination
+## 📧 Support
 
-### Core Endpoints
-
--   `GET /api/programs` - List all programs
--   `GET /api/facilities` - List all facilities
--   `GET /api/projects` - List all projects
--   `GET /api/participants` - List all participants
--   `POST /api/projects` - Create a new project
--   `PUT /api/projects/{id}` - Update a project
--   `DELETE /api/projects/{id}` - Delete a project
-
-## 🎯 Development Guidelines
-
-### Code Style
-
--   Follow PSR-12 for PHP code
--   Use ESLint and Prettier for JavaScript/React
--   Write meaningful commit messages
-
-### Testing Strategy
-
--   Unit tests for models and services
--   Feature tests for API endpoints
--   Browser tests for critical user flows
-
-### Git Workflow
-
--   Feature branches for new development
--   Pull requests for code review
--   Squash commits before merging
-
-## 📅 Development Timeline
-
-### Month 1: Web Application (Weeks 1-4)
-
--   **Weeks 1-2**: Core CRUD operations for all entities
--   **Weeks 3-4**: Testing, API documentation, and deployment
-
-### Month 2: Mobile Application (Weeks 5-8)
-
--   **Weeks 5-6**: Mobile app foundation and core features
--   **Weeks 7-8**: Feature parity and deployment
-
-## 👥 Team Responsibilities
-
-See the detailed task breakdown in the project documentation.
-
-## 📞 Support
-
-For questions or issues, please create an issue in the repository or contact the development team.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+For questions/issues, open a GitHub issue.
