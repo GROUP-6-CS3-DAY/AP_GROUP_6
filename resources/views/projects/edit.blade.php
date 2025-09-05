@@ -1,60 +1,117 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Project')
+@section('title', 'Edit Project - InnoTrack')
 
 @section('content')
-    <h1>Edit Project</h1>
-
-    <form action="{{ route('projects.update', $project->project_ID) }}" method="POST">
-        @csrf
-        @method('PUT')
-
-        <div class="mb-3">
-            <label for="program_ID" class="form-label">Program ID</label>
-            <input type="number" class="form-control" id="program_ID" name="program_ID" value="{{ old('program_ID', $project->program_ID) }}" required>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-edit me-2"></i>Edit Project
+            </h1>
+            <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Projects
+            </a>
         </div>
+    </div>
+</div>
 
-        <div class="mb-3">
-            <label for="facility_ID" class="form-label">Facility ID</label>
-            <input type="number" class="form-control" id="facility_ID" name="facility_ID" value="{{ old('facility_ID', $project->facility_ID) }}" required>
-        </div>
+<div class="card">
+    <div class="card-body">
+        <form action="{{ route('projects.update', $project) }}" method="POST">
+            @csrf
+            @method('PUT')
 
-        <div class="mb-3">
-            <label for="title" class="form-label">Title</label>
-            <input type="text" class="form-control" id="title" name="title" value="{{ old('title', $project->title) }}" required>
-        </div>
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title', $project->title) }}" required>
+                @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
 
-        <div class="mb-3">
-            <label for="nature_of_project" class="form-label">Nature of Project</label>
-            <textarea class="form-control" id="nature_of_project" name="nature_of_project" required>{{ old('nature_of_project', $project->nature_of_project) }}</textarea>
-        </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="4" required>{{ old('description', $project->description) }}</textarea>
+                @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
 
-        <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" name="description" required>{{ old('description', $project->description) }}</textarea>
-        </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="program_id" class="form-label">Program</label>
+                    <select class="form-select @error('program_id') is-invalid @enderror" id="program_id" name="program_id" required>
+                        <option value="">Select program</option>
+                        @foreach($programs as $program)
+                        <option value="{{ $program->id }}" {{ old('program_id', $project->program_id) == $program->id ? 'selected' : '' }}>{{ $program->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('program_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-6">
+                    <label for="facility_id" class="form-label">Facility</label>
+                    <select class="form-select @error('facility_id') is-invalid @enderror" id="facility_id" name="facility_id" required>
+                        <option value="">Select facility</option>
+                        @foreach($facilities as $facility)
+                        <option value="{{ $facility->id }}" {{ old('facility_id', $project->facility_id) == $facility->id ? 'selected' : '' }}>{{ $facility->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('facility_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+            </div>
 
-        <div class="mb-3">
-            <label for="innovation_focus" class="form-label">Innovation Focus</label>
-            <textarea class="form-control" id="innovation_focus" name="innovation_focus" required>{{ old('innovation_focus', $project->innovation_focus) }}</textarea>
-        </div>
+            <div class="mb-3">
+                <label for="nature_of_project" class="form-label">Nature of Project</label>
+                <textarea class="form-control @error('nature_of_project') is-invalid @enderror" id="nature_of_project" name="nature_of_project" rows="3" required>{{ old('nature_of_project', $project->nature_of_project) }}</textarea>
+                @error('nature_of_project')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
 
-        <div class="mb-3">
-            <label for="prototype_stage" class="form-label">Prototype Stage</label>
-            <input type="text" class="form-control" id="prototype_stage" name="prototype_stage" value="{{ old('prototype_stage', $project->prototype_stage) }}" required>
-        </div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="innovation_focus" class="form-label">Innovation Focus</label>
+                    <select class="form-select @error('innovation_focus') is-invalid @enderror" id="innovation_focus" name="innovation_focus" required>
+                        <option value="">Select innovation focus</option>
+                        @foreach($innovationFocus as $key => $value)
+                        <option value="{{ $key }}" {{ old('innovation_focus', $project->innovation_focus) == $key ? 'selected' : '' }}>{{ $value }}</option>
+                        @endforeach
+                    </select>
+                    @error('innovation_focus')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-6">
+                    <label for="prototype_stage" class="form-label">Prototype Stage</label>
+                    <select class="form-select @error('prototype_stage') is-invalid @enderror" id="prototype_stage" name="prototype_stage" required>
+                        <option value="">Select prototype stage</option>
+                        @foreach($prototypeStages as $key => $value)
+                        <option value="{{ $key }}" {{ old('prototype_stage', $project->prototype_stage) == $key ? 'selected' : '' }}>{{ $value }}</option>
+                        @endforeach
+                    </select>
+                    @error('prototype_stage')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+            </div>
 
-        <div class="mb-3">
-            <label for="testing_requirements" class="form-label">Testing Requirements</label>
-            <textarea class="form-control" id="testing_requirements" name="testing_requirements" required>{{ old('testing_requirements', $project->testing_requirements) }}</textarea>
-        </div>
+            <div class="mb-3">
+                <label for="testing_requirements" class="form-label">Testing Requirements</label>
+                <textarea class="form-control @error('testing_requirements') is-invalid @enderror" id="testing_requirements" name="testing_requirements" rows="3" required>{{ old('testing_requirements', $project->testing_requirements) }}</textarea>
+                @error('testing_requirements')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
 
-        <div class="mb-3">
-            <label for="commercialization_plan" class="form-label">Commercialization Plan</label>
-            <textarea class="form-control" id="commercialization_plan" name="commercialization_plan" required>{{ old('commercialization_plan', $project->commercialization_plan) }}</textarea>
-        </div>
+            <div class="mb-3">
+                <label for="commercialization_plan" class="form-label">Commercialization Plan</label>
+                <textarea class="form-control @error('commercialization_plan') is-invalid @enderror" id="commercialization_plan" name="commercialization_plan" rows="3" required>{{ old('commercialization_plan', $project->commercialization_plan) }}</textarea>
+                @error('commercialization_plan')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
 
-        <button type="submit" class="btn btn-primary">Update Project</button>
-        <a href="{{ route('projects.index') }}" class="btn btn-secondary">Cancel</a>
-    </form>
+            <div class="text-end">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-1"></i>Save Changes
+                </button>
+                <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+</div>
 @endsection
+
+@push('styles')
+<style>
+    .form-label { font-weight: 600; }
+</style>
+@endpush
