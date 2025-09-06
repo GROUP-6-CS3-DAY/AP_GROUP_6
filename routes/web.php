@@ -4,10 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\ParticipantController;
 use App\Models\Facility;
 use App\Models\Service;
 use App\Models\Equipment;
 use App\Models\Project;
+use App\Models\Participant;
 
 /*
 |--------------------------------------------------------------------------
@@ -72,4 +74,9 @@ Route::prefix('equipment')->name('equipment.')->group(function () {
     Route::put('/{equipment}', [EquipmentController::class, 'update'])->name('update');
     Route::delete('/{equipment}', [EquipmentController::class, 'destroy'])->name('destroy');
     Route::get('/facility/{facility}', [EquipmentController::class, 'getByFacility'])->name('by-facility');
+
 });
+
+
+//Participants Routes
+Route::resource('participants', ParticipantController::class);

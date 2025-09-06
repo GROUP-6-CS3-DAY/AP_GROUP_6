@@ -48,14 +48,14 @@ class ParticipantController extends Controller
      * Display the specified resource.
      */
     public function show(Participant $participant)
-    {
-        $availableProjects = Project::whereDoesntHave('participants', function($query) use ($participant) {
-            $query->where('project_participants.participant_id', $participant->participant_id);
-        })->get();
-
-        return view('participants.show', compact('participant', 'availableProjects'));
-    }
-
+{
+    // Get all projects that don't have this participant assigned
+    $availableProjects = Project::where('project_ID', '!=', $participant->project_id)
+                               ->orWhereNull($participant->project_id)
+                               ->get();
+    
+    return view('participants.show', compact('participant', 'availableProjects'));
+}
     /**
      * Show the form for editing the specified resource.
      */

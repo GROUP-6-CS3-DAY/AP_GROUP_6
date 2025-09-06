@@ -34,4 +34,10 @@ class Project extends Model
         return $this->belongsTo(Facility::class, 'facility_ID');
     }
 
+    public function participants()
+{
+    return $this->hasMany(Participant::class, 'project_id', 'project_ID');
+}
+
+
 }

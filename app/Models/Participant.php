@@ -27,10 +27,9 @@ class Participant extends Model
     /**
      * Get the projects this participant is involved in.
      */
-    public function projects()
-    {
-        return $this->belongsToMany(Project::class, 'project_participants', 'participant_id', 'project_id')
-            ->withPivot('role_on_project', 'skill_role')
-            ->withTimestamps();
-    }
+    public function project()
+{
+return $this->belongsTo(Project::class, 'project_id', 'project_ID');
+}
+
 }

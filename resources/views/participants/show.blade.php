@@ -78,85 +78,74 @@
                             <h3 style="color: #48284A; font-weight: 600;">Project Statistics</h3>
                             <div class="row mt-3">
                                 <div class="col-4 text-center">
-                                    <h3 style="color: #A1869E;">{{ $participant->projects->count() }}</h3>
-                                    <small>Total Projects</small>
+                                     <h3 style="color: #A1869E;">{{ $participant->project ? 1 : 0 }}</h3>
+                                        <small>Total Projects</small>
                                 </div>
-                                <div class="col-4 text-center">
-                                    <h3 style="color: #A1869E;">
-                                        {{ $participant->projects->where('pivot.role_on_project', 'lead')->count() }}
-                                    </h3>
+                            <div class="col-4 text-center">
+                                <h3 style="color: #A1869E;">0</h3>
                                     <small>As Lead</small>
-                                </div>
-                                <div class="col-4 text-center">
-                                    <h3 style="color: #A1869E;">
-                                        {{ $participant->projects->where('pivot.role_on_project', 'member')->count() }}
-                                    </h3>
+                            </div>
+                            <div class="col-4 text-center">
+                                <h3 style="color: #A1869E;">{{ $participant->project ? 1 : 0 }}</h3>
                                     <small>As Member</small>
-                                </div>
+                            </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Existing Projects Card -->
+                    <!-- Current Project Card -->
                     <div class="card shadow-sm" style="border: none; border-radius: 10px; padding-top: 20px;">
                         <div class="card-body p-4">
-                            <h4 style="color: #48284A; font-weight: 600;">Assigned Projects</h4>
+                            <h4 style="color: #48284A; font-weight: 600;">Current Project</h4>
                             
-                            @if($participant->projects->count() > 0)
+                            @if($participant->project)
                                 <div class="list-group mt-3">
-                                    @foreach($participant->projects as $project)
-                                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <h6 class="mb-0">{{ $project->name }}</h6>
-                                                <small>Role: {{ ucfirst($project->pivot->role_on_project) }}</small>
-                                                <br>
-                                                <small>Skill: {{ ucfirst($project->pivot->skill_role) }}</small>
-                                            </div>
-                                            <form action="{{ route('participants.remove-project', [$participant->participant_id, $project->project_id]) }}" 
-                                                  method="POST" style="display:inline;">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                            </form>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">{{ $participant->project->name }}</h6>
+                                            <small>Status: {{ ucfirst($participant->project->status ?? 'Active') }}</small>
+                                            <br>
+                                            <small>Description: {{ $participant->project->description ?? 'N/A' }}</small>
                                         </div>
-                                    @endforeach
+                                        <form action="{{ route('participants.remove-project', $participant->participant_id) }}" 
+                                              method="POST" style="display:inline;">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                        </form>
+                                    </div>
                                 </div>
                             @else
-                                <p class="text-muted">No projects assigned yet.</p>
+                                <p class="text-muted">No project assigned yet.</p>
                             @endif
 
                             <!-- Add Project Form -->
-                            <form action="{{ route('participants.add-project', $participant->participant_id) }}" 
-                                  method="POST" class="mt-4">
-                                @csrf
-                                <div class="mb-3" >
-                                    <label class="form-label" style="color: #48284A;">Add to Project</label>
-                                    <select name="project_id" class="form-select" required>
-                                        @foreach($availableProjects as $project)
-                                            <option value="{{ $project->project_id }}">{{ $project->name }}</option>
-                                        @endforeach
-                                    </select>
+                            @if(!$participant->project && $availableProjects->count() > 0)
+                                <form action="{{ route('participants.add-project', $participant->participant_id) }}" 
+                                      method="POST" class="mt-4">
+                                    @csrf
+                                    <div class="mb-3" >
+                                        <label class="form-label" style="color: #48284A;">Assign to Project</label>
+                                        <select name="project_id" class="form-select" required>
+                                            <option value="">Select a project...</option>
+                                            @foreach($availableProjects as $project)
+                                                <option value="{{ $project->project_ID }}">{{ $project->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn" 
+                                            style="background: #A1869E; color: white; border-radius: 3px; border-width: 0cm;">
+                                        Assign to Project
+                                    </button>
+                                </form>
+                            @elseif($participant->project)
+                                <div class="alert alert-info mt-3">
+                                    <small>This participant is already assigned to a project. Remove them first to assign to a different project.</small>
                                 </div>
-                                <div class="mb-3" style="padding-top: 20px;">
-                                    <label class="form-label" style="color: #48284A;">Role on Project</label>
-                                    <select name="role_on_project" class="form-select" required>
-                                        <option value="lead">Lead</option>
-                                        <option value="member">Member</option>
-                                        <option value="consultant">Consultant</option>
-                                    </select>
+                            @else
+                                <div class="alert alert-warning mt-3">
+                                    <small>No available projects to assign.</small>
                                 </div>
-                                <div class="mb-3" style="padding-top: 20px; padding-bottom: 20px;">
-                                    <label class="form-label" style="color: #48284A;">Skill Role</label>
-                                    <select name="skill_role" class="form-select" required>
-                                        <option value="software">Software</option>
-                                        <option value="hardware">Hardware</option>
-                                        <option value="business">Business</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn" 
-                                        style="background: #A1869E; color: white; border-radius: 3px; border-width: 0cm;">
-                                    Add to Project
-                                </button>
-                            </form>
+                            @endif
                         </div>
                     </div>
                 </div>
