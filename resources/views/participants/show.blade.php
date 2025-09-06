@@ -1,171 +1,311 @@
 @extends('layouts.app')
 
+@section('title', $participant->full_name . ' - Participant Details - InnoTrack')
+
 @section('content')
-<div class="container-fluid px-0">
-    <!-- Banner -->
-    <div style="background: #48284A; height: 157px; width: 100%;"></div>
-</div>
-<div class="container mt-n4">
-    <!-- Tab-like header section -->
-    <div class="d-flex align-items-center mb-4" style="margin-top: -40px;">
-        <div class="bg-white rounded-pill px-4 py-2 shadow-sm" style="font-size: 1.5rem; font-weight: 600; color: #EFF1F3">
-            Participant Details
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-user me-2"></i>{{ $participant->full_name }}
+            </h1>
+            <div>
+                <a href="{{ route('participants.edit', $participant) }}" class="btn btn-warning me-2">
+                    <i class="fas fa-edit me-1"></i>Edit Participant
+                </a>
+                <a href="{{ route('participants.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Participants
+                </a>
+            </div>
         </div>
     </div>
+</div>
 
-    <div class="card shadow-sm" style="border: none; border-radius: 10px;">
-        <div class="card-body p-4">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-4">
-                        <div class="d-flex align-items-center mb-3" style="padding-top: 20px; padding-left: 20px;">
-                            <i class="fas fa-user" style="color: #A1869E; width: 24px;"></i>
-                            <span class="ms-3">
-                                <span style="color: #48284A; font-weight: 600; margin-right: 10px;">Full Name:</span>
-                                {{ $participant->full_name }}
-                            </span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-3" style="padding-top: 20px; padding-left: 20px;">
-                            <i class="fas fa-envelope" style="color: #A1869E; width: 24px;"></i>
-                            <span class="ms-3">
-                                <span style="color: #48284A; font-weight: 600; margin-right: 10px;">Email:</span>
-                                {{ $participant->email }}
-                            </span>
-                        </div>
-                        
-                        <div class="d-flex align-items-center mb-3"style="padding-top: 20px; padding-left: 20px;">
-                            <i class="fas fa-users" style="color: #A1869E; width: 24px;"></i>
-                            <span class="ms-3">
-                                <span style="color: #48284A; font-weight: 600; margin-right: 10px;">Affiliation:</span>
-                                {{ ucfirst($participant->affiliation) }}
-                            </span>
-                        </div>
-                        
-                        <div class="d-flex align-items-center mb-3" style="padding-top: 20px; padding-left: 20px;">
-                            <i class="fas fa-code-branch" style="color: #A1869E; width: 24px;"></i>
-                            <span class="ms-3">
-                                <span style="color: #48284A; font-weight: 600; margin-right: 10px;">Specialization:</span>
-                                {{ ucfirst($participant->specialization) }}
-                            </span>
-                        </div>
-
-                        <div class="d-flex align-items-center mb-3" style="padding-top: 20px; padding-left: 20px;">
-                            <i class="fas fa-graduation-cap" style="color: #A1869E; width: 24px;"></i>
-                            <span class="ms-3">
-                                <span style="color: #48284A; font-weight: 600; margin-right: 10px;">Institution:</span>
-                                {{ strtoupper($participant->institution) }}
-                            </span>
-                        </div>
-
-                        <div class="d-flex align-items-center" style="padding-top: 20px; padding-left: 20px;">
-                            <i class="fas fa-check-circle" style="color: #A1869E; width: 24px;"></i>
-                            <span class="ms-3">
-                                <span style="color: #48284A; font-weight: 600; margin-right: 10px;">Cross Skill Trained:</span>
-                                <span class="badge {{ $participant->cross_skill_trained ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ $participant->cross_skill_trained ? 'Yes' : 'No' }}
-                                </span>
-                            </span>
-                        </div>
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Participant Details -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Participant Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Full Name</h6>
+                        <p class="h5">{{ $participant->full_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Email</h6>
+                        <p class="mb-0">
+                            <i class="fas fa-envelope me-1"></i>{{ $participant->email }}
+                        </p>
                     </div>
                 </div>
-                
-                <!-- Add Projects Section -->
-                <div class="col-md-6" style="padding-left: 20px; padding-top: 20px;">
-                    <!-- Add Statistics Card -->
-                    <div class="card shadow-sm mb-3" style="border: none; border-radius: 10px; background-color: #f8f9fa;">
-                        <div class="card-body">
-                            <h3 style="color: #48284A; font-weight: 600;">Project Statistics</h3>
-                            <div class="row mt-3">
-                                <div class="col-4 text-center">
-                                     <h3 style="color: #A1869E;">{{ $participant->project ? 1 : 0 }}</h3>
-                                        <small>Total Projects</small>
-                                </div>
-                            <div class="col-4 text-center">
-                                <h3 style="color: #A1869E;">0</h3>
-                                    <small>As Lead</small>
-                            </div>
-                            <div class="col-4 text-center">
-                                <h3 style="color: #A1869E;">{{ $participant->project ? 1 : 0 }}</h3>
-                                    <small>As Member</small>
-                            </div>
-                            </div>
-                        </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Affiliation</h6>
+                        <span class="badge bg-secondary fs-6">{{ ucfirst($participant->affiliation) }}</span>
                     </div>
-                    
-                    <!-- Current Project Card -->
-                    <div class="card shadow-sm" style="border: none; border-radius: 10px; padding-top: 20px;">
-                        <div class="card-body p-4">
-                            <h4 style="color: #48284A; font-weight: 600;">Current Project</h4>
-                            
-                            @if($participant->project)
-                                <div class="list-group mt-3">
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-0">{{ $participant->project->name }}</h6>
-                                            <small>Status: {{ ucfirst($participant->project->status ?? 'Active') }}</small>
-                                            <br>
-                                            <small>Description: {{ $participant->project->description ?? 'N/A' }}</small>
-                                        </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Specialization</h6>
+                        <span class="badge bg-info fs-6">{{ ucfirst($participant->specialization) }}</span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Institution</h6>
+                        <p class="mb-0">{{ strtoupper($participant->institution) }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Cross Skill Trained</h6>
+                        <span class="badge {{ $participant->cross_skill_trained ? 'bg-success' : 'bg-secondary' }}">
+                            {{ $participant->cross_skill_trained ? 'Yes' : 'No' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Project Section -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-project-diagram me-2"></i>Current Project
+                    <span class="badge bg-info ms-2">{{ $participant->project ? 1 : 0 }}</span>
+                </h5>
+                @if(!$participant->project && $availableProjects->count() > 0)
+                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#assignProjectModal">
+                    <i class="fas fa-plus me-1"></i>Assign Project
+                </button>
+                @endif
+            </div>
+            <div class="card-body">
+                @if($participant->project)
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Status</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <a href="{{ route('projects.show', $participant->project) }}" class="text-decoration-none">
+                                        {{ $participant->project->name }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{ ucfirst($participant->project->status ?? 'Active') }}</span>
+                                </td>
+                                <td>
+                                    {{ Str::limit($participant->project->description ?? 'N/A', 50) }}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ route('projects.show', $participant->project) }}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
                                         <form action="{{ route('participants.remove-project', $participant->participant_id) }}" 
                                               method="POST" style="display:inline;">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to remove this participant from the project?')">
+                                                <i class="fas fa-times"></i>
+                                            </button>
                                         </form>
                                     </div>
-                                </div>
-                            @else
-                                <p class="text-muted">No project assigned yet.</p>
-                            @endif
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                <div class="text-center py-3">
+                    <i class="fas fa-project-diagram fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">No project assigned to this participant</p>
+                    @if($availableProjects->count() > 0)
+                    <button class="btn btn-success btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#assignProjectModal">
+                        <i class="fas fa-plus me-1"></i>Assign to Project
+                    </button>
+                    @else
+                    <p class="text-muted mt-2"><small>No available projects to assign.</small></p>
+                    @endif
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
 
-                            <!-- Add Project Form -->
-                            @if(!$participant->project && $availableProjects->count() > 0)
-                                <form action="{{ route('participants.add-project', $participant->participant_id) }}" 
-                                      method="POST" class="mt-4">
-                                    @csrf
-                                    <div class="mb-3" >
-                                        <label class="form-label" style="color: #48284A;">Assign to Project</label>
-                                        <select name="project_id" class="form-select" required>
-                                            <option value="">Select a project...</option>
-                                            @foreach($availableProjects as $project)
-                                                <option value="{{ $project->project_ID }}">{{ $project->name }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    <button type="submit" class="btn" 
-                                            style="background: #A1869E; color: white; border-radius: 3px; border-width: 0cm;">
-                                        Assign to Project
-                                    </button>
-                                </form>
-                            @elseif($participant->project)
-                                <div class="alert alert-info mt-3">
-                                    <small>This participant is already assigned to a project. Remove them first to assign to a different project.</small>
-                                </div>
-                            @else
-                                <div class="alert alert-warning mt-3">
-                                    <small>No available projects to assign.</small>
-                                </div>
-                            @endif
-                        </div>
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ route('participants.edit', $participant) }}" class="btn btn-warning">
+                        <i class="fas fa-edit me-1"></i>Edit Participant
+                    </a>
+                    @if(!$participant->project && $availableProjects->count() > 0)
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#assignProjectModal">
+                        <i class="fas fa-plus me-1"></i>Assign Project
+                    </button>
+                    @endif
+                    @if($participant->project)
+                    <form action="{{ route('participants.remove-project', $participant->participant_id) }}" 
+                          method="POST" style="display:inline;">
+                        @csrf @method('DELETE')
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this participant from the project?')">
+                            <i class="fas fa-times me-1"></i>Remove from Project
+                        </button>
+                    </form>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <!-- Participant Statistics -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Statistics
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ $participant->project ? 1 : 0 }}</h4>
+                        <small class="text-muted">Total Projects</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">0</h4>
+                        <small class="text-muted">As Lead</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-info">{{ $participant->project ? 1 : 0 }}</h4>
+                        <small class="text-muted">As Member</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-warning">{{ $participant->cross_skill_trained ? 1 : 0 }}</h4>
+                        <small class="text-muted">Cross Skills</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills & Training -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>Skills & Training
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Specialization</small>
+                    <div>
+                        <span class="badge bg-primary">{{ ucfirst($participant->specialization) }}</span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Cross Skill Training</small>
+                    <div>
+                        <span class="badge {{ $participant->cross_skill_trained ? 'bg-success' : 'bg-secondary' }}">
+                            {{ $participant->cross_skill_trained ? 'Completed' : 'Not Completed' }}
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="mt-4" style="padding-top: 20px; padding-left: 20px;">
-        <a href="{{ route('participants.index') }}" 
-           class="btn" 
-           style="background: #A1869E; 
-                  color: white; 
-                  padding: 10px 30px; 
-                  border-radius: 5px; 
-                  text-decoration: none;">
-            Back to List
-        </a>
+<!-- Assign Project Modal -->
+@if(!$participant->project && $availableProjects->count() > 0)
+<div class="modal fade" id="assignProjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign to Project</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('participants.add-project', $participant->participant_id) }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Project</label>
+                        <select name="project_id" class="form-select" required>
+                            <option value="">Choose a project...</option>
+                            @foreach($availableProjects as $project)
+                                <option value="{{ $project->project_ID }}">{{ $project->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <small>This will assign {{ $participant->full_name }} to the selected project.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Assign to Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Participant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the participant "<strong>{{ $participant->full_name }}</strong>"?</p>
+                <p class="text-danger"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ route('participants.destroy', $participant) }}" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Delete Participant</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    // Delete confirmation
+    function confirmDelete() {
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        modal.show();
+    }
+</script>
+@endpush
 
 @section('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
