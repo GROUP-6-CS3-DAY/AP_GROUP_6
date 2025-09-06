@@ -9,26 +9,19 @@ class Program extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'program_id';
+    protected $primaryKey = 'program_ID';
 
     protected $fillable = [
+        'program_ID',
         'name',
         'description',
         'national_alignment',
         'focus_areas',
-        'phases',
+        'phases'
     ];
 
-    protected $casts = [
-        'focus_areas' => 'array',
-        'phases' => 'array',
-    ];
-
-    /**
-     * Get the projects for this program.
-     */
     public function projects()
     {
-        return $this->hasMany(Project::class, 'program_id', 'program_id');
+        return $this->hasMany(Project::class, 'program_ID');
     }
 }
