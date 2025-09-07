@@ -72,14 +72,6 @@ class FacilityController extends Controller
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
         try {
-            // Normalize capabilities: accept JSON string or array
-            if ($request->has('capabilities') && is_string($request->input('capabilities'))) {
-                $decoded = json_decode($request->input('capabilities'), true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $request->merge(['capabilities' => $decoded]);
-                }
-            }
-
             $validator = Validator::make($request->all(), [
                 'name' => 'required|string|max:255|unique:facilities,name',
                 'location' => 'required|string|max:1000',
@@ -101,13 +93,7 @@ class FacilityController extends Controller
                     ->withInput();
             }
 
-            // Ensure capabilities is an array
-            $data = $validator->validated();
-            if (is_string($data['capabilities'])) {
-                $data['capabilities'] = json_decode($data['capabilities'], true) ?? [];
-            }
-
-            $facility = Facility::create($data);
+            $facility = Facility::create($validator->validated());
 
             return redirect()->route('facilities.show', $facility)
                 ->with('success', 'Facility created successfully');
@@ -151,21 +137,13 @@ class FacilityController extends Controller
     public function update(Request $request, Facility $facility): \Illuminate\Http\RedirectResponse
     {
         try {
-            // Normalize capabilities: accept JSON string or array
-            if ($request->has('capabilities') && is_string($request->input('capabilities'))) {
-                $decoded = json_decode($request->input('capabilities'), true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $request->merge(['capabilities' => $decoded]);
-                }
-            }
-
             $validator = Validator::make($request->all(), [
                 'name' => [
                     'sometimes',
                     'required',
                     'string',
                     'max:255',
-                    Rule::unique('facilities', 'name')->ignore($facility->id)
+                    Rule::unique('facilities', 'name')->ignore($facility->facility_id, 'facility_id')
                 ],
                 'location' => 'sometimes|required|string|max:1000',
                 'description' => 'sometimes|required|string|max:2000',
@@ -187,13 +165,7 @@ class FacilityController extends Controller
                     ->withInput();
             }
 
-            // Ensure capabilities is an array
-            $data = $validator->validated();
-            if (isset($data['capabilities']) && is_string($data['capabilities'])) {
-                $data['capabilities'] = json_decode($data['capabilities'], true) ?? [];
-            }
-
-            $facility->update($data);
+            $facility->update($validator->validated());
 
             return redirect()->route('facilities.show', $facility)
                 ->with('success', 'Facility updated successfully');
