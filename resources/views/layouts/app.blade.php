@@ -58,6 +58,11 @@
                             <i class="fas fa-tools me-1"></i>Project
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('participants.index') }}">
+                            <i class="fas fa-tools me-1"></i>Participants
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
