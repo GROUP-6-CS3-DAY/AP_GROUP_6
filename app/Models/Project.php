@@ -9,12 +9,10 @@ class Project extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'project_ID';
 
     protected $fillable = [
-        'project_ID',
-        'program_ID',
-        'facility_ID',
+        'program_id',
+        'facility_id',
         'title',
         'nature_of_project',
         'description',
@@ -26,12 +24,12 @@ class Project extends Model
 
     public function program()
     {
-        return $this->belongsTo(Program::class, 'program_ID');
+        return $this->belongsTo(Program::class, 'program_id');
     }
 
     public function facility()
     {
-        return $this->belongsTo(Facility::class, 'facility_ID');
+        return $this->belongsTo(Facility::class, 'facility_id');
     }
 
 }
