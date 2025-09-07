@@ -18,23 +18,8 @@ return new class extends Migration
             $table->json('capabilities');
             $table->text('description');
             $table->string('inventory_code')->unique();
-            $table->enum('usage_domain', [
-                'electronics',
-                'mechanical',
-                'iot',
-                'software',
-                'renewable_energy',
-                'automation',
-                'materials',
-                'biomedical'
-            ]);
-            $table->enum('support_phase', [
-                'training',
-                'prototyping',
-                'testing',
-                'commercialization',
-                'research'
-            ]);
+            $table->string('usage_domain');
+            $table->string('support_phase');
             $table->timestamps();
 
             // Indexes for better performance
