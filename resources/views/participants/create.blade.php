@@ -99,12 +99,12 @@
                                 id="project_id" name="project_id">
                                 <option value="">No project assignment</option>
                                 @if(isset($projects))
-                                    @foreach($projects as $project)
-                                        <option value="{{ $project->project_ID }}" {{ old('project_id') == $project->project_ID ? 'selected' : '' }}>
-                                            {{ $project->name }}
-                                        </option>
-                                    @endforeach
-                                @endif
+    @foreach($projects as $project)
+        <option value="{{ $project->project_id }}" {{ old('project_id') == $project->project_id ? 'selected' : '' }}>
+            {{ $project->title }}
+        </option>
+    @endforeach
+@endif
                             </select>
                             @error('project_id')
                             <div class="invalid-feedback">{{ $message }}</div>

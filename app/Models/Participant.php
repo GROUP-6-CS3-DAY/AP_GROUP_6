@@ -18,6 +18,7 @@ class Participant extends Model
         'specialization',
         'cross_skill_trained',
         'institution',
+        'project_id',
     ];
 
     protected $casts = [
@@ -29,7 +30,7 @@ class Participant extends Model
      */
     public function project()
 {
-return $this->belongsTo(Project::class, 'project_id', 'project_ID');
+return $this->belongsTo(Project::class, 'project_id', 'project_id');
 }
 
 }

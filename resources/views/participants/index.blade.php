@@ -130,7 +130,7 @@
                         </td>
                         <td>
                             @if($participant->project)
-                                <span class="badge bg-primary">{{ $participant->project->name }}</span>
+                                <span class="badge bg-primary">{{ $participant->project->title }}</span>
                             @else
                                 <span class="text-muted">No project</span>
                             @endif

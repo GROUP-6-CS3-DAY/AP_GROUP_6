@@ -89,3 +89,8 @@ Route::prefix('equipment')->name('equipment.')->group(function () {
 
 //Participants Routes
 Route::resource('participants', ParticipantController::class);
+// Additional routes for project management
+Route::post('participants/{participant}/add-project', [ParticipantController::class, 'addProject'])
+    ->name('participants.add-project');
+Route::delete('participants/{participant}/remove-project/{project}', [ParticipantController::class, 'removeProject'])
+    ->name('participants.remove-project');

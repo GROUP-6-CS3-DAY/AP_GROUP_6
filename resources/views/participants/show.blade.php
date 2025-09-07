@@ -103,7 +103,7 @@
                             <tr>
                                 <td>
                                     <a href="{{ route('projects.show', $participant->project) }}" class="text-decoration-none">
-                                        {{ $participant->project->name }}
+                                        {{ $participant->project->title }}
                                     </a>
                                 </td>
                                 <td>
@@ -117,7 +117,7 @@
                                         <a href="{{ route('projects.show', $participant->project) }}" class="btn btn-outline-primary btn-sm">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <form action="{{ route('participants.remove-project', $participant->participant_id) }}" 
+                                        <form action="{{ route('participants.remove-project', [$participant->participant_id, $participant->project->project_id]) }}" 
                                               method="POST" style="display:inline;">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to remove this participant from the project?')">
@@ -166,7 +166,7 @@
                     </button>
                     @endif
                     @if($participant->project)
-                    <form action="{{ route('participants.remove-project', $participant->participant_id) }}" 
+                    <form action="{{ route('participants.remove-project', [$participant->participant_id, $participant->project->project_id]) }}" 
                           method="POST" style="display:inline;">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this participant from the project?')">
@@ -178,37 +178,7 @@
             </div>
         </div>
 
-        <!-- Participant Statistics -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-chart-bar me-2"></i>Statistics
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <h4 class="text-primary">{{ $participant->project ? 1 : 0 }}</h4>
-                        <small class="text-muted">Total Projects</small>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="text-success">0</h4>
-                        <small class="text-muted">As Lead</small>
-                    </div>
-                </div>
-                <hr>
-                <div class="row text-center">
-                    <div class="col-6">
-                        <h4 class="text-info">{{ $participant->project ? 1 : 0 }}</h4>
-                        <small class="text-muted">As Member</small>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="text-warning">{{ $participant->cross_skill_trained ? 1 : 0 }}</h4>
-                        <small class="text-muted">Cross Skills</small>
-                    </div>
-                </div>
-            </div>
-        </div>
+       
 
         <!-- Skills & Training -->
         <div class="card">
@@ -254,7 +224,7 @@
                         <select name="project_id" class="form-select" required>
                             <option value="">Choose a project...</option>
                             @foreach($availableProjects as $project)
-                                <option value="{{ $project->project_ID }}">{{ $project->name }}</option>
+                                <option value="{{ $project->project_id }}">{{ $project->title }}</option>
                             @endforeach
                         </select>
                     </div>
