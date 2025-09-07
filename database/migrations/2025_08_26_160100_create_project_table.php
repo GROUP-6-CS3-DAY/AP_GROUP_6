@@ -11,24 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-
         Schema::create('projects', function (Blueprint $table) {
-            $table->id('project_ID');
-            $table->unsignedBigInteger('program_ID');
-            $table->unsignedBigInteger('facility_ID');
+            $table->id();
+            $table->foreignId('program_id')->constrained('programs')->cascadeOnDelete();
+            $table->foreignId('facility_id')->constrained('facilities')->cascadeOnDelete();
             $table->string('title');
-            $table->string('nature_of_project');
+            $table->text('nature_of_project');
             $table->text('description');
             $table->string('innovation_focus');
             $table->string('prototype_stage');
-            $table->string('testing_requirements');
-            $table->string('commercialization_plan');
+            $table->text('testing_requirements');
+            $table->text('commercialization_plan');
             $table->timestamps();
-            
-            $table->foreign('program_ID')->references('program_ID')->on('programs')->onDelete('cascade');
-            $table->foreign('facility_ID')->references('facility_ID')->on('facilities')->onDelete('cascade');
         });
-
     }
 
     /**

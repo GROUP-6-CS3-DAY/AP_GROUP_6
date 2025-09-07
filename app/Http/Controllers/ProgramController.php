@@ -11,10 +11,45 @@ class ProgramController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $programs = Program::all();
-        return view('programs.index', compact('programs'));
+        $query = Program::query();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+        }
+
+        // Focus areas filter (replacing status filter)
+        if ($request->filled('focus_areas')) {
+            $query->where('focus_areas', 'like', '%' . $request->focus_areas . '%');
+        }
+
+        // Phases filter (replacing facility filter)
+        if ($request->filled('phases')) {
+            $query->where('phases', 'like', '%' . $request->phases . '%');
+        }
+
+        $programs = $query->paginate(15);
+        
+        // Define focus areas options (replacing statuses)
+        $focusAreas = [
+            'research' => 'Research',
+            'development' => 'Development',
+            'innovation' => 'Innovation',
+            'technology' => 'Technology'
+        ];
+
+        // Define phases options (replacing facilities)
+        $phases = [
+            'planning' => 'Planning',
+            'execution' => 'Execution',
+            'evaluation' => 'Evaluation',
+            'closure' => 'Closure'
+        ];
+
+        return view('programs.index', compact('programs', 'focusAreas', 'phases'));
     }
 
     /**
@@ -22,7 +57,21 @@ class ProgramController extends Controller
      */
     public function create()
     {
-        return view('programs.create');
+        $focusAreas = [
+            'research' => 'Research',
+            'development' => 'Development',
+            'innovation' => 'Innovation',
+            'technology' => 'Technology'
+        ];
+
+        $phases = [
+            'planning' => 'Planning',
+            'execution' => 'Execution',
+            'evaluation' => 'Evaluation',
+            'closure' => 'Closure'
+        ];
+
+        return view('programs.create', compact('focusAreas', 'phases'));
     }
 
     /**
@@ -46,27 +95,38 @@ class ProgramController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Program $program)
     {
-        $program = Program::findOrFail($id);
         return view('programs.show', compact('program'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Program $program)
     {
-        $program = Program::findOrFail($id);
-        return view('programs.edit', compact('program'));
+        $focusAreas = [
+            'research' => 'Research',
+            'development' => 'Development',
+            'innovation' => 'Innovation',
+            'technology' => 'Technology'
+        ];
+
+        $phases = [
+            'planning' => 'Planning',
+            'execution' => 'Execution',
+            'evaluation' => 'Evaluation',
+            'closure' => 'Closure'
+        ];
+
+        return view('programs.edit', compact('program', 'focusAreas', 'phases'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Program $program)
     {
-        $program = Program::findOrFail($id);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -84,9 +144,8 @@ class ProgramController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Program $program)
     {
-        $program = Program::findOrFail($id);
         $program->delete();
 
         return redirect()->route('programs.index')->with('success', 'Program deleted successfully');
