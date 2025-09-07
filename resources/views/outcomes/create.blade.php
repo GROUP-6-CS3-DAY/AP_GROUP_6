@@ -32,7 +32,7 @@
                     <select id="project_id" name="project_id" class="form-select @error('project_id') is-invalid @enderror" required>
                         <option value="">Select project</option>
                         @foreach($projects as $project)
-                        <option value="{{ $project->id }}" {{ old('project_id') == $project->id ? 'selected' : '' }}>{{ $project->title }}</option>
+                        <option value="{{ $project->project_id }}" {{ old('project_id') == $project->project_id ? 'selected' : '' }}>{{ $project->title }}</option>
                         @endforeach
                     </select>
                     @error('project_id')<div class="invalid-feedback">{{ $message }}</div>@enderror

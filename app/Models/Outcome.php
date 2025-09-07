@@ -17,6 +17,12 @@ class Outcome extends Model
         'outcome_type',
         'quality_certification',
         'commercialization_status',
+        'impact',
+        'date_achieved'
+    ];
+
+    protected $casts = [
+        'date_achieved' => 'date'
     ];
 
     /**

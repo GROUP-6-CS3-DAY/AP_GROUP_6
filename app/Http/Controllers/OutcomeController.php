@@ -36,7 +36,7 @@ class OutcomeController extends Controller
      */
     public function create()
     {
-        $projects = Project::select('id','title')->orderBy('title')->get();
+        $projects = Project::select('project_id','title')->orderBy('title')->get();
         return view('outcomes.create', compact('projects'));
     }
 
@@ -46,7 +46,7 @@ class OutcomeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => 'required|exists:projects,project_id',
             'description' => 'required|string|max:1000',
             'title' => 'required|string|max:255',
             'outcome_type' => 'required|string|max:255',
@@ -76,7 +76,7 @@ class OutcomeController extends Controller
      */
     public function edit(Outcome $outcome)
     {
-        $projects = Project::select('id','title')->orderBy('title')->get();
+        $projects = Project::select('project_id','title')->orderBy('title')->get();
         return view('outcomes.edit', compact('outcome', 'projects'));
     }
 
@@ -86,7 +86,7 @@ class OutcomeController extends Controller
     public function update(Request $request, Outcome $outcome)
     {
         $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => 'required|exists:projects,project_id',
             'description' => 'required|string|max:1000',
             'title' => 'required|string|max:255',
             'outcome_type' => 'required|string|max:255',

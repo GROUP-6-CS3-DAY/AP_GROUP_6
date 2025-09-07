@@ -55,6 +55,25 @@
     </div>
 
     <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ $outcomesCount ?? 0 }}</h4>
+                        <p class="card-text">Total Outcomes</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-trophy fa-2x"></i>
+                    </div>
+                </div>
+                <a href="{{ route('outcomes.index') }}" class="text-white text-decoration-none">
+                    <small>View all outcomes <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
         <div class="card bg-success text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -91,7 +110,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3" style="margin-top: 20px;">
         <div class="card bg-info text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -124,6 +143,25 @@
                 </div>
                 <a href="{{ route('projects.index') }}" class="text-white text-decoration-none">
                     <small>View all projects <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3" style="margin-top: 20px;">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ $programsCount ?? 0 }}</h4>
+                        <p class="card-text">Active Programs</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-th-large fa-2x"></i>
+                    </div>
+                </div>
+                <a href="{{ route('programs.index') }}" class="text-white text-decoration-none">
+                    <small>View all programs <i class="fas fa-arrow-right"></i></small>
                 </a>
             </div>
         </div>

@@ -10,6 +10,8 @@ use App\Models\Service;
 use App\Models\Equipment;
 use App\Models\Project;
 use App\Models\Participant;
+use App\Models\Program;
+use App\Models\Outcome;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\OutcomeController;
@@ -35,12 +37,18 @@ Route::get('/dashboard', function () {
     $servicesCount = Service::count();
     $equipmentCount = Equipment::count();
     $projectsCount = Project::count();
+    $participantsCount = Participant::count();
+    $programsCount = Program::count();
+    $outcomesCount = Outcome::count();
 
     return view('dashboard.overview', compact(
         'facilitiesCount',
         'servicesCount',
         'equipmentCount',
-        'projectsCount'
+        'projectsCount',
+        'participantsCount',
+        'programsCount',
+        'outcomesCount'
     ));
 })->name('dashboard.overview');
 

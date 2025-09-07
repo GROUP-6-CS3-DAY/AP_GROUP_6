@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('outcomes', function (Blueprint $table) {
             $table->id(); // standard primary key
-            $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
+            $table->foreignId('project_id')->constrained('projects', 'project_id')->cascadeOnDelete();
             $table->string('title');
             $table->text('description');
             $table->string('artifact_link')->nullable();

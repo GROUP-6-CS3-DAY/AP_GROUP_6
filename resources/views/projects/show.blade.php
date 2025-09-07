@@ -95,10 +95,10 @@
                 </div>
                 <hr>
                 <!-- Participants temporarily disabled -->
-                <div class="text-center">
+                <!-- <div class="text-center">
                     <h4 class="text-primary mb-0">—</h4>
                     <small class="text-muted">Participants (disabled)</small>
-                </div>
+                </div> -->
             </div>
         </div>
         <div class="card">
@@ -109,6 +109,83 @@
                     <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-list me-1"></i>All Projects</a>
                     <!-- Participant add disabled -->
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4 g-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Participants <span class="badge bg-primary">{{ $project->participants->count() }}</span></h5>
+                <a href="#" class="btn btn-sm btn-outline-secondary disabled" title="Add Participant disabled"><i class="fas fa-plus"></i></a>
+            </div>
+            <div class="card-body p-0">
+                @if($project->participants->count())
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Affiliation</th>
+                                <th>Specialization</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($project->participants as $participant)
+                            <tr>
+                                <td><a href="{{ route('participants.show', $participant) }}" class="text-decoration-none">{{ $participant->full_name }}</a></td>
+                                <td>{{ ucfirst($participant->affiliation) }}</td>
+                                <td>{{ ucfirst($participant->specialization) }}</td>
+                                <td class="text-end"><a href="{{ route('participants.show', $participant) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a></td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                <div class="p-4 text-center text-muted">No participants assigned.</div>
+                @endif
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-flag-checkered me-2"></i>Outcomes <span class="badge bg-success">{{ $project->outcomes->count() }}</span></h5>
+                <a href="{{ route('outcomes.create', ['project_id' => $project->project_id]) }}" class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></a>
+            </div>
+            <div class="card-body p-0">
+                @if($project->outcomes->count())
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0 align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Type</th>
+                                <th>Date</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($project->outcomes as $outcome)
+                            <tr>
+                                <td><a href="{{ route('outcomes.show', $outcome) }}" class="text-decoration-none">{{ $outcome->title }}</a></td>
+                                <td>{{ $outcome->outcome_type }}</td>
+                                <td>{{ $outcome->date_achieved?->format('Y-m-d') }}</td>
+                                <td class="text-end">
+                                    <a href="{{ route('outcomes.edit', $outcome) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else
+                <div class="p-4 text-center text-muted">No outcomes recorded.</div>
+                @endif
             </div>
         </div>
     </div>

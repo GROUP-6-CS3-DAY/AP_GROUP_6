@@ -116,7 +116,7 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $project->load(['program','facility']); // participants disabled
+        $project->load(['program','facility','participants','outcomes']);
 
         $innovationFocus = [
             'product' => 'Product Innovation',
