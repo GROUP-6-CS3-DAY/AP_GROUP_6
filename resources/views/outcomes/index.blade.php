@@ -19,11 +19,31 @@ use Illuminate\Support\Str;
     </div>
 </div>
 
+<!-- Search Bar -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ route('outcomes.index') }}" class="row g-3">
+            <div class="col-md-10">
+                <label for="search" class="form-label">Search Outcomes</label>
+                <input type="text" id="search" name="search" class="form-control" placeholder="Search by title, description, type, impact, commercialization..." value="{{ request('search') }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-outline-primary">
+                        <i class="fas fa-search me-1"></i>Search
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
         <h5 class="card-title mb-0">
             <i class="fas fa-list me-2"></i>Outcome List
-            <span class="badge bg-secondary ms-2">{{ $outcomes->count() }}</span>
+            <span class="badge bg-secondary ms-2">{{ $outcomes->total() }}</span>
         </h5>
     </div>
     <div class="card-body">
@@ -58,14 +78,14 @@ use Illuminate\Support\Str;
                             @endif
                         </td>
                         <td><span class="badge bg-info">{{ $outcome->outcome_type }}</span></td>
-                        <td><span class="badge bg-primary">{{ $outcome->impact }}</span></td>
+                        <td><span class="badge bg-primary">{{ $outcome->impact ?? '—' }}</span></td>
                         <td>{{ $outcome->date_achieved ? \Carbon\Carbon::parse($outcome->date_achieved)->format('Y-m-d') : '—' }}</td>
-                        <td><span class="badge bg-warning">{{ $outcome->commercialization_status }}</span></td>
+                        <td><span class="badge bg-warning">{{ $outcome->commercialization_status ?? '—' }}</span></td>
                         <td>
                             <div class="btn-group" role="group">
-                                <a href="{{ route('outcomes.show', $outcome->id ?? $outcome->outcome_ID) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></a>
-                                <a href="{{ route('outcomes.edit', $outcome->id ?? $outcome->outcome_ID) }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                                <form action="{{ route('outcomes.destroy', $outcome->id ?? $outcome->outcome_ID) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this outcome?');">
+                                <a href="{{ route('outcomes.show', $outcome) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></a>
+                                <a href="{{ route('outcomes.edit', $outcome) }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fas fa-edit"></i></a>
+                                <form action="{{ route('outcomes.destroy', $outcome) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this outcome?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
@@ -77,11 +97,16 @@ use Illuminate\Support\Str;
                 </tbody>
             </table>
         </div>
+        @if($outcomes->hasPages())
+        <div class="d-flex justify-content-center mt-4">
+            {{ $outcomes->links() }}
+        </div>
+        @endif
         @else
         <div class="text-center py-5">
             <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">No outcomes recorded</h5>
-            <p class="text-muted mb-3">Track innovation outputs such as prototypes, certifications, IP, and commercialization milestones.</p>
+            <h5 class="text-muted">No outcomes found</h5>
+            <p class="text-muted mb-3">Try adjusting your search or create a new outcome.</p>
             <a href="{{ route('outcomes.create') }}" class="btn btn-success">
                 <i class="fas fa-plus me-1"></i>Create First Outcome
             </a>

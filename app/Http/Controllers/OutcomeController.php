@@ -11,9 +11,23 @@ class OutcomeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $outcomes = Outcome::all();
+        $query = Outcome::with('project');
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%$search%")
+                  ->orWhere('description', 'like', "%$search%")
+                  ->orWhere('outcome_type', 'like', "%$search%")
+                  ->orWhere('commercialization_status', 'like', "%$search%")
+                  ->orWhere('impact', 'like', "%$search%") ;
+            });
+        }
+
+        $outcomes = $query->orderByDesc('date_achieved')->paginate(15)->appends($request->query());
+
         return view('outcomes.index', compact('outcomes'));
     }
 
@@ -22,7 +36,7 @@ class OutcomeController extends Controller
      */
     public function create()
     {
-        $projects = Project::all();
+        $projects = Project::select('id','title')->orderBy('title')->get();
         return view('outcomes.create', compact('projects'));
     }
 
@@ -33,14 +47,14 @@ class OutcomeController extends Controller
     {
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
-            'description' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
             'title' => 'required|string|max:255',
             'outcome_type' => 'required|string|max:255',
-            'quality_certification' => 'required|string|max:255',
-            'impact' => 'required|string|max:255',
+            'quality_certification' => 'nullable|string|max:255',
+            'impact' => 'nullable|string|max:1000',
             'date_achieved' => 'required|date',
-            'commercialization_status' => 'required|string|max:255',
-            'artifact_link' => 'required|url|max:255',
+            'commercialization_status' => 'nullable|string|max:255',
+            'artifact_link' => 'nullable|url|max:255',
         ]);
 
         Outcome::create($validated);
@@ -51,39 +65,36 @@ class OutcomeController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Outcome $outcome)
     {
-        $outcome = Outcome::findOrFail($id);
+        $outcome->load('project');
         return view('outcomes.show', compact('outcome'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Outcome $outcome)
     {
-        $outcome = Outcome::findOrFail($id);
-        $projects = Project::all();
+        $projects = Project::select('id','title')->orderBy('title')->get();
         return view('outcomes.edit', compact('outcome', 'projects'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Outcome $outcome)
     {
-        $outcome = Outcome::findOrFail($id);
-
         $validated = $request->validate([
             'project_id' => 'required|exists:projects,id',
-            'description' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
             'title' => 'required|string|max:255',
             'outcome_type' => 'required|string|max:255',
-            'quality_certification' => 'required|string|max:255',
-            'impact' => 'required|string|max:255',
+            'quality_certification' => 'nullable|string|max:255',
+            'impact' => 'nullable|string|max:1000',
             'date_achieved' => 'required|date',
-            'commercialization_status' => 'required|string|max:255',
-            'artifact_link' => 'required|url|max:255',
+            'commercialization_status' => 'nullable|string|max:255',
+            'artifact_link' => 'nullable|url|max:255',
         ]);
 
         $outcome->update($validated);
@@ -94,11 +105,9 @@ class OutcomeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Outcome $outcome)
     {
-        $outcome = Outcome::findOrFail($id);
         $outcome->delete();
-
         return redirect()->route('outcomes.index')->with('success', 'Outcome deleted successfully.');
     }
 

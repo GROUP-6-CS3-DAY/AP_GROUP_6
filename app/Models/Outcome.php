@@ -9,12 +9,8 @@ class Outcome extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'outcome_ID';
-    protected $table = 'outcomes';
-
     protected $fillable = [
-        'outcome_ID',
-        'project_ID',
+        'project_id',
         'title',
         'description',
         'artifact_link',
@@ -27,6 +23,6 @@ class Outcome extends Model
 
     public function project()
     {
-        return $this->belongsTo(Project::class, 'project_ID');
+        return $this->belongsTo(Project::class, 'project_id');
     }
 }

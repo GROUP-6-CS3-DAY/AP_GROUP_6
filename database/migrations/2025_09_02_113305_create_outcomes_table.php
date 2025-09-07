@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('outcomes', function (Blueprint $table) {
-            $table->id('outcome_ID');
-            $table->unsignedBigInteger('project_ID');
+            $table->id(); // standard primary key
+            $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
             $table->string('title');
             $table->text('description');
             $table->string('artifact_link')->nullable();
@@ -23,8 +23,6 @@ return new class extends Migration
             $table->text('impact')->nullable();
             $table->date('date_achieved');
             $table->timestamps();
-
-            $table->foreign('project_ID')->references('project_ID')->on('projects')->onDelete('cascade');
         });
     }
 
