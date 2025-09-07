@@ -89,14 +89,14 @@ class ProjectController extends Controller
         return view('projects.create', compact('innovationFocus', 'prototypeStages', 'programs', 'facilities'));
     }
 
-        /**
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'program_id' => 'required|exists:programs,id',
-            'facility_id' => 'required|exists:facilities,id',
+            'program_id' => 'required|exists:programs,program_id',  // Fixed: use program_id column
+            'facility_id' => 'required|exists:facilities,facility_id', // change 'id' to your actual column name
             'title' => 'required|string|max:255',
             'nature_of_project' => 'required|string',
             'description' => 'required|string',
@@ -166,7 +166,7 @@ class ProjectController extends Controller
     public function update(Request $request, Project $project)
     {
         $validated = $request->validate([
-            'program_id' => 'required|exists:programs,id',
+            'program_id' => 'required|exists:programs,program_id',  // Fixed: use program_id column
             'facility_id' => 'required|exists:facilities,id',
             'title' => 'required|string|max:255',
             'nature_of_project' => 'required|string',

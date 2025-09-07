@@ -18,6 +18,13 @@ class Facility extends Model
     protected $table = 'facilities';
 
     /**
+     * The primary key associated with the table.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'facility_id';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -45,7 +52,7 @@ class Facility extends Model
      */
     public function services(): HasMany
     {
-        return $this->hasMany(Service::class);
+        return $this->hasMany(Service::class, 'facility_id');
     }
 
     /**
@@ -53,7 +60,7 @@ class Facility extends Model
      */
     public function equipment(): HasMany
     {
-        return $this->hasMany(Equipment::class);
+        return $this->hasMany(Equipment::class, 'facility_id');
     }
 
     /**
@@ -61,7 +68,7 @@ class Facility extends Model
      */
     public function projects(): HasMany
     {
-        return $this->hasMany(Project::class);
+        return $this->hasMany(Project::class, 'facility_id');
     }
 
     /**

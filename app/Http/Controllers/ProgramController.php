@@ -21,14 +21,14 @@ class ProgramController extends Controller
                   ->orWhere('description', 'like', '%' . $request->search . '%');
         }
 
-        // Focus areas filter (replacing status filter)
+        // Focus areas filter - using JSON_CONTAINS for proper JSON searching
         if ($request->filled('focus_areas')) {
-            $query->where('focus_areas', 'like', '%' . $request->focus_areas . '%');
+            $query->whereJsonContains('focus_areas', $request->focus_areas);
         }
 
-        // Phases filter (replacing facility filter)
+        // Phases filter - using JSON_CONTAINS for proper JSON searching
         if ($request->filled('phases')) {
-            $query->where('phases', 'like', '%' . $request->phases . '%');
+            $query->whereJsonContains('phases', $request->phases);
         }
 
         $programs = $query->paginate(15);
@@ -97,6 +97,10 @@ class ProgramController extends Controller
             'phases' => 'required|string',
         ]);
 
+        // Convert single strings to arrays for JSON storage
+        $validated['focus_areas'] = [$validated['focus_areas']];
+        $validated['phases'] = [$validated['phases']];
+
         Program::create($validated);
 
         return redirect()->route('programs.index')->with('success', 'Program created successfully');
@@ -143,7 +147,6 @@ class ProgramController extends Controller
      */
     public function update(Request $request, Program $program)
     {
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -151,6 +154,10 @@ class ProgramController extends Controller
             'focus_areas' => 'required|string',
             'phases' => 'required|string',
         ]);
+
+        // Convert single strings to arrays for JSON storage
+        $validated['focus_areas'] = [$validated['focus_areas']];
+        $validated['phases'] = [$validated['phases']];
 
         $program->update($validated);
 

@@ -39,7 +39,7 @@
                     <select class="form-select @error('program_id') is-invalid @enderror" id="program_id" name="program_id" required>
                         <option value="">Select program</option>
                         @foreach($programs as $program)
-                        <option value="{{ $program->id }}" {{ old('program_id') == $program->id ? 'selected' : '' }}>{{ $program->name }}</option>
+                        <option value="{{ $program->program_id }}" {{ old('program_id') == $program->program_id ? 'selected' : '' }}>{{ $program->name }}</option>
                         @endforeach
                     </select>
                     @error('program_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -49,7 +49,7 @@
                     <select class="form-select @error('facility_id') is-invalid @enderror" id="facility_id" name="facility_id" required>
                         <option value="">Select facility</option>
                         @foreach($facilities as $facility)
-                        <option value="{{ $facility->id }}" {{ old('facility_id') == $facility->id ? 'selected' : '' }}>{{ $facility->name }}</option>
+                        <option value="{{ $facility->facility_id }}" {{ old('facility_id') == $facility->facility_id ? 'selected' : '' }}>{{ $facility->name }}</option>
                         @endforeach
                     </select>
                     @error('facility_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
