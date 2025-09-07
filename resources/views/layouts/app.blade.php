@@ -44,11 +44,6 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('equipment.index') }}">
-                            <i class="fas fa-tools me-1"></i>Equipment
-                        </a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('programs.index') }}">
                             <i class="fas fa-tools me-1"></i>Program
                         </a>
