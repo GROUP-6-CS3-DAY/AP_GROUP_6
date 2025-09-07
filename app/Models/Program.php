@@ -17,14 +17,6 @@ class Program extends Model
         'phases'
     ];
 
-    /**
-     * Get the route key for the model.
-     */
-    public function getRouteKeyName()
-    {
-        return 'id';
-    }
-
     public function projects()
     {
         return $this->hasMany(Project::class, 'program_id');

@@ -77,7 +77,7 @@
             <i class="fas fa-project-diagram me-2"></i>Projects
             <span class="badge bg-primary ms-2">{{ $program->projects->count() }}</span>
         </h5>
-        <a href="{{ route('projects.create', ['program_id' => $program->id]) }}" class="btn btn-sm btn-success">
+        <a href="{{ route('projects.create', ['project_id' => $program->id]) }}" class="btn btn-sm btn-success">
             <i class="fas fa-plus me-1"></i>Add Project
         </a>
     </div>
@@ -145,7 +145,7 @@
             <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
             <h5 class="text-muted">No projects found</h5>
             <p class="text-muted mb-0">This program doesn't have any projects yet.</p>
-            <a href="{{ route('projects.create', ['program_id' => $program->id]) }}" class="btn btn-success mt-3">
+            <a href="{{ route('projects.create', ['project_id' => $program->id]) }}" class="btn btn-success mt-3">
                 <i class="fas fa-plus me-1"></i>Create First Project
             </a>
         </div>

@@ -6,8 +6,6 @@ use Illuminate\Http\Request;
 
 use App\Models\Program;
 
-use Illuminate\Support\Str;
-
 class ProgramController extends Controller
 {
     /**
@@ -35,22 +33,26 @@ class ProgramController extends Controller
 
         $programs = $query->paginate(15);
         
-        // Define focus areas options (replacing statuses)
+        // Define focus areas and phases for filter dropdowns
         $focusAreas = [
             'research' => 'Research',
-            'development' => 'Development',
+            'development' => 'Development', 
             'innovation' => 'Innovation',
-            'technology' => 'Technology'
+            'technology' => 'Technology',
+            'iot' => 'IoT',
+            'automation' => 'Automation',
+            'renewable_energy' => 'Renewable Energy'
         ];
 
-        // Define phases options (replacing facilities)
         $phases = [
             'planning' => 'Planning',
             'execution' => 'Execution',
             'evaluation' => 'Evaluation',
-            'closure' => 'Closure'
+            'closure' => 'Closure',
+            'prototyping' => 'Prototyping',
+            'commercialization' => 'Commercialization'
         ];
-
+        
         return view('programs.index', compact('programs', 'focusAreas', 'phases'));
     }
 
@@ -59,18 +61,24 @@ class ProgramController extends Controller
      */
     public function create()
     {
+        // Define focus areas and phases for dropdowns
         $focusAreas = [
             'research' => 'Research',
-            'development' => 'Development',
+            'development' => 'Development', 
             'innovation' => 'Innovation',
-            'technology' => 'Technology'
+            'technology' => 'Technology',
+            'iot' => 'IoT',
+            'automation' => 'Automation',
+            'renewable_energy' => 'Renewable Energy'
         ];
 
         $phases = [
             'planning' => 'Planning',
             'execution' => 'Execution',
             'evaluation' => 'Evaluation',
-            'closure' => 'Closure'
+            'closure' => 'Closure',
+            'prototyping' => 'Prototyping',
+            'commercialization' => 'Commercialization'
         ];
 
         return view('programs.create', compact('focusAreas', 'phases'));
@@ -107,18 +115,24 @@ class ProgramController extends Controller
      */
     public function edit(Program $program)
     {
+        // Define focus areas and phases for dropdowns
         $focusAreas = [
             'research' => 'Research',
-            'development' => 'Development',
+            'development' => 'Development', 
             'innovation' => 'Innovation',
-            'technology' => 'Technology'
+            'technology' => 'Technology',
+            'iot' => 'IoT',
+            'automation' => 'Automation',
+            'renewable_energy' => 'Renewable Energy'
         ];
 
         $phases = [
             'planning' => 'Planning',
             'execution' => 'Execution',
             'evaluation' => 'Evaluation',
-            'closure' => 'Closure'
+            'closure' => 'Closure',
+            'prototyping' => 'Prototyping',
+            'commercialization' => 'Commercialization'
         ];
 
         return view('programs.edit', compact('program', 'focusAreas', 'phases'));

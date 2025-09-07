@@ -33,9 +33,11 @@ class Project extends Model
     }
 
     public function participants()
-{
-    return $this->hasMany(Participant::class, 'project_id', 'project_ID');
-}
+    {
+        return $this->belongsToMany(Participant::class, 'project_participants', 'project_id', 'participant_id')
+                    ->withPivot('role_on_project', 'skill_role')
+                    ->withTimestamps();
+    }
 
 
 }

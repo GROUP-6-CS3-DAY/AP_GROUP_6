@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('programs', function (Blueprint $table) {
-            $table->id('program_id');
+            $table->id();
             $table->string('name');
             $table->text('description');
             $table->string('national_alignment'); // Link to NDPIII, Roadmap, or 4IR goals
-            $table->json('focus_areas'); // Domains such as IoT, automation, renewable energy
-            $table->json('phases'); // Cross-Skilling, Collaboration, Technical Skills, Prototyping, Commercialization
+            $table->string('focus_areas'); // Domains such as IoT, automation, renewable energy
+            $table->string('phases'); // Cross-Skilling, Collaboration, Technical Skills, Prototyping, Commercialization
             $table->timestamps();
         });
     }
