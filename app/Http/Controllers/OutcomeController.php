@@ -101,4 +101,12 @@ class OutcomeController extends Controller
 
         return redirect()->route('outcomes.index')->with('success', 'Outcome deleted successfully.');
     }
+
+    /**
+     * Get outcomes by facility.
+     */
+    public function getByFacility(string $facility)
+    {
+        return view('outcomes.by-facility');
+    }
 }

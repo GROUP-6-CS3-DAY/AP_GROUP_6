@@ -6,6 +6,7 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\OutcomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +25,17 @@ Route::get('/', function () {
 
 // Dashboard
 Route::get('/dashboard', function () {
-    return view('dashboard.overview');
+    $facilitiesCount = \App\Models\Facility::count();
+    $servicesCount = \App\Models\Service::count();
+    $equipmentCount = \App\Models\Equipment::count();
+    $projectsCount = \App\Models\Project::count();
+
+    return view('dashboard.overview', compact(
+        'facilitiesCount',
+        'servicesCount',
+        'equipmentCount',
+        'projectsCount'
+    ));
 })->name('dashboard.overview');
 
 // Project Routes
@@ -68,3 +79,6 @@ Route::prefix('equipment')->name('equipment.')->group(function () {
     Route::delete('/{equipment}', [EquipmentController::class, 'destroy'])->name('destroy');
     Route::get('/facility/{facility}', [EquipmentController::class, 'getByFacility'])->name('by-facility');
 });
+
+// Outcome Routes (replaced grouped routes with resource for standard naming)
+Route::resource('outcomes', OutcomeController::class);

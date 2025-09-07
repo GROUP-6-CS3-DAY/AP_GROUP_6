@@ -101,7 +101,7 @@
                         <i class="fas fa-project-diagram fa-2x"></i>
                     </div>
                 </div>
-                <a href="#" class="text-white text-decoration-none">
+                <a href="{{ route('projects.index') }}" class="text-white text-decoration-none">
                     <small>View all projects <i class="fas fa-arrow-right"></i></small>
                 </a>
             </div>
