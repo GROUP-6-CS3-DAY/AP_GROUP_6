@@ -10,6 +10,8 @@ use App\Models\Service;
 use App\Models\Equipment;
 use App\Models\Project;
 use App\Models\Participant;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProgramController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +42,13 @@ Route::get('/dashboard', function () {
         'projectsCount'
     ));
 })->name('dashboard.overview');
+
+// Project Routes
+Route::resource('projects', ProjectController::class);
+
+
+// Program Routes
+Route::resource('programs', ProgramController::class);
 
 // Facility Routes
 Route::prefix('facilities')->name('facilities.')->group(function () {

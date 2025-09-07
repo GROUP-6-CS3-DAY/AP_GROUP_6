@@ -14,7 +14,7 @@
     @stack('styles')
 </head>
 
-<body>
+<body style="font-family: 'Inter', sans-serif;">
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
@@ -46,6 +46,16 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('equipment.index') }}">
                             <i class="fas fa-tools me-1"></i>Equipment
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('programs.index') }}">
+                            <i class="fas fa-tools me-1"></i>Program
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('projects.index') }}">
+                            <i class="fas fa-tools me-1"></i>Project
                         </a>
                     </li>
                 </ul>

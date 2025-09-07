@@ -20,8 +20,8 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         // Seed facilities, services, and equipment
-        $this->call([
-            FacilitySeeder::class,
-        ]);
+        // $this->call([
+        //     FacilitySeeder::class,
+        // ]);
     }
 }
