@@ -3,6 +3,9 @@
 @section('title', 'Programs - InnoTrack')
 
 @section('content')
+@php
+use Illuminate\Support\Str;
+@endphp
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -87,10 +90,10 @@
                             {{ $program->national_alignment }}
                         </td>
                         <td>
-                            <span class="badge bg-info">{{ $focusAreas[$program->focus_areas] ?? $program->focus_areas }}</span>
+                            <span class="badge bg-info">{{ $focusAreas[$program->focus_areas[0] ?? ''] ?? ($program->focus_areas[0] ?? 'N/A') }}</span>
                         </td>
                         <td>
-                            <span class="badge bg-warning">{{ $phases[$program->phases] ?? $program->phases }}</span>
+                            <span class="badge bg-warning">{{ $phases[$program->phases[0] ?? ''] ?? ($program->phases[0] ?? 'N/A') }}</span>
                         </td>
                         <td>
                             <small class="text-muted">{{ Str::limit($program->description, 80) }}</small>

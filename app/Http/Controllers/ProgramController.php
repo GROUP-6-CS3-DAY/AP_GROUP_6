@@ -21,34 +21,38 @@ class ProgramController extends Controller
                   ->orWhere('description', 'like', '%' . $request->search . '%');
         }
 
-        // Focus areas filter (replacing status filter)
+        // Focus areas filter - using LIKE for string fields
         if ($request->filled('focus_areas')) {
-            $query->where('focus_areas', 'like', '%' . $request->focus_areas . '%');
+            $query->where('focus_areas', $request->focus_areas);
         }
 
-        // Phases filter (replacing facility filter)
+        // Phases filter - using LIKE for string fields
         if ($request->filled('phases')) {
-            $query->where('phases', 'like', '%' . $request->phases . '%');
+            $query->where('phases', $request->phases);
         }
 
-        $programs = $query->paginate(15);
+        $programs = $query->paginate(15)->appends($request->query());
         
-        // Define focus areas options (replacing statuses)
+        // Define focus areas and phases for filter dropdowns
         $focusAreas = [
             'research' => 'Research',
-            'development' => 'Development',
+            'development' => 'Development', 
             'innovation' => 'Innovation',
-            'technology' => 'Technology'
+            'technology' => 'Technology',
+            'iot' => 'IoT',
+            'automation' => 'Automation',
+            'renewable_energy' => 'Renewable Energy'
         ];
 
-        // Define phases options (replacing facilities)
         $phases = [
             'planning' => 'Planning',
             'execution' => 'Execution',
             'evaluation' => 'Evaluation',
-            'closure' => 'Closure'
+            'closure' => 'Closure',
+            'prototyping' => 'Prototyping',
+            'commercialization' => 'Commercialization'
         ];
-
+        
         return view('programs.index', compact('programs', 'focusAreas', 'phases'));
     }
 
@@ -57,18 +61,24 @@ class ProgramController extends Controller
      */
     public function create()
     {
+        // Define focus areas and phases for dropdowns
         $focusAreas = [
             'research' => 'Research',
-            'development' => 'Development',
+            'development' => 'Development', 
             'innovation' => 'Innovation',
-            'technology' => 'Technology'
+            'technology' => 'Technology',
+            'iot' => 'IoT',
+            'automation' => 'Automation',
+            'renewable_energy' => 'Renewable Energy'
         ];
 
         $phases = [
             'planning' => 'Planning',
             'execution' => 'Execution',
             'evaluation' => 'Evaluation',
-            'closure' => 'Closure'
+            'closure' => 'Closure',
+            'prototyping' => 'Prototyping',
+            'commercialization' => 'Commercialization'
         ];
 
         return view('programs.create', compact('focusAreas', 'phases'));
@@ -87,6 +97,7 @@ class ProgramController extends Controller
             'phases' => 'required|string',
         ]);
 
+        // Store as single strings to match migration
         Program::create($validated);
 
         return redirect()->route('programs.index')->with('success', 'Program created successfully');
@@ -97,6 +108,7 @@ class ProgramController extends Controller
      */
     public function show(Program $program)
     {
+        $program->load('projects');
         return view('programs.show', compact('program'));
     }
 
@@ -105,18 +117,24 @@ class ProgramController extends Controller
      */
     public function edit(Program $program)
     {
+        // Define focus areas and phases for dropdowns
         $focusAreas = [
             'research' => 'Research',
-            'development' => 'Development',
+            'development' => 'Development', 
             'innovation' => 'Innovation',
-            'technology' => 'Technology'
+            'technology' => 'Technology',
+            'iot' => 'IoT',
+            'automation' => 'Automation',
+            'renewable_energy' => 'Renewable Energy'
         ];
 
         $phases = [
             'planning' => 'Planning',
             'execution' => 'Execution',
             'evaluation' => 'Evaluation',
-            'closure' => 'Closure'
+            'closure' => 'Closure',
+            'prototyping' => 'Prototyping',
+            'commercialization' => 'Commercialization'
         ];
 
         return view('programs.edit', compact('program', 'focusAreas', 'phases'));
@@ -127,7 +145,6 @@ class ProgramController extends Controller
      */
     public function update(Request $request, Program $program)
     {
-
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -136,6 +153,7 @@ class ProgramController extends Controller
             'phases' => 'required|string',
         ]);
 
+        // Store as single strings to match migration
         $program->update($validated);
 
         return redirect()->route('programs.index')->with('success', 'Program updated successfully');

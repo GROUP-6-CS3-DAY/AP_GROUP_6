@@ -17,12 +17,13 @@ class Outcome extends Model
         'outcome_type',
         'quality_certification',
         'commercialization_status',
-        'impact',
-        'date_achieved'
     ];
 
+    /**
+     * Get the project this outcome belongs to.
+     */
     public function project()
     {
-        return $this->belongsTo(Project::class, 'project_id');
+        return $this->belongsTo(Project::class, 'project_id', 'project_id');
     }
 }

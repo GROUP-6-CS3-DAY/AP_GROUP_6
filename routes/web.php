@@ -4,6 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\ParticipantController;
+use App\Models\Facility;
+use App\Models\Service;
+use App\Models\Equipment;
+use App\Models\Project;
+use App\Models\Participant;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\OutcomeController;
@@ -25,10 +31,10 @@ Route::get('/', function () {
 
 // Dashboard
 Route::get('/dashboard', function () {
-    $facilitiesCount = \App\Models\Facility::count();
-    $servicesCount = \App\Models\Service::count();
-    $equipmentCount = \App\Models\Equipment::count();
-    $projectsCount = \App\Models\Project::count();
+    $facilitiesCount = Facility::count();
+    $servicesCount = Service::count();
+    $equipmentCount = Equipment::count();
+    $projectsCount = Project::count();
 
     return view('dashboard.overview', compact(
         'facilitiesCount',
@@ -78,7 +84,16 @@ Route::prefix('equipment')->name('equipment.')->group(function () {
     Route::put('/{equipment}', [EquipmentController::class, 'update'])->name('update');
     Route::delete('/{equipment}', [EquipmentController::class, 'destroy'])->name('destroy');
     Route::get('/facility/{facility}', [EquipmentController::class, 'getByFacility'])->name('by-facility');
+
 });
 
 // Outcome Routes (replaced grouped routes with resource for standard naming)
 Route::resource('outcomes', OutcomeController::class);
+
+//Participants Routes
+Route::resource('participants', ParticipantController::class);
+// Additional routes for project management
+Route::post('participants/{participant}/add-project', [ParticipantController::class, 'addProject'])
+    ->name('participants.add-project');
+Route::delete('participants/{participant}/remove-project/{project}', [ParticipantController::class, 'removeProject'])
+    ->name('participants.remove-project');

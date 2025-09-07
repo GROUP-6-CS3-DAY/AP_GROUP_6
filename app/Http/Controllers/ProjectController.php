@@ -89,7 +89,7 @@ class ProjectController extends Controller
         return view('projects.create', compact('innovationFocus', 'prototypeStages', 'programs', 'facilities'));
     }
 
-        /**
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)

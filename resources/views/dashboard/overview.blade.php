@@ -19,6 +19,9 @@
                 <a href="{{ route('equipment.create') }}" class="btn btn-info">
                     <i class="fas fa-plus me-1"></i>New Equipment
                 </a>
+                <a href="{{ route('participants.create') }}" class="btn btn-info" style="margin-left:10px;">
+                    <i class="fas fa-plus me-1"></i>New Participant
+                </a>
                 <a href="{{ route('programs.create') }}" class="btn btn-info" style="background-color: #8d5aebff;margin:0px 10px;">
                     <i class="fas fa-plus me-1"></i>New Program
                 </a>
@@ -88,8 +91,26 @@
             </div>
         </div>
     </div>
-
     <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ $participantsCount ?? 0 }}</h4>
+                        <p class="card-text">Total Participants</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+                <a href="{{ route('participants.index') }}" class="text-white text-decoration-none">
+                    <small>View all participants <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3" style="margin-top: 20px;">
         <div class="card bg-warning text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">

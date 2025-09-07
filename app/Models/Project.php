@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Partcipant;
+use App\Models\Participant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Project extends Model
 {
     use HasFactory;
-
+ protected $primaryKey = 'project_id';
 
     protected $fillable = [
         'program_id',
@@ -36,7 +36,9 @@ class Project extends Model
     public function participants()
     {
         return $this->belongsToMany(Participant::class, 'project_participants', 'project_id', 'participant_id')
-            ->withPivot(['role_on_project','skill_role'])
-            ->withTimestamps();
+                    ->withPivot('role_on_project', 'skill_role')
+                    ->withTimestamps();
     }
+
+
 }

@@ -14,24 +14,12 @@ return new class extends Migration
         Schema::create('facilities', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->text('location');
+            $table->string('location');
             $table->text('description');
-            $table->string('partner_organization');
-            $table->enum('facility_type', [
-                'workshop',
-                'testing_center',
-                'laboratory',
-                'maker_space',
-                'innovation_hub',
-                'research_center'
-            ]);
-            $table->json('capabilities');
+            $table->string('partner_organization'); // Partner such as UniPod, UIRI, Lwera
+            $table->string('facility_type');
+            $table->json('capabilities'); // CNC, PCB fabrication, materials testing
             $table->timestamps();
-
-            // Indexes for better performance
-            $table->index('facility_type');
-            $table->index('partner_organization');
-            $table->index('name');
         });
     }
 

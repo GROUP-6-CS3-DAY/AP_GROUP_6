@@ -17,6 +17,8 @@ class Facility extends Model
      */
     protected $table = 'facilities';
 
+    // Using default 'id' primary key
+
     /**
      * The attributes that are mass assignable.
      *
@@ -45,7 +47,7 @@ class Facility extends Model
      */
     public function services(): HasMany
     {
-        return $this->hasMany(Service::class);
+        return $this->hasMany(Service::class, 'facility_id');
     }
 
     /**
@@ -53,7 +55,7 @@ class Facility extends Model
      */
     public function equipment(): HasMany
     {
-        return $this->hasMany(Equipment::class);
+        return $this->hasMany(Equipment::class, 'facility_id');
     }
 
     /**
@@ -61,7 +63,7 @@ class Facility extends Model
      */
     public function projects(): HasMany
     {
-        return $this->hasMany(Project::class);
+        return $this->hasMany(Project::class, 'facility_id');
     }
 
     /**

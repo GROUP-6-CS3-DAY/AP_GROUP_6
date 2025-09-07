@@ -20,55 +20,46 @@ class FacilityController extends Controller
         try {
             $query = Facility::query();
 
-            // Apply search filter
-            if ($request->has('search') && !empty($request->search)) {
-                $query->search($request->search);
+            if ($request->filled('search')) {
+                $query->search($request->get('search'));
+            }
+            if ($request->filled('facility_type')) {
+                $query->byType($request->get('facility_type'));
+            }
+            if ($request->filled('partner_organization')) {
+                $query->byPartner($request->get('partner_organization'));
+            }
+            if ($request->filled('capability')) {
+                $query->whereJsonContains('capabilities', $request->get('capability'));
             }
 
-            // Apply facility type filter
-            if ($request->has('facility_type') && !empty($request->facility_type)) {
-                $query->byType($request->facility_type);
-            }
+            $perPage = (int) $request->get('per_page', 15);
+            if ($perPage <= 0) { $perPage = 15; }
 
-            // Apply partner organization filter
-            if ($request->has('partner_organization') && !empty($request->partner_organization)) {
-                $query->byPartner($request->partner_organization);
-            }
-
-            // Apply capability filter
-            if ($request->has('capability') && !empty($request->capability)) {
-                $query->whereJsonContains('capabilities', $request->capability);
-            }
-
-            // Pagination
-            $perPage = $request->get('per_page', 15);
             $facilities = $query->with(['services', 'equipment'])
                 ->orderBy('name')
-                ->paginate($perPage);
+                ->paginate($perPage)
+                ->appends($request->query());
 
             $facilityTypes = Facility::getFacilityTypeOptions();
             $capabilities = Facility::getCapabilityOptions();
 
             return view('facilities.index', compact('facilities', 'facilityTypes', 'capabilities'));
         } catch (\Exception $e) {
-            return view('facilities.index')->with('error', 'Failed to retrieve facilities: ' . $e->getMessage());
+            Log::error('Facility index failed: '.$e->getMessage());
+            return view('facilities.index')->with('error', 'Failed to retrieve facilities');
         }
     }
 
-    /**
-     * Show the form for creating a new facility.
-     */
+    /** Show create form */
     public function create(): View
     {
         $facilityTypes = Facility::getFacilityTypeOptions();
         $capabilities = Facility::getCapabilityOptions();
-
         return view('facilities.create', compact('facilityTypes', 'capabilities'));
     }
 
-    /**
-     * Store a newly created facility.
-     */
+    /** Store new facility */
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
         try {
@@ -77,129 +68,100 @@ class FacilityController extends Controller
                 'location' => 'required|string|max:1000',
                 'description' => 'required|string|max:2000',
                 'partner_organization' => 'required|string|max:255',
-                'facility_type' => [
-                    'required',
-                    Rule::in(array_keys(Facility::getFacilityTypeOptions()))
-                ],
+                'facility_type' => ['required', Rule::in(array_keys(Facility::getFacilityTypeOptions()))],
                 'capabilities' => 'required|array|min:1',
-                'capabilities.*' => [
-                    Rule::in(array_keys(Facility::getCapabilityOptions()))
-                ],
+                'capabilities.*' => [Rule::in(array_keys(Facility::getCapabilityOptions()))],
             ]);
 
             if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
+                return back()->withErrors($validator)->withInput();
             }
 
-            $facility = Facility::create($validator->validated());
+            $data = $validator->validated();
+            // Ensure numeric keys removed for clean JSON storage
+            $data['capabilities'] = array_values($data['capabilities']);
+
+            $facility = Facility::create($data);
 
             return redirect()->route('facilities.show', $facility)
                 ->with('success', 'Facility created successfully');
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Failed to create facility: ' . $e->getMessage())
-                ->withInput();
+            Log::error('Facility store failed: '.$e->getMessage());
+            return back()->with('error', 'Failed to create facility')->withInput();
         }
     }
 
-    /**
-     * Display the specified facility.
-     */
+    /** Show facility */
     public function show(Facility $facility): View
     {
         try {
             $facility->load(['services', 'equipment', 'projects']);
-
             return view('facilities.show', compact('facility'));
         } catch (\Exception $e) {
-            // Log the error and show a simple error view instead of redirecting
-            Log::error('Failed to retrieve facility: ' . $e->getMessage());
+            Log::error('Facility show failed: '.$e->getMessage());
             return view('facilities.show')->with('error', 'Failed to retrieve facility details');
         }
     }
 
-    /**
-     * Show the form for editing the specified facility.
-     */
+    /** Edit form */
     public function edit(Facility $facility): View
     {
         $facilityTypes = Facility::getFacilityTypeOptions();
         $capabilities = Facility::getCapabilityOptions();
-
         return view('facilities.edit', compact('facility', 'facilityTypes', 'capabilities'));
     }
 
-    /**
-     * Update the specified facility.
-     */
+    /** Update facility */
     public function update(Request $request, Facility $facility): \Illuminate\Http\RedirectResponse
     {
         try {
             $validator = Validator::make($request->all(), [
                 'name' => [
-                    'sometimes',
-                    'required',
-                    'string',
-                    'max:255',
-                    Rule::unique('facilities', 'name')->ignore($facility->facility_id, 'facility_id')
+                    'sometimes','required','string','max:255',
+                    Rule::unique('facilities', 'name')->ignore($facility->id)
                 ],
                 'location' => 'sometimes|required|string|max:1000',
                 'description' => 'sometimes|required|string|max:2000',
                 'partner_organization' => 'sometimes|required|string|max:255',
-                'facility_type' => [
-                    'sometimes',
-                    'required',
-                    Rule::in(array_keys(Facility::getFacilityTypeOptions()))
-                ],
+                'facility_type' => ['sometimes','required', Rule::in(array_keys(Facility::getFacilityTypeOptions()))],
                 'capabilities' => 'sometimes|required|array|min:1',
-                'capabilities.*' => [
-                    Rule::in(array_keys(Facility::getCapabilityOptions()))
-                ],
+                'capabilities.*' => [Rule::in(array_keys(Facility::getCapabilityOptions()))],
             ]);
 
             if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
+                return back()->withErrors($validator)->withInput();
             }
 
-            $facility->update($validator->validated());
+            $data = $validator->validated();
+            if (isset($data['capabilities'])) {
+                $data['capabilities'] = array_values($data['capabilities']);
+            }
+
+            $facility->update($data);
 
             return redirect()->route('facilities.show', $facility)
                 ->with('success', 'Facility updated successfully');
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Failed to update facility: ' . $e->getMessage())
-                ->withInput();
+            Log::error('Facility update failed: '.$e->getMessage());
+            return back()->with('error', 'Failed to update facility')->withInput();
         }
     }
 
-    /**
-     * Remove the specified facility.
-     */
+    /** Destroy facility */
     public function destroy(Facility $facility): \Illuminate\Http\RedirectResponse
     {
         try {
-            // Check if facility has dependent records
             if ($facility->projects()->exists()) {
-                return redirect()->back()
-                    ->with('error', 'Cannot delete facility with active projects');
+                return back()->with('error', 'Cannot delete facility with active projects');
             }
-
             if ($facility->services()->exists() || $facility->equipment()->exists()) {
-                return redirect()->back()
-                    ->with('error', 'Cannot delete facility with services or equipment');
+                return back()->with('error', 'Cannot delete facility with services or equipment');
             }
-
             $facility->delete();
-
-            return redirect()->route('facilities.index')
-                ->with('success', 'Facility deleted successfully');
+            return redirect()->route('facilities.index')->with('success', 'Facility deleted successfully');
         } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Failed to delete facility: ' . $e->getMessage());
+            Log::error('Facility delete failed: '.$e->getMessage());
+            return back()->with('error', 'Failed to delete facility');
         }
     }
 

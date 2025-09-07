@@ -41,9 +41,12 @@ class ServiceController extends Controller
             }
 
             // Pagination
-            $perPage = $request->get('per_page', 15);
+            $perPage = (int) $request->get('per_page', 15);
+            if ($perPage <= 0) { $perPage = 15; }
+            
             $services = $query->orderBy('name')
-                ->paginate($perPage);
+                ->paginate($perPage)
+                ->appends($request->query());
 
             $categories = Service::getCategoryOptions();
             $skillTypes = Service::getSkillTypeOptions();
@@ -76,7 +79,14 @@ class ServiceController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'facility_id' => 'required|exists:facilities,id',
-                'name' => 'required|string|max:255',
+                'name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('services')->where(function ($query) use ($request) {
+                        return $query->where('facility_id', $request->facility_id);
+                    })
+                ],
                 'description' => 'required|string|max:2000',
                 'category' => [
                     'required',
@@ -91,17 +101,6 @@ class ServiceController extends Controller
             if ($validator->fails()) {
                 return redirect()->back()
                     ->withErrors($validator)
-                    ->withInput();
-            }
-
-            // Check if service name already exists for this facility
-            $existingService = Service::where('facility_id', $request->facility_id)
-                ->where('name', $request->name)
-                ->first();
-
-            if ($existingService) {
-                return redirect()->back()
-                    ->with('error', 'A service with this name already exists at this facility')
                     ->withInput();
             }
 
@@ -152,7 +151,16 @@ class ServiceController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'facility_id' => 'sometimes|required|exists:facilities,id',
-                'name' => 'sometimes|required|string|max:255',
+                'name' => [
+                    'sometimes',
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('services')->where(function ($query) use ($request, $service) {
+                        $facilityId = $request->get('facility_id', $service->facility_id);
+                        return $query->where('facility_id', $facilityId);
+                    })->ignore($service->id)
+                ],
                 'description' => 'sometimes|required|string|max:2000',
                 'category' => [
                     'sometimes',
@@ -170,26 +178,6 @@ class ServiceController extends Controller
                 return redirect()->back()
                     ->withErrors($validator)
                     ->withInput();
-            }
-
-            // Check if service name already exists for this facility (if facility_id or name is being updated)
-            if (($request->has('facility_id') && $request->facility_id != $service->facility_id) ||
-                ($request->has('name') && $request->name != $service->name)
-            ) {
-
-                $facilityId = $request->get('facility_id', $service->facility_id);
-                $name = $request->get('name', $service->name);
-
-                $existingService = Service::where('facility_id', $facilityId)
-                    ->where('name', $name)
-                    ->where('service_id', '!=', $service->service_id)
-                    ->first();
-
-                if ($existingService) {
-                    return redirect()->back()
-                        ->with('error', 'A service with this name already exists at this facility')
-                        ->withInput();
-                }
             }
 
             $service->update($validator->validated());
