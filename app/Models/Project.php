@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Partcipant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Project extends Model
@@ -32,4 +33,10 @@ class Project extends Model
         return $this->belongsTo(Facility::class, 'facility_id');
     }
 
+    public function participants()
+    {
+        return $this->belongsToMany(Participant::class, 'project_participants', 'project_id', 'participant_id')
+            ->withPivot(['role_on_project','skill_role'])
+            ->withTimestamps();
+    }
 }
