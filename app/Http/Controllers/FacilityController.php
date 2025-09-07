@@ -143,7 +143,7 @@ class FacilityController extends Controller
                     'required',
                     'string',
                     'max:255',
-                    Rule::unique('facilities', 'name')->ignore($facility->facility_id, 'facility_id')
+                    Rule::unique('facilities', 'name')->ignore($facility->id)
                 ],
                 'location' => 'sometimes|required|string|max:1000',
                 'description' => 'sometimes|required|string|max:2000',

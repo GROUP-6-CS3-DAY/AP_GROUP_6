@@ -3,6 +3,9 @@
 @section('title', 'Program Details - InnoTrack')
 
 @section('content')
+@php
+use Illuminate\Support\Str;
+@endphp
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">

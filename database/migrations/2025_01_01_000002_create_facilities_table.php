@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('facilities', function (Blueprint $table) {
-            $table->id('facility_id');
+            $table->id();
             $table->string('name');
             $table->string('location');
             $table->text('description');
             $table->string('partner_organization'); // Partner such as UniPod, UIRI, Lwera
-            $table->enum('facility_type', ['lab', 'workshop', 'testing_center']);
+            $table->string('facility_type');
             $table->json('capabilities'); // CNC, PCB fabrication, materials testing
             $table->timestamps();
         });
