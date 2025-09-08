@@ -33,8 +33,8 @@ class DatabaseSeeder extends Seeder
 
         Facility::factory(20)->create()->each(function ($facility) {
             Project::factory(3)->create([
-                'facility_ID' => $facility->facility_ID,
-                'program_ID' => Program::inRandomOrder()->first()->program_ID,
+                'facility_id' => $facility->id,
+                'program_id' => Program::inRandomOrder()->value('id'),
             ]);
         });
 
@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
 
         Project::all()->each(function ($project) {
             Outcome::factory(rand(1, 3))->create([
-                'project_ID' => $project->project_ID,
+                'project_id' => $project->project_id,
             ]);
         });
     }

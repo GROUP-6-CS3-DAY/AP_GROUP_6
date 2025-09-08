@@ -19,8 +19,8 @@ class ProjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'program_ID' => Program::factory(),
-            'facility_ID' => Facility::factory(),
+            'program_id' => Program::factory(),
+            'facility_id' => Facility::factory(),
             'title' => $this->faker->sentence,
             'nature_of_project' => $this->faker->word,
             'description' => $this->faker->paragraph,

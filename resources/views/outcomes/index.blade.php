@@ -49,7 +49,7 @@ use Illuminate\Support\Str;
     <div class="card-body">
         @if($outcomes->count())
         <div class="table-responsive">
-            <table class="table table-hover align-middle">
+            <table class="table table-hover align-middle table-striped">
                 <thead class="table-light">
                     <tr>
                         <th>Title</th>
@@ -70,7 +70,7 @@ use Illuminate\Support\Str;
                         </td>
                         <td>
                             @if($outcome->project)
-                            <a href="{{ route('projects.show', $outcome->project_id ?? $outcome->project_ID) }}" class="text-decoration-none">
+                            <a href="{{ route('projects.show', $outcome->project_id) }}" class="text-decoration-none">
                                 <i class="fas fa-project-diagram me-1"></i>{{ $outcome->project->title ?? 'Project' }}
                             </a>
                             @else
@@ -98,8 +98,11 @@ use Illuminate\Support\Str;
             </table>
         </div>
         @if($outcomes->hasPages())
-        <div class="d-flex justify-content-center mt-4">
-            {{ $outcomes->links() }}
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <small class="text-muted">Showing {{ $outcomes->firstItem() }}–{{ $outcomes->lastItem() }} of {{ $outcomes->total() }}</small>
+            <div>
+                {{ $outcomes->onEachSide(1)->links() }}
+            </div>
         </div>
         @endif
         @else
@@ -118,6 +121,8 @@ use Illuminate\Support\Str;
 
 @push('styles')
 <style>
-    .badge { font-size: 0.7rem; }
+    .badge {
+        font-size: 0.7rem;
+    }
 </style>
 @endpush

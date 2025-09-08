@@ -12,6 +12,29 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     @stack('styles')
+    <style>
+        /* Normalize pagination arrow sizes */
+        .pagination .page-link .fa,
+        .pagination .page-link .fas,
+        .pagination .page-link .far {
+            font-size: 0.8rem;
+            line-height: 1;
+        }
+
+        .pagination .page-link {
+            padding: .25rem .5rem;
+            border-radius: .25rem;
+        }
+
+        .pagination .page-item {
+            margin: 0 2px;
+        }
+
+        .table td,
+        .table th {
+            vertical-align: middle;
+        }
+    </style>
 </head>
 
 <body style="font-family: 'Inter', sans-serif;">

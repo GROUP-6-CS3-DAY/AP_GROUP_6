@@ -18,7 +18,7 @@ class OutcomeFactory extends Factory
     public function definition(): array
     {
         return [
-            'project_ID' => Project::factory(),
+            'project_id' => Project::factory(),
             'title' => $this->faker->sentence,
             'description' => $this->faker->paragraph,
             'artifact_link' => $this->faker->url,

@@ -180,7 +180,7 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h6>Facility Management</h6>
+                        <h6 class="text-uppercase text-muted mb-2">Facility Management</h6>
                         <div class="list-group list-group-flush">
                             <a href="{{ route('facilities.create') }}" class="list-group-item list-group-item-action">
                                 <i class="fas fa-plus me-2"></i>Register New Facility
@@ -188,13 +188,13 @@
                             <a href="{{ route('facilities.index') }}" class="list-group-item list-group-item-action">
                                 <i class="fas fa-list me-2"></i>View All Facilities
                             </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <i class="fas fa-search me-2"></i>Search Facilities
+                            <a href="{{ route('services.create') }}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-handshake-angle me-2"></i>Link Service to Facility
                             </a>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <h6>Service & Equipment</h6>
+                        <h6 class="text-uppercase text-muted mb-2">Service & Equipment</h6>
                         <div class="list-group list-group-flush">
                             <a href="{{ route('services.create') }}" class="list-group-item list-group-item-action">
                                 <i class="fas fa-plus me-2"></i>Add New Service
@@ -202,8 +202,8 @@
                             <a href="{{ route('equipment.create') }}" class="list-group-item list-group-item-action">
                                 <i class="fas fa-plus me-2"></i>Register Equipment
                             </a>
-                            <a href="#" class="list-group-item list-group-item-action">
-                                <i class="fas fa-chart-bar me-2"></i>View Statistics
+                            <a href="{{ route('equipment.index') }}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-list-check me-2"></i>Browse Equipment
                             </a>
                         </div>
                     </div>
@@ -223,10 +223,74 @@
                 </h5>
             </div>
             <div class="card-body">
-                <div class="text-center text-muted py-4">
-                    <i class="fas fa-info-circle fa-2x mb-3"></i>
-                    <p>Recent activity will be displayed here once the system is fully operational.</p>
-                    <p>This includes new facility registrations, service updates, and equipment additions.</p>
+                <div class="row">
+                    <div class="col-lg-4 mb-3">
+                        <h6 class="text-uppercase text-muted mb-2"><i class="fas fa-building me-2"></i>New Facilities</h6>
+                        <ul class="list-group list-group-flush small">
+                            @forelse($recentFacilities as $f)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ $f->name }}</span>
+                                <a href="{{ route('facilities.show', $f) }}" class="text-decoration-none"><i class="fas fa-arrow-right"></i></a>
+                            </li>
+                            @empty
+                            <li class="list-group-item text-muted">No recent facilities</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                    <div class="col-lg-4 mb-3">
+                        <h6 class="text-uppercase text-muted mb-2"><i class="fas fa-cogs me-2"></i>New Services</h6>
+                        <ul class="list-group list-group-flush small">
+                            @forelse($recentServices as $s)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ $s->name ?? 'Service' }}</span>
+                                <a href="{{ route('services.show', $s) }}" class="text-decoration-none"><i class="fas fa-arrow-right"></i></a>
+                            </li>
+                            @empty
+                            <li class="list-group-item text-muted">No recent services</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                    <div class="col-lg-4 mb-3">
+                        <h6 class="text-uppercase text-muted mb-2"><i class="fas fa-tools me-2"></i>New Equipment</h6>
+                        <ul class="list-group list-group-flush small">
+                            @forelse($recentEquipment as $e)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ $e->name }}</span>
+                                <a href="{{ route('equipment.show', $e) }}" class="text-decoration-none"><i class="fas fa-arrow-right"></i></a>
+                            </li>
+                            @empty
+                            <li class="list-group-item text-muted">No recent equipment</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-lg-6 mb-3">
+                        <h6 class="text-uppercase text-muted mb-2"><i class="fas fa-project-diagram me-2"></i>New Projects</h6>
+                        <ul class="list-group list-group-flush small">
+                            @forelse($recentProjects as $p)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ $p->title }}</span>
+                                <a href="{{ route('projects.show', $p) }}" class="text-decoration-none"><i class="fas fa-arrow-right"></i></a>
+                            </li>
+                            @empty
+                            <li class="list-group-item text-muted">No recent projects</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <h6 class="text-uppercase text-muted mb-2"><i class="fas fa-trophy me-2"></i>New Outcomes</h6>
+                        <ul class="list-group list-group-flush small">
+                            @forelse($recentOutcomes as $o)
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ $o->title }}</span>
+                                <a href="{{ route('outcomes.show', $o) }}" class="text-decoration-none"><i class="fas fa-arrow-right"></i></a>
+                            </li>
+                            @empty
+                            <li class="list-group-item text-muted">No recent outcomes</li>
+                            @endforelse
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>

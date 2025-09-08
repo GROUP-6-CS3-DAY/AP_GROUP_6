@@ -14,7 +14,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form action="{{ route('outcomes.update', $outcome->id ?? $outcome->outcome_ID) }}" method="POST">
+        <form action="{{ route('outcomes.update', $outcome->id) }}" method="POST">
             @csrf
             @method('PUT')
 
@@ -29,7 +29,7 @@
                     <select id="project_id" name="project_id" class="form-select @error('project_id') is-invalid @enderror" required>
                         <option value="">Select project</option>
                         @foreach($projects as $project)
-                        <option value="{{ $project->id }}" {{ old('project_id', $outcome->project_id ?? $outcome->project_ID) == $project->id ? 'selected' : '' }}>{{ $project->title }}</option>
+                        <option value="{{ $project->id }}" {{ old('project_id', $outcome->project_id) == $project->id ? 'selected' : '' }}>{{ $project->title }}</option>
                         @endforeach
                     </select>
                     @error('project_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -89,5 +89,9 @@
 @endsection
 
 @push('styles')
-<style>.form-label{font-weight:600}</style>
+<style>
+    .form-label {
+        font-weight: 600
+    }
+</style>
 @endpush
