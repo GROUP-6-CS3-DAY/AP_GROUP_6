@@ -94,7 +94,7 @@
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <label for="project_id" class="form-label">Assign to Project (Optional)</label>
+                            <label for="project_id" class="form-label">Assign to Project</label>
                             <select class="form-select @error('project_id') is-invalid @enderror"
                                 id="project_id" name="project_id">
                                 <option value="">No project assignment</option>
