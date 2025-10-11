@@ -16,13 +16,12 @@ class Participant extends Model
         'email',
         'affiliation',
         'specialization',
-        'cross_skill_trained',
         'institution',
-        'project_id',
+        'cross_skill_trained'
     ];
 
     protected $casts = [
-        'cross_skill_trained' => 'boolean',
+        'cross_skill_trained' => 'boolean'
     ];
 
     /**

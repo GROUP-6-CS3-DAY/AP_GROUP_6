@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('services', function (Blueprint $table) {
             $table->id('service_id');
-            $table->foreignId('facility_id')->constrained('facilities', 'facility_id')->onDelete('cascade');
             $table->string('name');
-            $table->text('description');
-            $table->enum('category', ['machining', 'testing', 'training']);
-            $table->enum('skill_type', ['hardware', 'software', 'integration']);
+            $table->text('description')->nullable();
+            $table->unsignedBigInteger('facility_id');
             $table->timestamps();
+
+            $table->foreign('facility_id')
+                  ->references('facility_id')
+                  ->on('facilities')
+                  ->onDelete('cascade');
         });
     }
 

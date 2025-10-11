@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ParticipantController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +18,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::get('/test', function () {
+    return response()->json(['message' => 'success'], 200);
+});
+Route::post('/participants', [ParticipantController::class, 'store']);
+Route::get('/participants', [ParticipantController::class, 'index']);
