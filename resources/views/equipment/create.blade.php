@@ -6,11 +6,9 @@
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-plus-circle me-2"></i>Create Equipment
-            </h1>
+            <h1 class="h3 mb-0"><i class="fas fa-plus me-2"></i>Create Equipment</h1>
             <a href="{{ route('equipment.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i>Back to Equipment
+                <i class="fas fa-arrow-left me-1"></i>Back
             </a>
         </div>
     </div>
@@ -21,40 +19,39 @@
         <form action="{{ route('equipment.store') }}" method="POST">
             @csrf
 
-            <div class="mb-3">
-                <label for="name" class="form-label">Equipment Name</label>
-                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
-                @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="4" required>{{ old('description') }}</textarea>
-                @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                    <label for="facility_id" class="form-label">Facility</label>
-                    <select class="form-select @error('facility_id') is-invalid @enderror" id="facility_id" name="facility_id" required>
+                    <label class="form-label" for="facility_id">Facility</label>
+                    <select id="facility_id" name="facility_id" class="form-select @error('facility_id') is-invalid @enderror" required>
                         <option value="">Select facility</option>
                         @foreach($facilities as $facility)
-                        <option value="{{ $facility->id }}" {{ old('facility_id') == $facility->id ? 'selected' : '' }}>{{ $facility->name }}</option>
+                        <option value="{{ $facility->getId() }}" {{ old('facility_id') == $facility->getId() ? 'selected' : '' }}>
+                            {{ $facility->getName() }}
+                        </option>
                         @endforeach
                     </select>
                     @error('facility_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-6">
                     <label for="inventory_code" class="form-label">Inventory Code</label>
-                    <input type="text" class="form-control @error('inventory_code') is-invalid @enderror" id="inventory_code" name="inventory_code" value="{{ old('inventory_code') }}" required>
+                    <input type="text" class="form-control @error('inventory_code') is-invalid @enderror" 
+                           id="inventory_code" name="inventory_code" value="{{ old('inventory_code') }}" required>
                     @error('inventory_code')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Equipment Name</label>
+                <input type="text" class="form-control @error('name') is-invalid @enderror" 
+                       id="name" name="name" value="{{ old('name') }}" required>
+                @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label for="usage_domain" class="form-label">Usage Domain</label>
-                    <select class="form-select @error('usage_domain') is-invalid @enderror" id="usage_domain" name="usage_domain" required>
+                    <select class="form-select @error('usage_domain') is-invalid @enderror" 
+                            id="usage_domain" name="usage_domain" required>
                         <option value="">Select usage domain</option>
                         @foreach($usageDomains as $key => $value)
                         <option value="{{ $key }}" {{ old('usage_domain') == $key ? 'selected' : '' }}>{{ $value }}</option>
@@ -64,7 +61,8 @@
                 </div>
                 <div class="col-md-6">
                     <label for="support_phase" class="form-label">Support Phase</label>
-                    <select class="form-select @error('support_phase') is-invalid @enderror" id="support_phase" name="support_phase" required>
+                    <select class="form-select @error('support_phase') is-invalid @enderror" 
+                            id="support_phase" name="support_phase" required>
                         <option value="">Select support phase</option>
                         @foreach($supportPhases as $key => $value)
                         <option value="{{ $key }}" {{ old('support_phase') == $key ? 'selected' : '' }}>{{ $value }}</option>
@@ -75,12 +73,21 @@
             </div>
 
             <div class="mb-3">
-                <label for="capabilities" class="form-label">Capabilities</label>
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control @error('description') is-invalid @enderror" 
+                          id="description" name="description" rows="4" required>{{ old('description') }}</textarea>
+                @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Capabilities</label>
                 <div class="row">
                     @foreach($capabilities as $key => $value)
-                    <div class="col-md-4 mb-2">
+                    <div class="col-md-4 col-sm-6 mb-2">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="capabilities[]" value="{{ $key }}" id="capability_{{ $key }}" {{ in_array($key, old('capabilities', [])) ? 'checked' : '' }}>
+                            <input class="form-check-input" type="checkbox" name="capabilities[]" 
+                                   value="{{ $key }}" id="capability_{{ $key }}" 
+                                   {{ in_array($key, old('capabilities', [])) ? 'checked' : '' }}>
                             <label class="form-check-label" for="capability_{{ $key }}">
                                 {{ $value }}
                             </label>
@@ -88,7 +95,7 @@
                     </div>
                     @endforeach
                 </div>
-                @error('capabilities')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                @error('capabilities')<div class="text-danger">{{ $message }}</div>@enderror
             </div>
 
             <div class="text-end">
@@ -97,7 +104,6 @@
                 </button>
                 <a href="{{ route('equipment.index') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
             </div>
-
         </form>
     </div>
 </div>

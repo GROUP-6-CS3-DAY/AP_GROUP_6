@@ -12,8 +12,8 @@ use Illuminate\Support\Str;
             <h1 class="h3 mb-0">
                 <i class="fas fa-tools me-2"></i>Equipment
             </h1>
-            <a href="{{ route('equipment.create') }}" class="btn btn-success">
-                <i class="fas fa-plus me-1"></i>New Equipment
+            <a href="{{ route('equipment.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add Equipment
             </a>
         </div>
     </div>
@@ -51,7 +51,9 @@ use Illuminate\Support\Str;
                 <select class="form-select" id="facility_id" name="facility_id">
                     <option value="">All Facilities</option>
                     @foreach($facilities as $facility)
-                    <option value="{{ $facility->id }}" {{ request('facility_id') == $facility->id ? 'selected' : '' }}>{{ $facility->name }}</option>
+                    <option value="{{ $facility->getId() }}" {{ request('facility_id') == $facility->getId() ? 'selected' : '' }}>
+                        {{ $facility->getName() }}
+                    </option>
                     @endforeach
                 </select>
             </div>
@@ -77,68 +79,39 @@ use Illuminate\Support\Str;
     </div>
     <div class="card-body">
         @if($equipment->count() > 0)
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Name</th>
-                        <th>Facility</th>
-                        <th>Usage Domain</th>
-                        <th>Support Phase</th>
-                        <th>Inventory Code</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($equipment as $item)
-                    <tr>
-                        <td>
-                            <strong>{{ $item->name }}</strong>
-                            <br><small class="text-muted">{{ Str::limit($item->description, 40) }}</small>
-                        </td>
-                        <td>
-                            @if($item->facility)
-                            <a href="{{ route('facilities.show', $item->facility) }}" class="text-decoration-none">
-                                <i class="fas fa-building me-1"></i>{{ $item->facility->name }}
-                            </a>
-                            @else
-                            <span class="text-muted">—</span>
-                            @endif
-                        </td>
-                        <td>
-                            <span class="badge bg-info">{{ $usageDomains[$item->usage_domain] ?? $item->usage_domain }}</span>
-                        </td>
-                        <td>
-                            <span class="badge bg-warning">{{ $supportPhases[$item->support_phase] ?? $item->support_phase }}</span>
-                        </td>
-                        <td>
-                            <code>{{ $item->inventory_code }}</code>
-                        </td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <a href="{{ route('equipment.show', $item) }}"
-                                    class="btn btn-sm btn-outline-primary" title="View">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{{ route('equipment.edit', $item) }}"
-                                    class="btn btn-sm btn-outline-warning" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('equipment.destroy', $item) }}"
-                                    method="POST" class="d-inline"
-                                    onsubmit="return confirm('Are you sure you want to delete this equipment?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div class="row">
+            @foreach($equipment as $item)
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title">{{ $item->getName() }}</h5>
+                            <span class="badge bg-primary">{{ $item->getInventoryCode() }}</span>
+                        </div>
+                        <p class="card-text">{{ Str::limit($item->getDescription(), 100) }}</p>
+                        <div class="mb-2">
+                            <span class="badge bg-info">{{ $item->getUsageDomain()->getDisplayName() }}</span>
+                            <span class="badge bg-secondary">{{ $item->getSupportPhase()->getDisplayName() }}</span>
+                        </div>
+                        <div class="text-muted small">
+                            <strong>Capabilities:</strong>
+                            <div>{{ Str::limit($item->getCapabilitiesAsString(), 80) }}</div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a href="{{ route('equipment.show', $item->getId()) }}" class="btn btn-outline-primary btn-sm">View</a>
+                            <a href="{{ route('equipment.edit', $item->getId()) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            <form action="{{ route('equipment.destroy', $item->getId()) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
         </div>
 
         <!-- Pagination -->
@@ -152,14 +125,14 @@ use Illuminate\Support\Str;
             <i class="fas fa-tools fa-3x text-muted mb-3"></i>
             <h5 class="text-muted">No equipment found</h5>
             <p class="text-muted">
-                @if(request()->has('search') || request()->has('usage_domain') || request()->has('support_phase') || request()->has('facility_id'))
+                @if(request()->hasAny(['search', 'usage_domain', 'support_phase', 'facility_id']))
                 Try adjusting your search criteria or
                 <a href="{{ route('equipment.index') }}">clear all filters</a>.
                 @else
                 Get started by adding your first equipment.
                 @endif
             </p>
-            @if(!request()->has('search') && !request()->has('usage_domain') && !request()->has('support_phase') && !request()->has('facility_id'))
+            @if(!request()->hasAny(['search', 'usage_domain', 'support_phase', 'facility_id']))
             <a href="{{ route('equipment.create') }}" class="btn btn-success">
                 <i class="fas fa-plus me-1"></i>Add First Equipment
             </a>
@@ -170,47 +143,12 @@ use Illuminate\Support\Str;
 </div>
 @endsection
 
-@push('styles')
-<style>
-    .table th {
-        border-top: none;
-        font-weight: 600;
-    }
-
-    .btn-group .btn {
-        margin-right: 2px;
-    }
-
-    .btn-group .btn:last-child {
-        margin-right: 0;
-    }
-
-    .badge {
-        font-size: 0.75em;
-    }
-
-    code {
-        font-size: 0.85em;
-    }
-</style>
-@endpush
-
 @push('scripts')
 <script>
     // Auto-submit form when filters change
-    var usageDomainEl = document.getElementById('usage_domain');
-    var supportPhaseEl = document.getElementById('support_phase');
-    var facilityEl = document.getElementById('facility_id');
-
-    if (usageDomainEl) {
-        usageDomainEl.addEventListener('change', function() { this.form.submit(); });
-    }
-    if (supportPhaseEl) {
-        supportPhaseEl.addEventListener('change', function() { this.form.submit(); });
-    }
-    if (facilityEl) {
-        facilityEl.addEventListener('change', function() { this.form.submit(); });
-    }
+    document.querySelectorAll('#usage_domain, #support_phase, #facility_id').forEach(function(el) {
+        el.addEventListener('change', function() { this.form.submit(); });
+    });
 
     // Search on enter
     document.getElementById('search')?.addEventListener('keydown', function(e) {
