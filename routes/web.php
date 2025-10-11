@@ -14,7 +14,7 @@ use App\Models\Program;
 use App\Models\Outcome;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProgramController;
-use App\Http\Controllers\OutcomeController;
+use App\Presentation\Http\Controllers\OutcomeController;
 
 /*
 |--------------------------------------------------------------------------
