@@ -7,6 +7,7 @@ use App\Domain\Repositories\ProjectRepositoryInterface;
 use App\Domain\ValueObjects\InnovationFocus;
 use App\Domain\ValueObjects\PrototypeStage;
 use App\Models\Project as ProjectModel;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentProjectRepository implements ProjectRepositoryInterface
 {
@@ -34,12 +35,14 @@ class EloquentProjectRepository implements ProjectRepositoryInterface
         $query = ProjectModel::with(['program', 'facility']);
 
         if (!empty($filters['search'])) {
-            $query->where('title', 'like', '%' . $filters['search'] . '%')
+            $query->where(function($q) use ($filters) {
+                $q->where('title', 'like', '%' . $filters['search'] . '%')
                   ->orWhere('description', 'like', '%' . $filters['search'] . '%');
+            });
         }
 
         if (!empty($filters['innovation_focus'])) {
-            $query->where('innovation_focus', 'like', '%' . $filters['innovation_focus'] . '%');
+            $query->where('innovation_focus', $filters['innovation_focus']);
         }
 
         if (!empty($filters['prototype_stage'])) {
@@ -50,11 +53,28 @@ class EloquentProjectRepository implements ProjectRepositoryInterface
             $query->where('program_id', $filters['program_id']);
         }
 
-        $models = $query->paginate($perPage);
+        $paginatedResults = $query->paginate($perPage);
         
+        // Transform the paginated results to domain entities
+        $transformedItems = $paginatedResults->getCollection()->map(function($model) {
+            return $this->mapToEntity($model);
+        });
+
+        // Create new paginator with transformed items
+        $pagination = new LengthAwarePaginator(
+            $transformedItems,
+            $paginatedResults->total(),
+            $paginatedResults->perPage(),
+            $paginatedResults->currentPage(),
+            [
+                'path' => request()->url(),
+                'pageName' => 'page',
+            ]
+        );
+
         return [
-            'data' => $models->items(),
-            'pagination' => $models
+            'pagination' => $pagination,
+            'data' => $transformedItems->toArray()
         ];
     }
 
@@ -87,8 +107,8 @@ class EloquentProjectRepository implements ProjectRepositoryInterface
     {
         return new Project(
             id: (string) $model->getKey(),
-            programId: (string) $model->program_id,
-            facilityId: (string) $model->facility_id,
+            programId: $model->program_id,
+            facilityId: $model->facility_id,
             title: $model->title,
             natureOfProject: $model->nature_of_project,
             description: $model->description,

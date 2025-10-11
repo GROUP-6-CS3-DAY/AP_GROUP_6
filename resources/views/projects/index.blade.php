@@ -12,8 +12,8 @@ use Illuminate\Support\Str;
             <h1 class="h3 mb-0">
                 <i class="fas fa-project-diagram me-2"></i>Projects
             </h1>
-            <a href="{{ route('projects.create') }}" class="btn btn-success">
-                <i class="fas fa-plus me-1"></i>New Project
+            <a href="{{ route('projects.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add Project
             </a>
         </div>
     </div>
@@ -51,7 +51,7 @@ use Illuminate\Support\Str;
                 <select class="form-select" id="program_id" name="program_id">
                     <option value="">All Programs</option>
                     @foreach($programs as $program)
-                    <option value="{{ $program->id }}" {{ request('program_id') == $program->id ? 'selected' : '' }}>{{ $program->name }}</option>
+                    <option value="{{ $program->getId() }}" {{ request('program_id') == $program->getId() ? 'selected' : '' }}>{{ $program->getName() }}</option>
                     @endforeach
                 </select>
             </div>
@@ -87,6 +87,10 @@ use Illuminate\Support\Str;
                         <div class="mb-2">
                             <span class="badge bg-primary">{{ $project->getInnovationFocus()->getDisplayName() }}</span>
                             <span class="badge bg-secondary">{{ $project->getPrototypeStage()->getDisplayName() }}</span>
+                        </div>
+                        <div class="text-muted small">
+                            <div>Participants: {{ $project->getParticipantCount() }}</div>
+                            <div>Outcomes: {{ $project->getOutcomeCount() }}</div>
                         </div>
                     </div>
                     <div class="card-footer bg-transparent">

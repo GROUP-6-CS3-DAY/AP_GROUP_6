@@ -23,8 +23,8 @@
                     <select id="program_id" name="program_id" class="form-select @error('program_id') is-invalid @enderror" required>
                         <option value="">Select program</option>
                         @foreach($programs as $program)
-                        <option value="{{ $program['id'] }}" {{ old('program_id') == $program['id'] ? 'selected' : '' }}>
-                            {{ $program['title'] }}
+                        <option value="{{ $program->getId() }}" {{ old('program_id') == $program->getId() ? 'selected' : '' }}>
+                            {{ $program->getName() }}
                         </option>
                         @endforeach
                     </select>
@@ -35,8 +35,8 @@
                     <select id="facility_id" name="facility_id" class="form-select @error('facility_id') is-invalid @enderror" required>
                         <option value="">Select facility</option>
                         @foreach($facilities as $facility)
-                        <option value="{{ $facility['id'] }}" {{ old('facility_id') == $facility['id'] ? 'selected' : '' }}>
-                            {{ $facility['name'] }}
+                        <option value="{{ $facility->getId() }}" {{ old('facility_id') == $facility->getId() ? 'selected' : '' }}>
+                            {{ $facility->getName() }}
                         </option>
                         @endforeach
                     </select>

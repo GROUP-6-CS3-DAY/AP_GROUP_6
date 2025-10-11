@@ -7,7 +7,6 @@ use App\Domain\Entities\Project;
 interface ProjectRepositoryInterface
 {
     public function findById(string $id): ?Project;
-    public function findAll(): array;
     public function findWithFilters(array $filters, int $perPage = 15): array;
     public function save(Project $project): void;
     public function delete(string $id): void;

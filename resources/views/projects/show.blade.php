@@ -48,7 +48,7 @@
                     <p>{{ $project->getTestingRequirements() }}</p>
                 </div>
                 
-                <div class="mb-3">
+                <div class="mb-0">
                     <strong>Commercialization Plan:</strong>
                     <p>{{ $project->getCommercializationPlan() }}</p>
                 </div>
@@ -59,7 +59,7 @@
     <div class="col-md-4">
         <div class="card mb-4">
             <div class="card-header">
-                <h5 class="mb-0">Project Stats</h5>
+                <h5 class="mb-0">Project Status</h5>
             </div>
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-2">
