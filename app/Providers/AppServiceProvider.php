@@ -7,10 +7,12 @@ use App\Domain\Repositories\ProjectRepositoryInterface;
 use App\Domain\Repositories\ProgramRepositoryInterface;
 use App\Domain\Repositories\FacilityRepositoryInterface;
 use App\Domain\Repositories\OutcomeRepositoryInterface;
+use App\Domain\Repositories\EquipmentRepositoryInterface;
 use App\Infrastructure\Repositories\EloquentProjectRepository;
 use App\Infrastructure\Repositories\EloquentProgramRepository;
 use App\Infrastructure\Repositories\EloquentFacilityRepository;
 use App\Infrastructure\Repositories\EloquentOutcomeRepository;
+use App\Infrastructure\Repositories\EloquentEquipmentRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProgramRepositoryInterface::class, EloquentProgramRepository::class);
         $this->app->bind(FacilityRepositoryInterface::class, EloquentFacilityRepository::class);
         $this->app->bind(OutcomeRepositoryInterface::class, EloquentOutcomeRepository::class);
+        $this->app->bind(EquipmentRepositoryInterface::class, EloquentEquipmentRepository::class);
     }
 
     /**

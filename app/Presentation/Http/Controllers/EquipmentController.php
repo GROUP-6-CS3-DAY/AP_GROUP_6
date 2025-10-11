@@ -2,48 +2,40 @@
 
 namespace App\Presentation\Http\Controllers;
 
-use App\Models\Equipment;
-use App\Models\Facility;
 use Illuminate\Http\Request;
+use App\Application\UseCases\CreateEquipmentUseCase;
+use App\Application\UseCases\UpdateEquipmentUseCase;
+use App\Application\DTOs\CreateEquipmentDTO;
+use App\Application\DTOs\UpdateEquipmentDTO;
+use App\Presentation\Requests\CreateEquipmentRequest;
+use App\Presentation\Requests\UpdateEquipmentRequest;
+use App\Domain\Repositories\EquipmentRepositoryInterface;
+use App\Domain\Repositories\FacilityRepositoryInterface;
+use App\Domain\ValueObjects\UsageDomain;
+use App\Domain\ValueObjects\SupportPhase;
 
 class EquipmentController extends Controller
 {
+    public function __construct(
+        private EquipmentRepositoryInterface $equipmentRepository,
+        private FacilityRepositoryInterface $facilityRepository,
+        private CreateEquipmentUseCase $createEquipmentUseCase,
+        private UpdateEquipmentUseCase $updateEquipmentUseCase
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = Equipment::with(['facility']);
-
-        // Search functionality
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%')
-                  ->orWhere('inventory_code', 'like', '%' . $request->search . '%');
-        }
-
-        // Usage domain filter
-        if ($request->filled('usage_domain')) {
-            $query->where('usage_domain', $request->usage_domain);
-        }
-
-        // Support phase filter
-        if ($request->filled('support_phase')) {
-            $query->where('support_phase', $request->support_phase);
-        }
-
-        // Facility filter
-        if ($request->filled('facility_id')) {
-            $query->where('facility_id', $request->facility_id);
-        }
-
-        $equipment = $query->paginate(15);
+        $filters = $request->only(['search', 'usage_domain', 'support_phase', 'facility_id']);
+        $result = $this->equipmentRepository->findWithFilters($filters, 15);
         
-        // Define options for dropdowns
-        $usageDomains = Equipment::getUsageDomainOptions();
-        $supportPhases = Equipment::getSupportPhaseOptions();
-        $capabilities = Equipment::getCapabilityOptions();
-        $facilities = Facility::all();
+        $equipment = $result['pagination'];
+        $usageDomains = UsageDomain::getAllOptions();
+        $supportPhases = SupportPhase::getAllOptions();
+        $capabilities = $this->getCapabilityOptions();
+        $facilities = $this->facilityRepository->findAll();
 
         return view('equipment.index', compact('equipment', 'usageDomains', 'supportPhases', 'capabilities', 'facilities'));
     }
@@ -53,10 +45,10 @@ class EquipmentController extends Controller
      */
     public function create()
     {
-        $usageDomains = Equipment::getUsageDomainOptions();
-        $supportPhases = Equipment::getSupportPhaseOptions();
-        $capabilities = Equipment::getCapabilityOptions();
-        $facilities = Facility::all();
+        $usageDomains = UsageDomain::getAllOptions();
+        $supportPhases = SupportPhase::getAllOptions();
+        $capabilities = $this->getCapabilityOptions();
+        $facilities = $this->facilityRepository->findAll();
 
         return view('equipment.create', compact('usageDomains', 'supportPhases', 'capabilities', 'facilities'));
     }
@@ -64,31 +56,43 @@ class EquipmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateEquipmentRequest $request)
     {
-        $validated = $request->validate([
-            'facility_id' => 'required|exists:facilities,id',
-            'name' => 'required|string|max:255',
-            'capabilities' => 'required|array|min:1',
-            'description' => 'required|string',
-            'inventory_code' => 'required|string|max:255|unique:equipment',
-            'usage_domain' => 'required|string',
-            'support_phase' => 'required|string',
-        ]);
+        try {
+            $dto = new CreateEquipmentDTO(
+                facilityId: $request->validated('facility_id'),
+                name: $request->validated('name'),
+                capabilities: $request->validated('capabilities'),
+                description: $request->validated('description'),
+                inventoryCode: $request->validated('inventory_code'),
+                usageDomain: $request->validated('usage_domain'),
+                supportPhase: $request->validated('support_phase')
+            );
 
-        Equipment::create($validated);
+            $this->createEquipmentUseCase->execute($dto);
 
-        return redirect()->route('equipment.index')->with('success', 'Equipment created successfully');
+            return redirect()->route('equipment.index')->with('success', 'Equipment created successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to create equipment: ' . $e->getMessage());
+        }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Equipment $equipment)
+    public function show(string $id)
     {
-        $usageDomains = Equipment::getUsageDomainOptions();
-        $supportPhases = Equipment::getSupportPhaseOptions();
-        $capabilities = Equipment::getCapabilityOptions();
+        $equipment = $this->equipmentRepository->findById($id);
+        
+        if (!$equipment) {
+            abort(404, 'Equipment not found');
+        }
+
+        $usageDomains = UsageDomain::getAllOptions();
+        $supportPhases = SupportPhase::getAllOptions();
+        $capabilities = $this->getCapabilityOptions();
 
         return view('equipment.show', compact('equipment', 'usageDomains', 'supportPhases', 'capabilities'));
     }
@@ -96,12 +100,18 @@ class EquipmentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Equipment $equipment)
+    public function edit(string $id)
     {
-        $usageDomains = Equipment::getUsageDomainOptions();
-        $supportPhases = Equipment::getSupportPhaseOptions();
-        $capabilities = Equipment::getCapabilityOptions();
-        $facilities = Facility::all();
+        $equipment = $this->equipmentRepository->findById($id);
+        
+        if (!$equipment) {
+            abort(404, 'Equipment not found');
+        }
+
+        $usageDomains = UsageDomain::getAllOptions();
+        $supportPhases = SupportPhase::getAllOptions();
+        $capabilities = $this->getCapabilityOptions();
+        $facilities = $this->facilityRepository->findAll();
 
         return view('equipment.edit', compact('equipment', 'usageDomains', 'supportPhases', 'capabilities', 'facilities'));
     }
@@ -109,43 +119,74 @@ class EquipmentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Equipment $equipment)
+    public function update(UpdateEquipmentRequest $request, string $id)
     {
-        $validated = $request->validate([
-            'facility_id' => 'required|exists:facilities,id',
-            'name' => 'required|string|max:255',
-            'capabilities' => 'required|array|min:1',
-            'description' => 'required|string',
-            'inventory_code' => 'required|string|max:255|unique:equipment,inventory_code,' . $equipment->id,
-            'usage_domain' => 'required|string',
-            'support_phase' => 'required|string',
-        ]);
+        try {
+            $dto = new UpdateEquipmentDTO(
+                facilityId: $request->validated('facility_id'),
+                name: $request->validated('name'),
+                capabilities: $request->validated('capabilities'),
+                description: $request->validated('description'),
+                inventoryCode: $request->validated('inventory_code'),
+                usageDomain: $request->validated('usage_domain'),
+                supportPhase: $request->validated('support_phase')
+            );
 
-        $equipment->update($validated);
+            $this->updateEquipmentUseCase->execute($id, $dto);
 
-        return redirect()->route('equipment.index')->with('success', 'Equipment updated successfully');
+            return redirect()->route('equipment.index')->with('success', 'Equipment updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to update equipment: ' . $e->getMessage());
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Equipment $equipment)
+    public function destroy(string $id)
     {
-        $equipment->delete();
-
-        return redirect()->route('equipment.index')->with('success', 'Equipment deleted successfully');
+        try {
+            $this->equipmentRepository->delete($id);
+            return redirect()->route('equipment.index')->with('success', 'Equipment deleted successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete equipment: ' . $e->getMessage());
+        }
     }
 
     /**
      * Get equipment by facility.
      */
-    public function getByFacility(Facility $facility)
+    public function getByFacility(string $facilityId)
     {
-        $equipment = $facility->equipment()->paginate(15);
-        $usageDomains = Equipment::getUsageDomainOptions();
-        $supportPhases = Equipment::getSupportPhaseOptions();
-        $capabilities = Equipment::getCapabilityOptions();
+        $facility = $this->facilityRepository->findById($facilityId);
+        
+        if (!$facility) {
+            abort(404, 'Facility not found');
+        }
+
+        $equipment = $this->equipmentRepository->findByFacility($facilityId);
+        $usageDomains = UsageDomain::getAllOptions();
+        $supportPhases = SupportPhase::getAllOptions();
+        $capabilities = $this->getCapabilityOptions();
 
         return view('equipment.by-facility', compact('equipment', 'facility', 'usageDomains', 'supportPhases', 'capabilities'));
+    }
+
+    private function getCapabilityOptions(): array
+    {
+        return [
+            'cnc_machining' => 'CNC Machining',
+            'pcb_fabrication' => 'PCB Fabrication',
+            'materials_testing' => 'Materials Testing',
+            '3d_printing' => '3D Printing',
+            'welding' => 'Welding',
+            'electronics_testing' => 'Electronics Testing',
+            'software_development' => 'Software Development',
+            'iot_prototyping' => 'IoT Prototyping',
+            'renewable_energy_testing' => 'Renewable Energy Testing',
+            'automation_systems' => 'Automation Systems'
+        ];
     }
 }
