@@ -7,7 +7,9 @@
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 mb-0"><i class="fas fa-edit me-2"></i>Edit Outcome</h1>
-            <a href="{{ route('outcomes.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
+            <a href="{{ route('outcomes.show', $outcome->getId()) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back
+            </a>
         </div>
     </div>
 </div>
@@ -18,21 +20,40 @@
             @csrf
             @method('PUT')
 
+            <div class="mb-3">
+                <label class="form-label" for="project_id">Project</label>
+                <select id="project_id" name="project_id" class="form-select @error('project_id') is-invalid @enderror" required>
+                    <option value="">Select project</option>
+                    @foreach($projects as $project)
+                    <option value="{{ $project->getId() }}" 
+                        {{ old('project_id', $outcome->getProjectId()) == $project->getId() ? 'selected' : '' }}>
+                        {{ $project->getTitle() }}
+                    </option>
+                    @endforeach
+                </select>
+                @error('project_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
-                    <label class="form-label" for="title">Title</label>
-                    <input type="text" id="title" name="title" class="form-control @error('title') is-invalid @enderror" value="{{ old('title', $outcome->getTitle()) }}" required>
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control @error('title') is-invalid @enderror" 
+                           id="title" name="title" value="{{ old('title', $outcome->getTitle()) }}" required>
                     @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label" for="project_id">Project</label>
-                    <select id="project_id" name="project_id" class="form-select @error('project_id') is-invalid @enderror" required>
-                        <option value="">Select project</option>
-                        @foreach($projects as $project)
-                        <option value="{{ $project->getProjectId() }}" {{ old('project_id', $outcome->getProjectId()) == $project->getProjectId() ? 'selected' : '' }}>{{ $project->getTitle() }}</option>
-                        @endforeach
+                    <label for="outcome_type" class="form-label">Type</label>
+                    <select class="form-select @error('outcome_type') is-invalid @enderror" 
+                            id="outcome_type" name="outcome_type" required>
+                        <option value="">Select type</option>
+                        <option value="publication" {{ old('outcome_type', $outcome->getOutcomeType()) == 'publication' ? 'selected' : '' }}>Publication</option>
+                        <option value="patent" {{ old('outcome_type', $outcome->getOutcomeType()) == 'patent' ? 'selected' : '' }}>Patent</option>
+                        <option value="product" {{ old('outcome_type', $outcome->getOutcomeType()) == 'product' ? 'selected' : '' }}>Product</option>
+                        <option value="prototype" {{ old('outcome_type', $outcome->getOutcomeType()) == 'prototype' ? 'selected' : '' }}>Prototype</option>
+                        <option value="certification" {{ old('outcome_type', $outcome->getOutcomeType()) == 'certification' ? 'selected' : '' }}>Certification</option>
+                        <option value="other" {{ old('outcome_type', $outcome->getOutcomeType()) == 'other' ? 'selected' : '' }}>Other</option>
                     </select>
-                    @error('project_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @error('outcome_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>
 
@@ -44,11 +65,6 @@
 
             <div class="row g-3 mb-3">
                 <div class="col-md-4">
-                    <label class="form-label" for="outcome_type">Outcome Type</label>
-                    <input type="text" id="outcome_type" name="outcome_type" class="form-control @error('outcome_type') is-invalid @enderror" value="{{ old('outcome_type', $outcome->getOutcomeType()) }}" required>
-                    @error('outcome_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-4">
                     <label class="form-label" for="quality_certification">Quality / Certification</label>
                     <input type="text" id="quality_certification" name="quality_certification" class="form-control @error('quality_certification') is-invalid @enderror" value="{{ old('quality_certification', $outcome->getQualityCertification()) }}" required>
                     @error('quality_certification')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -58,19 +74,17 @@
                     <input type="date" id="date_achieved" name="date_achieved" class="form-control @error('date_achieved') is-invalid @enderror" value="{{ old('date_achieved', $outcome->getDateAchieved()->format('Y-m-d')) }}" required>
                     @error('date_achieved')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-            </div>
-
-            <div class="row g-3 mb-3">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label" for="commercialization_status">Commercialization Status</label>
                     <input type="text" id="commercialization_status" name="commercialization_status" class="form-control @error('commercialization_status') is-invalid @enderror" value="{{ old('commercialization_status', $outcome->getCommercializationStatus()) }}" required>
                     @error('commercialization_status')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label" for="impact">Impact</label>
-                    <input type="text" id="impact" name="impact" class="form-control @error('impact') is-invalid @enderror" value="{{ old('impact', $outcome->getImpact()) }}" required>
-                    @error('impact')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="impact">Impact</label>
+                <input type="text" id="impact" name="impact" class="form-control @error('impact') is-invalid @enderror" value="{{ old('impact', $outcome->getImpact()) }}" required>
+                @error('impact')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
             <div class="mb-3">
@@ -80,8 +94,10 @@
             </div>
 
             <div class="text-end">
-                <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Save Changes</button>
-                <a href="{{ route('outcomes.index') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-1"></i>Save Changes
+                </button>
+                <a href="{{ route('outcomes.show', $outcome->getId()) }}" class="btn btn-outline-secondary ms-2">Cancel</a>
             </div>
         </form>
     </div>

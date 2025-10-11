@@ -12,26 +12,59 @@ use Illuminate\Support\Str;
             <h1 class="h3 mb-0">
                 <i class="fas fa-trophy me-2"></i>Outcomes
             </h1>
-            <a href="{{ route('outcomes.create') }}" class="btn btn-success">
-                <i class="fas fa-plus me-1"></i>New Outcome
+            <a href="{{ route('outcomes.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add Outcome
             </a>
         </div>
     </div>
 </div>
 
-<!-- Search Bar -->
+<!-- Search and Filters -->
 <div class="card mb-4">
     <div class="card-body">
         <form method="GET" action="{{ route('outcomes.index') }}" class="row g-3">
-            <div class="col-md-10">
-                <label for="search" class="form-label">Search Outcomes</label>
-                <input type="text" id="search" name="search" class="form-control" placeholder="Search by title, description, type, impact, commercialization..." value="{{ request('search') }}">
+            <div class="col-md-3">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="search"
+                    value="{{ request('search') }}" placeholder="Search outcomes...">
             </div>
             <div class="col-md-2">
+                <label for="outcome_type" class="form-label">Type</label>
+                <select class="form-select" id="outcome_type" name="outcome_type">
+                    <option value="">All Types</option>
+                    <option value="publication" {{ request('outcome_type') == 'publication' ? 'selected' : '' }}>Publication</option>
+                    <option value="patent" {{ request('outcome_type') == 'patent' ? 'selected' : '' }}>Patent</option>
+                    <option value="product" {{ request('outcome_type') == 'product' ? 'selected' : '' }}>Product</option>
+                    <option value="prototype" {{ request('outcome_type') == 'prototype' ? 'selected' : '' }}>Prototype</option>
+                    <option value="certification" {{ request('outcome_type') == 'certification' ? 'selected' : '' }}>Certification</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="commercialization_status" class="form-label">Status</label>
+                <select class="form-select" id="commercialization_status" name="commercialization_status">
+                    <option value="">All Statuses</option>
+                    <option value="Ready" {{ request('commercialization_status') == 'Ready' ? 'selected' : '' }}>Ready</option>
+                    <option value="In Progress" {{ request('commercialization_status') == 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                    <option value="Commercialized" {{ request('commercialization_status') == 'Commercialized' ? 'selected' : '' }}>Commercialized</option>
+                    <option value="Not Applicable" {{ request('commercialization_status') == 'Not Applicable' ? 'selected' : '' }}>Not Applicable</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="project_id" class="form-label">Project</label>
+                <select class="form-select" id="project_id" name="project_id">
+                    <option value="">All Projects</option>
+                    @foreach($projects as $project)
+                    <option value="{{ $project->getId() }}" {{ request('project_id') == $project->getId() ? 'selected' : '' }}>
+                        {{ $project->getTitle() }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-md-1">
                 <label class="form-label">&nbsp;</label>
                 <div class="d-grid">
                     <button type="submit" class="btn btn-outline-primary">
-                        <i class="fas fa-search me-1"></i>Search
+                        <i class="fas fa-search me-1"></i>Filter
                     </button>
                 </div>
             </div>
@@ -39,6 +72,7 @@ use Illuminate\Support\Str;
     </div>
 </div>
 
+<!-- Outcomes List -->
 <div class="card">
     <div class="card-header">
         <h5 class="card-title mb-0">
@@ -47,77 +81,92 @@ use Illuminate\Support\Str;
         </h5>
     </div>
     <div class="card-body">
-        @if($outcomes->count())
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Title</th>
-                        <th>Project</th>
-                        <th>Type</th>
-                        <th>Impact</th>
-                        <th>Date Achieved</th>
-                        <th>Commercialization</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($outcomes as $outcome)
-                    <tr>
-                        <td>
-                            <strong>{{ $outcome->title }}</strong><br>
-                            <small class="text-muted">{{ Str::limit($outcome->description, 50) }}</small>
-                        </td>
-                        <td>
-                            @if($outcome->project)
-                            <a href="{{ route('projects.show', $outcome->project_id ?? $outcome->project_ID) }}" class="text-decoration-none">
-                                <i class="fas fa-project-diagram me-1"></i>{{ $outcome->project->title ?? 'Project' }}
-                            </a>
-                            @else
-                            <span class="text-muted">—</span>
+        @if($outcomes->count() > 0)
+        <div class="row">
+            @foreach($outcomes as $outcome)
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title">{{ $outcome->getTitle() }}</h5>
+                            @if($outcome->canBeCommercializaed())
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i>Commercial
+                            </span>
                             @endif
-                        </td>
-                        <td><span class="badge bg-info">{{ $outcome->outcome_type }}</span></td>
-                        <td><span class="badge bg-primary">{{ $outcome->impact ?? '—' }}</span></td>
-                        <td>{{ $outcome->date_achieved ? \Carbon\Carbon::parse($outcome->date_achieved)->format('Y-m-d') : '—' }}</td>
-                        <td><span class="badge bg-warning">{{ $outcome->commercialization_status ?? '—' }}</span></td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <a href="{{ route('outcomes.show', $outcome) }}" class="btn btn-sm btn-outline-primary" title="View"><i class="fas fa-eye"></i></a>
-                                <a href="{{ route('outcomes.edit', $outcome) }}" class="btn btn-sm btn-outline-warning" title="Edit"><i class="fas fa-edit"></i></a>
-                                <form action="{{ route('outcomes.destroy', $outcome) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this outcome?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                        </div>
+                        <p class="card-text">{{ Str::limit($outcome->getDescription(), 100) }}</p>
+                        <div class="mb-2">
+                            <span class="badge bg-primary">{{ ucfirst($outcome->getOutcomeType()) }}</span>
+                            @if($outcome->isHighImpact())
+                            <span class="badge bg-warning">High Impact</span>
+                            @endif
+                        </div>
+                        <div class="text-muted small">
+                            <div><i class="fas fa-calendar me-1"></i>{{ $outcome->getDateAchieved()->format('M d, Y') }}</div>
+                            @if($outcome->getCommercializationStatus())
+                            <div><i class="fas fa-chart-line me-1"></i>{{ $outcome->getCommercializationStatus() }}</div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a href="{{ route('outcomes.show', $outcome->getId()) }}" class="btn btn-outline-primary btn-sm">View</a>
+                            <a href="{{ route('outcomes.edit', $outcome->getId()) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            <form action="{{ route('outcomes.destroy', $outcome->getId()) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
         </div>
+
+        <!-- Pagination -->
         @if($outcomes->hasPages())
         <div class="d-flex justify-content-center mt-4">
-            {{ $outcomes->links() }}
+            {{ $outcomes->appends(request()->query())->links() }}
         </div>
         @endif
         @else
         <div class="text-center py-5">
             <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
             <h5 class="text-muted">No outcomes found</h5>
-            <p class="text-muted mb-3">Try adjusting your search or create a new outcome.</p>
+            <p class="text-muted">
+                @if(request()->has('search') || request()->has('outcome_type') || request()->has('commercialization_status') || request()->has('project_id'))
+                Try adjusting your search criteria or
+                <a href="{{ route('outcomes.index') }}">clear all filters</a>.
+                @else
+                Get started by recording your first outcome.
+                @endif
+            </p>
+            @if(!request()->hasAny(['search', 'outcome_type', 'commercialization_status', 'project_id']))
             <a href="{{ route('outcomes.create') }}" class="btn btn-success">
-                <i class="fas fa-plus me-1"></i>Create First Outcome
+                <i class="fas fa-plus me-1"></i>Record First Outcome
             </a>
+            @endif
         </div>
         @endif
     </div>
 </div>
 @endsection
 
-@push('styles')
-<style>
-    .badge { font-size: 0.7rem; }
-</style>
+@push('scripts')
+<script>
+    // Auto-submit form when filters change
+    document.querySelectorAll('#outcome_type, #commercialization_status, #project_id').forEach(function(el) {
+        el.addEventListener('change', function() { this.form.submit(); });
+    });
+
+    // Search on enter
+    document.getElementById('search')?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            this.form.submit();
+        }
+    });
+</script>
 @endpush
