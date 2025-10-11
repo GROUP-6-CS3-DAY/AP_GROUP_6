@@ -28,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OutcomeRepositoryInterface::class, EloquentOutcomeRepository::class);
         $this->app->bind(EquipmentRepositoryInterface::class, EloquentEquipmentRepository::class);
     }
+    
 
     /**
      * Bootstrap any application services.
