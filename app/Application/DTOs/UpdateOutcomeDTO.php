@@ -5,9 +5,9 @@ namespace App\Application\DTOs;
 class UpdateOutcomeDTO
 {
     public function __construct(
+        public readonly string $projectId,
         public readonly string $title,
         public readonly string $description,
-        public readonly string $projectId,
         public readonly string $outcomeType,
         public readonly string $qualityCertification,
         public readonly string $dateAchieved,
@@ -19,9 +19,9 @@ class UpdateOutcomeDTO
     public function toArray(): array
     {
         return [
+            'project_id' => $this->projectId,
             'title' => $this->title,
             'description' => $this->description,
-            'project_id' => $this->projectId,
             'outcome_type' => $this->outcomeType,
             'quality_certification' => $this->qualityCertification,
             'date_achieved' => $this->dateAchieved,

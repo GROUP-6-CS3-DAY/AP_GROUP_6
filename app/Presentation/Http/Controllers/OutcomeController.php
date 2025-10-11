@@ -2,33 +2,37 @@
 
 namespace App\Presentation\Http\Controllers;
 
-use App\Models\Outcome;
-use App\Models\Project;
 use Illuminate\Http\Request;
+use App\Application\UseCases\CreateOutcomeUseCase;
+use App\Application\UseCases\UpdateOutcomeUseCase;
+use App\Application\DTOs\CreateOutcomeDTO;
+use App\Application\DTOs\UpdateOutcomeDTO;
+use App\Presentation\Requests\CreateOutcomeRequest;
+use App\Presentation\Requests\UpdateOutcomeRequest;
+use App\Domain\Repositories\OutcomeRepositoryInterface;
+use App\Domain\Repositories\ProjectRepositoryInterface;
 
 class OutcomeController extends Controller
 {
+    public function __construct(
+        private OutcomeRepositoryInterface $outcomeRepository,
+        private ProjectRepositoryInterface $projectRepository,
+        private CreateOutcomeUseCase $createOutcomeUseCase,
+        private UpdateOutcomeUseCase $updateOutcomeUseCase
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = Outcome::with('project');
+        $filters = $request->only(['search', 'outcome_type', 'commercialization_status', 'project_id']);
+        $result = $this->outcomeRepository->findWithFilters($filters, 15);
+        
+        $outcomes = $result['pagination'];
+        $projects = $this->projectRepository->findAll();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%$search%")
-                  ->orWhere('description', 'like', "%$search%")
-                  ->orWhere('outcome_type', 'like', "%$search%")
-                  ->orWhere('commercialization_status', 'like', "%$search%")
-                  ->orWhere('impact', 'like', "%$search%") ;
-            });
-        }
-
-        $outcomes = $query->orderByDesc('date_achieved')->paginate(15)->appends($request->query());
-
-        return view('outcomes.index', compact('outcomes'));
+        return view('outcomes.index', compact('outcomes', 'projects'));
     }
 
     /**
@@ -36,86 +40,105 @@ class OutcomeController extends Controller
      */
     public function create()
     {
-        $projects = Project::select('project_id','title')->orderBy('title')->get();
+        $projects = $this->projectRepository->findAll();
         return view('outcomes.create', compact('projects'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateOutcomeRequest $request)
     {
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,project_id',
-            'description' => 'required|string|max:1000',
-            'title' => 'required|string|max:255',
-            'outcome_type' => 'required|string|max:255',
-            'quality_certification' => 'nullable|string|max:255',
-            'impact' => 'nullable|string|max:1000',
-            'date_achieved' => 'required|date',
-            'commercialization_status' => 'nullable|string|max:255',
-            'artifact_link' => 'nullable|url|max:255',
-        ]);
+        try {
+            $dto = new CreateOutcomeDTO(
+                projectId: $request->validated('project_id'),
+                title: $request->validated('title'),
+                description: $request->validated('description'),
+                outcomeType: $request->validated('outcome_type'),
+                qualityCertification: $request->validated('quality_certification', ''),
+                dateAchieved: $request->validated('date_achieved'),
+                commercializationStatus: $request->validated('commercialization_status', ''),
+                impact: $request->validated('impact', ''),
+                artifactLink: $request->validated('artifact_link', '')
+            );
 
-        Outcome::create($validated);
+            $this->createOutcomeUseCase->execute($dto);
 
-        return redirect()->route('outcomes.index')->with('success', 'Outcome created successfully.');
+            return redirect()->route('outcomes.index')->with('success', 'Outcome created successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to create outcome: ' . $e->getMessage());
+        }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Outcome $outcome)
+    public function show(string $id)
     {
-        $outcome->load('project');
+        $outcome = $this->outcomeRepository->findById($id);
+        
+        if (!$outcome) {
+            abort(404, 'Outcome not found');
+        }
+
         return view('outcomes.show', compact('outcome'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Outcome $outcome)
+    public function edit(string $id)
     {
-        $projects = Project::select('project_id','title')->orderBy('title')->get();
+        $outcome = $this->outcomeRepository->findById($id);
+        
+        if (!$outcome) {
+            abort(404, 'Outcome not found');
+        }
+
+        $projects = $this->projectRepository->findAll();
         return view('outcomes.edit', compact('outcome', 'projects'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Outcome $outcome)
+    public function update(UpdateOutcomeRequest $request, string $id)
     {
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,project_id',
-            'description' => 'required|string|max:1000',
-            'title' => 'required|string|max:255',
-            'outcome_type' => 'required|string|max:255',
-            'quality_certification' => 'nullable|string|max:255',
-            'impact' => 'nullable|string|max:1000',
-            'date_achieved' => 'required|date',
-            'commercialization_status' => 'nullable|string|max:255',
-            'artifact_link' => 'nullable|url|max:255',
-        ]);
+        try {
+            $dto = new UpdateOutcomeDTO(
+                projectId: $request->validated('project_id'),
+                title: $request->validated('title'),
+                description: $request->validated('description'),
+                outcomeType: $request->validated('outcome_type'),
+                qualityCertification: $request->validated('quality_certification', ''),
+                dateAchieved: $request->validated('date_achieved'),
+                commercializationStatus: $request->validated('commercialization_status', ''),
+                impact: $request->validated('impact', ''),
+                artifactLink: $request->validated('artifact_link', '')
+            );
 
-        $outcome->update($validated);
+            $this->updateOutcomeUseCase->execute($id, $dto);
 
-        return redirect()->route('outcomes.index')->with('success', 'Outcome updated successfully.');
+            return redirect()->route('outcomes.index')->with('success', 'Outcome updated successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to update outcome: ' . $e->getMessage());
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Outcome $outcome)
+    public function destroy(string $id)
     {
-        $outcome->delete();
-        return redirect()->route('outcomes.index')->with('success', 'Outcome deleted successfully.');
-    }
-
-    /**
-     * Get outcomes by facility.
-     */
-    public function getByFacility(string $facility)
-    {
-        return view('outcomes.by-facility');
+        try {
+            $this->outcomeRepository->delete($id);
+            return redirect()->route('outcomes.index')->with('success', 'Outcome deleted successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to delete outcome: ' . $e->getMessage());
+        }
     }
 }
