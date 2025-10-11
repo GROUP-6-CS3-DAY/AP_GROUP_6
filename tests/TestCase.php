@@ -2,17 +2,15 @@
 
 namespace Tests;
 
-use App\Models\User;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Foundation\Application;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication;
-
-    protected function signIn($user = null)
+    public function createApplication(): Application
     {
-        $user = $user ?: User::factory()->create();
-        $this->actingAs($user);
-        return $user;
+        $app = require __DIR__.'/../bootstrap/app.php';
+        $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+        return $app;
     }
 }

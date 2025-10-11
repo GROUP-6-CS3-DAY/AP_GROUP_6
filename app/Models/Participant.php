@@ -20,6 +20,14 @@ class Participant extends Model
         'cross_skill_trained'
     ];
 
+    public static $rules = [
+        'full_name' => 'required',
+        'email' => 'required|unique:participants,email',
+        'affiliation' => 'required',
+        'specialization' => 'required_if:cross_skill_trained,true|nullable',
+        'cross_skill_trained' => 'boolean'
+    ];
+
     protected $casts = [
         'cross_skill_trained' => 'boolean'
     ];

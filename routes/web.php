@@ -1,8 +1,21 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ParticipantController;
 use Illuminate\Support\Facades\Route;
+use App\Presentation\Http\Controllers\FacilityController;
+use App\Presentation\Http\Controllers\ServiceController;
+use App\Presentation\Http\Controllers\EquipmentController;
+use App\Presentation\Http\Controllers\ParticipantController;
+use App\Presentation\Http\Controllers\ProjectController;
+use App\Presentation\Http\Controllers\ProgramController;
+use App\Presentation\Http\Controllers\OutcomeController;
+use App\Models\Facility;
+use App\Models\Service;
+use App\Models\Equipment;
+use App\Models\Project;
+use App\Models\Participant;
+use App\Models\Program;
+use App\Models\Outcome;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -19,21 +32,88 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Dashboard
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    $facilitiesCount = Facility::count();
+    $servicesCount = Service::count();
+    $equipmentCount = Equipment::count();
+    $projectsCount = Project::count();
+    $participantsCount = Participant::count();
+    $programsCount = Program::count();
+    $outcomesCount = Outcome::count();
 
-// Participant routes
-Route::resource('participants', ParticipantController::class);
+    // Recent items for dashboard activity
+    $recentFacilities = Facility::orderByDesc('created_at')->limit(5)->get();
+    $recentServices = Service::orderByDesc('created_at')->limit(5)->get();
+    $recentEquipment = Equipment::orderByDesc('created_at')->limit(5)->get();
+    $recentProjects = Project::orderByDesc('created_at')->limit(5)->get();
+    $recentOutcomes = Outcome::orderByDesc('created_at')->limit(5)->get();
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::post('participants/{participant}/add-project', [ParticipantController::class, 'addProject'])
-        ->name('participants.add-project');
-    Route::delete('participants/{participant}/remove-project/{project}', [ParticipantController::class, 'removeProject'])
-        ->name('participants.remove-project');
+    return view('dashboard.overview', compact(
+        'facilitiesCount',
+        'servicesCount',
+        'equipmentCount',
+        'projectsCount',
+        'participantsCount',
+        'programsCount',
+        'outcomesCount',
+        'recentFacilities',
+        'recentServices',
+        'recentEquipment',
+        'recentProjects',
+        'recentOutcomes'
+    ));
+})->name('dashboard.overview');
+
+// Project Routes
+Route::resource('projects', ProjectController::class);
+
+
+// Program Routes
+Route::resource('programs', ProgramController::class);
+
+// Facility Routes
+Route::prefix('facilities')->name('facilities.')->group(function () {
+    Route::get('/', [FacilityController::class, 'index'])->name('index');
+    Route::get('/create', [FacilityController::class, 'create'])->name('create');
+    Route::post('/', [FacilityController::class, 'store'])->name('store');
+    Route::get('/{facility}', [FacilityController::class, 'show'])->name('show');
+    Route::get('/{facility}/edit', [FacilityController::class, 'edit'])->name('edit');
+    Route::put('/{facility}', [FacilityController::class, 'update'])->name('update');
+    Route::delete('/{facility}', [FacilityController::class, 'destroy'])->name('destroy');
 });
 
-require __DIR__.'/auth.php';
+// Service Routes
+Route::prefix('services')->name('services.')->group(function () {
+    Route::get('/', [ServiceController::class, 'index'])->name('index');
+    Route::get('/create', [ServiceController::class, 'create'])->name('create');
+    Route::post('/', [ServiceController::class, 'store'])->name('store');
+    Route::get('/{service}', [ServiceController::class, 'show'])->name('show');
+    Route::get('/{service}/edit', [ServiceController::class, 'edit'])->name('edit');
+    Route::put('/{service}', [ServiceController::class, 'update'])->name('update');
+    Route::delete('/{service}', [ServiceController::class, 'destroy'])->name('destroy');
+    Route::get('/facility/{facility}', [ServiceController::class, 'getByFacility'])->name('by-facility');
+});
+
+// Equipment Routes
+Route::prefix('equipment')->name('equipment.')->group(function () {
+    Route::get('/', [EquipmentController::class, 'index'])->name('index');
+    Route::get('/create', [EquipmentController::class, 'create'])->name('create');
+    Route::post('/', [EquipmentController::class, 'store'])->name('store');
+    Route::get('/{equipment}', [EquipmentController::class, 'show'])->name('show');
+    Route::get('/{equipment}/edit', [EquipmentController::class, 'edit'])->name('edit');
+    Route::put('/{equipment}', [EquipmentController::class, 'update'])->name('update');
+    Route::delete('/{equipment}', [EquipmentController::class, 'destroy'])->name('destroy');
+    Route::get('/facility/{facility}', [EquipmentController::class, 'getByFacility'])->name('by-facility');
+});
+
+// Outcome Routes (replaced grouped routes with resource for standard naming)
+Route::resource('outcomes', OutcomeController::class);
+
+//Participants Routes
+Route::resource('participants', ParticipantController::class);
+// Additional routes for project management
+Route::post('participants/{participant}/add-project', [ParticipantController::class, 'addProject'])
+    ->name('participants.add-project');
+Route::delete('participants/{participant}/remove-project/{project}', [ParticipantController::class, 'removeProject'])
+    ->name('participants.remove-project');

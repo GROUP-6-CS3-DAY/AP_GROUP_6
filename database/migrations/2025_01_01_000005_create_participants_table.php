@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('participants', function (Blueprint $table) {
+            $table->id('participant_id');
+            $table->string('full_name');
+            $table->string('email')->unique();
+            $table->enum('affiliation', ['cs', 'se', 'engineering', 'other']);
+            $table->enum('specialization', ['software', 'hardware', 'business']);
+            $table->boolean('cross_skill_trained')->default(false);
+            $table->enum('institution', ['scit', 'cedat', 'unipod', 'uiri', 'lwera']);
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('participants');
+    }
+};
