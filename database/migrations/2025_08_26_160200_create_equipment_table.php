@@ -12,15 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('equipment', function (Blueprint $table) {
-            $table->id('equipment_id');
-            $table->foreignId('facility_id')->constrained('facilities', 'facility_id')->onDelete('cascade');
+            $table->id();
+            $table->foreignId('facility_id')->constrained('facilities')->cascadeOnDelete();
             $table->string('name');
-            $table->text('capabilities');
+            $table->json('capabilities');
             $table->text('description');
-            $table->string('inventory_code');
-            $table->enum('usage_domain', ['electronics', 'mechanical', 'iot']);
-            $table->enum('support_phase', ['training', 'prototyping', 'testing', 'commercialization']);
+            $table->string('inventory_code')->unique();
+            $table->string('usage_domain');
+            $table->string('support_phase');
             $table->timestamps();
+
+            // Indexes for better performance
+            $table->index('facility_id');
+            $table->index('usage_domain');
+            $table->index('support_phase');
+            $table->index('inventory_code');
+            $table->index('name');
         });
     }
 

@@ -17,12 +17,7 @@ class Facility extends Model
      */
     protected $table = 'facilities';
 
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'facility_id';
+    // Using default 'id' primary key
 
     /**
      * The attributes that are mass assignable.

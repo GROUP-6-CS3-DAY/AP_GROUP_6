@@ -12,16 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('services', function (Blueprint $table) {
-            $table->id('service_id');
+            $table->id();
+            $table->foreignId('facility_id')->constrained('facilities', 'id')->cascadeOnDelete();
             $table->string('name');
-            $table->text('description')->nullable();
-            $table->unsignedBigInteger('facility_id');
+            $table->text('description');
+            $table->string('category');
+            $table->string('skill_type');
             $table->timestamps();
 
-            $table->foreign('facility_id')
-                  ->references('facility_id')
-                  ->on('facilities')
-                  ->onDelete('cascade');
+            // Indexes for better performance
+            $table->index('facility_id');
+            $table->index('category');
+            $table->index('skill_type');
+            $table->index('name');
+            
+            // Unique constraint for service name per facility
+            $table->unique(['facility_id', 'name']);
         });
     }
 

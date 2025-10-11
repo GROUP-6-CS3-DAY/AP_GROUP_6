@@ -9,8 +9,7 @@ class Program extends Model
 {
     use HasFactory;
 
-    // Add this line to specify the primary key column name
-    protected $primaryKey = 'program_id';
+    // Using default 'id' primary key to match migration
 
     protected $fillable = [
         'name',
@@ -20,14 +19,14 @@ class Program extends Model
         'phases'
     ];
 
-    // Add this casts array - this is what was missing!
-    protected $casts = [
-        'focus_areas' => 'array',
-        'phases' => 'array',
-    ];
+    // Remove casts since migration uses string fields, not JSON
+    // protected $casts = [
+    //     'focus_areas' => 'array',
+    //     'phases' => 'array',
+    // ];
 
     public function projects()
     {
-        return $this->hasMany(Project::class, 'program_id');
+        return $this->hasMany(Project::class, 'program_id', 'id');
     }
 }

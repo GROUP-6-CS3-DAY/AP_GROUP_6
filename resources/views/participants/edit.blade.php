@@ -3,27 +3,12 @@
 @section('title', 'Edit ' . $participant->full_name . ' - InnoTrack')
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-edit me-2"></i>Edit Participant: {{ $participant->full_name }}
-            </h1>
-            <div>
-                <a href="{{ route('participants.show', $participant) }}" class="btn btn-outline-primary me-2">
-                    <i class="fas fa-eye me-1"></i>View Participant
-                </a>
-                <a href="{{ route('participants.index') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>Back to Participants
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
+@php
+use Illuminate\Support\Str;
+@endphp
+<div class="row g-4 align-items-start"> <!-- changed row -->
+    <div class="col-lg-8 d-flex"> <!-- added d-flex -->
+        <div class="card w-100 h-100"> <!-- full height card -->
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="fas fa-user me-2"></i>Edit Participant Information
@@ -101,24 +86,25 @@
                             <div class="form-text">Select the institution or organization.</div>
                         </div>
                         <div class="col-md-6">
-    <label for="project_id" class="form-label">Assign to Project</label>
-    <select class="form-select @error('project_id') is-invalid @enderror"
-        id="project_id" name="project_id">
-        <option value="">No project assignment</option>
-        @if(isset($projects))
-            @foreach($projects as $project)
-                <option value="{{ $project->project_id }}" 
-                    {{ (old('project_id') ?? $participant->project_id ?? '') == $project->project_id ? 'selected' : '' }}>
-                    {{ $project->title }}
-                </option>
-            @endforeach
-        @endif
-    </select>
-    @error('project_id')
-    <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
-    <div class="form-text">Change project assignment if needed.</div>
-</div>
+                            <label for="project_id" class="form-label">Assign to Project</label>
+                            <select class="form-select @error('project_id') is-invalid @enderror"
+                                id="project_id" name="project_id">
+                                <option value="">No project assignment</option>
+                                @if(isset($projects))
+                                    @foreach($projects as $project)
+                                        <option value="{{ $project->project_id }}" 
+                                            {{ (old('project_id') ?? $participant->project_id ?? '') == $project->project_id ? 'selected' : '' }}>
+                                            {{ $project->title }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            @error('project_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text">Change project assignment if needed.</div>
+                        </div>
+                    </div>
 
                     <div class="mb-3">
                         <div class="form-check form-switch">
@@ -135,7 +121,7 @@
                         <div class="form-text">Check if the participant has completed cross-skill training.</div>
                     </div>
 
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between mt-4">
                         <a href="{{ route('participants.show', $participant) }}" class="btn btn-outline-secondary">
                             <i class="fas fa-times me-1"></i>Cancel
                         </a>
@@ -148,9 +134,8 @@
         </div>
     </div>
 
-    <div class="col-lg-4">
-        <!-- Current Participant Info -->
-        <div class="card mb-4">
+    <div class="col-lg-4 d-flex flex-column gap-4"> <!-- right column stacked -->
+        <div class="card">
             <div class="card-header">
                 <h6 class="card-title mb-0">
                     <i class="fas fa-info-circle me-2"></i>Current Information
@@ -158,7 +143,7 @@
             </div>
             <div class="card-body">
                 <h6>Participant Details</h6>
-                <ul class="list-unstyled small text-muted">
+                <ul class="list-unstyled small text-muted mb-0">
                     <li><strong>Name:</strong> {{ $participant->full_name }}</li>
                     <li><strong>Email:</strong> {{ $participant->email }}</li>
                     <li><strong>Affiliation:</strong> {{ ucfirst($participant->affiliation) }}</li>
@@ -170,10 +155,8 @@
                 </ul>
             </div>
         </div>
-
-        <!-- Current Project Info -->
         @if($participant->project)
-        <div class="card mb-4">
+        <div class="card">
             <div class="card-header">
                 <h6 class="card-title mb-0">
                     <i class="fas fa-project-diagram me-2"></i>Current Project
@@ -181,7 +164,7 @@
             </div>
             <div class="card-body">
                 <h6>{{ $participant->project->name }}</h6>
-                <ul class="list-unstyled small text-muted">
+                <ul class="list-unstyled small text-muted mb-3">
                     <li><strong>Status:</strong> {{ ucfirst($participant->project->status ?? 'Active') }}</li>
                     <li><strong>Description:</strong> {{ Str::limit($participant->project->description ?? 'N/A', 100) }}</li>
                 </ul>
@@ -191,32 +174,28 @@
             </div>
         </div>
         @endif
-
-        <!-- Help Information -->
-        <div class="card mb-4">
+        <div class="card">
             <div class="card-header">
                 <h6 class="card-title mb-0">
                     <i class="fas fa-question-circle me-2"></i>Help
                 </h6>
             </div>
-            <div class="card-body">
+            <div class="card-body small text-muted">
                 <h6>Affiliations</h6>
-                <ul class="list-unstyled small text-muted">
+                <ul class="list-unstyled mb-3">
                     <li><strong>Computer Science:</strong> CS students and professionals</li>
                     <li><strong>Software Engineering:</strong> SE focused individuals</li>
                     <li><strong>Engineering:</strong> General engineering disciplines</li>
                     <li><strong>Other:</strong> Non-technical or interdisciplinary</li>
                 </ul>
-
-                <h6 class="mt-3">Specializations</h6>
-                <ul class="list-unstyled small text-muted">
+                <h6>Specializations</h6>
+                <ul class="list-unstyled mb-3">
                     <li><strong>Software:</strong> Programming and software development</li>
                     <li><strong>Hardware:</strong> Electronics and physical systems</li>
                     <li><strong>Business:</strong> Entrepreneurship and business development</li>
                 </ul>
-
-                <h6 class="mt-3">Institutions</h6>
-                <ul class="list-unstyled small text-muted">
+                <h6>Institutions</h6>
+                <ul class="list-unstyled mb-0">
                     <li><strong>SCIT:</strong> School of Computing and IT</li>
                     <li><strong>CEDAT:</strong> College of Engineering</li>
                     <li><strong>UniPod:</strong> University Innovation Hub</li>
@@ -225,11 +204,9 @@
                 </ul>
             </div>
         </div>
-
-        <!-- Warning -->
-        <div class="alert alert-warning">
+        <div class="alert alert-warning mb-0">
             <i class="fas fa-exclamation-triangle me-2"></i>
-            <strong>Note:</strong> Changing participant details may affect project assignments and collaborations. Ensure all changes are accurate.
+            <strong>Note:</strong> Changing participant details may affect project assignments and collaborations.
         </div>
     </div>
 </div>
@@ -310,6 +287,10 @@
     .form-check-input:checked {
         background-color: #28a745;
         border-color: #28a745;
+    }
+    .card.h-100 {
+        display: flex;
+        flex-direction: column;
     }
 </style>
 @endpush

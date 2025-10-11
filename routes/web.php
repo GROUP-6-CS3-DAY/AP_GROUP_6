@@ -42,13 +42,6 @@ Route::get('/dashboard', function () {
     $programsCount = Program::count();
     $outcomesCount = Outcome::count();
 
-    // Recent items for dashboard activity
-    $recentFacilities = Facility::orderByDesc('created_at')->limit(5)->get();
-    $recentServices = Service::orderByDesc('created_at')->limit(5)->get();
-    $recentEquipment = Equipment::orderByDesc('created_at')->limit(5)->get();
-    $recentProjects = Project::orderByDesc('created_at')->limit(5)->get();
-    $recentOutcomes = Outcome::orderByDesc('created_at')->limit(5)->get();
-
     return view('dashboard.overview', compact(
         'facilitiesCount',
         'servicesCount',
@@ -56,12 +49,7 @@ Route::get('/dashboard', function () {
         'projectsCount',
         'participantsCount',
         'programsCount',
-        'outcomesCount',
-        'recentFacilities',
-        'recentServices',
-        'recentEquipment',
-        'recentProjects',
-        'recentOutcomes'
+        'outcomesCount'
     ));
 })->name('dashboard.overview');
 
@@ -105,6 +93,7 @@ Route::prefix('equipment')->name('equipment.')->group(function () {
     Route::put('/{equipment}', [EquipmentController::class, 'update'])->name('update');
     Route::delete('/{equipment}', [EquipmentController::class, 'destroy'])->name('destroy');
     Route::get('/facility/{facility}', [EquipmentController::class, 'getByFacility'])->name('by-facility');
+
 });
 
 // Outcome Routes (replaced grouped routes with resource for standard naming)

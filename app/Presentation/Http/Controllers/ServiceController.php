@@ -41,9 +41,12 @@ class ServiceController extends Controller
             }
 
             // Pagination
-            $perPage = $request->get('per_page', 15);
+            $perPage = (int) $request->get('per_page', 15);
+            if ($perPage <= 0) { $perPage = 15; }
+            
             $services = $query->orderBy('name')
-                ->paginate($perPage);
+                ->paginate($perPage)
+                ->appends($request->query());
 
             $categories = Service::getCategoryOptions();
             $skillTypes = Service::getSkillTypeOptions();

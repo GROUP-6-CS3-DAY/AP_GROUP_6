@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Outcome extends Model
 {
     use HasFactory;
-
-    protected $primaryKey = 'outcome_id';
 
     protected $fillable = [
         'project_id',
@@ -19,6 +17,12 @@ class Outcome extends Model
         'outcome_type',
         'quality_certification',
         'commercialization_status',
+        'impact',
+        'date_achieved'
+    ];
+
+    protected $casts = [
+        'date_achieved' => 'date'
     ];
 
     /**

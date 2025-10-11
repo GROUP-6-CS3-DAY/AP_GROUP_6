@@ -1,257 +1,113 @@
 @extends('layouts.app')
 
-@section('title', $equipment->name . ' - Equipment Details - InnoTrack')
+@section('title', 'Equipment Details - InnoTrack')
 
 @section('content')
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-tools me-2"></i>{{ $equipment->name }}
-            </h1>
-            <div>
-                <a href="{{ route('equipment.edit', $equipment) }}" class="btn btn-warning me-2">
-                    <i class="fas fa-edit me-1"></i>Edit Equipment
-                </a>
-                <a href="{{ route('equipment.index') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i>Back to Equipment
-                </a>
+            <h1 class="h3 mb-0"><i class="fas fa-tools me-2"></i>Equipment Details</h1>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ route('equipment.edit', $equipment) }}" class="btn btn-outline-warning"><i class="fas fa-edit me-1"></i>Edit</a>
+                <form action="{{ route('equipment.destroy', $equipment) }}" method="POST" onsubmit="return confirm('Delete this equipment?');">
+                    @csrf @method('DELETE')
+                    <button class="btn btn-outline-danger" type="submit"><i class="fas fa-trash me-1"></i>Delete</button>
+                </form>
+                <a href="{{ route('equipment.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row">
+<div class="row g-4">
     <div class="col-lg-8">
-        <!-- Equipment Details -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-info-circle me-2"></i>Equipment Information
-                </h5>
-            </div>
+        <div class="card h-100">
             <div class="card-body">
-                <div class="row">
+                <h4 class="mb-2">{{ $equipment->name }}</h4>
+                <p class="text-muted mb-4">{{ $equipment->description }}</p>
+
+                <div class="row g-3 mb-4">
                     <div class="col-md-6">
-                        <h6 class="text-muted">Equipment Name</h6>
-                        <p class="h5">{{ $equipment->name }}</p>
+                        <div class="p-3 border rounded bg-light h-100">
+                            <small class="text-muted d-block mb-1">Facility</small>
+                            @if($equipment->facility)
+                                <a href="{{ route('facilities.show', $equipment->facility) }}" class="text-decoration-none"><i class="fas fa-building me-1"></i>{{ $equipment->facility->name }}</a>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <h6 class="text-muted">Inventory Code</h6>
-                        <code class="h6">{{ $equipment->inventory_code }}</code>
+                        <div class="p-3 border rounded bg-light h-100">
+                            <small class="text-muted d-block mb-1">Inventory Code</small>
+                            <code>{{ $equipment->inventory_code }}</code>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light h-100">
+                            <small class="text-muted d-block mb-1">Usage Domain</small>
+                            <span class="badge bg-info">{{ $usageDomains[$equipment->usage_domain] ?? $equipment->usage_domain }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded bg-light h-100">
+                            <small class="text-muted d-block mb-1">Support Phase</small>
+                            <span class="badge bg-warning">{{ $supportPhases[$equipment->support_phase] ?? $equipment->support_phase }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <hr>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6 class="text-muted">Usage Domain</h6>
-                        <span class="badge bg-info fs-6">{{ $equipment->getUsageDomainOptions()[$equipment->usage_domain] ?? $equipment->usage_domain }}</span>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="text-muted">Support Phase</h6>
-                        <span class="badge bg-warning fs-6">{{ $equipment->getSupportPhaseOptions()[$equipment->support_phase] ?? $equipment->support_phase }}</span>
-                    </div>
-                </div>
-
-                <hr>
-
-                <div class="mb-3">
-                    <h6 class="text-muted">Description</h6>
-                    <p class="mb-0">{{ $equipment->description }}</p>
-                </div>
-
-                <hr>
-
-                <div class="mb-3">
-                    <h6 class="text-muted">Capabilities</h6>
+                <div class="mb-4">
+                    <h6 class="text-uppercase text-muted fw-semibold mb-2">Capabilities</h6>
                     @if($equipment->capabilities && count($equipment->capabilities) > 0)
-                    <div class="d-flex flex-wrap gap-2">
-                        @foreach($equipment->capabilities as $capability)
-                        <span class="badge bg-primary">{{ $capability }}</span>
-                        @endforeach
-                    </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            @foreach($equipment->capabilities as $capability)
+                                <span class="badge bg-primary">{{ $capabilities[$capability] ?? $capability }}</span>
+                            @endforeach
+                        </div>
                     @else
-                    <p class="text-muted mb-0">No capabilities listed</p>
+                        <span class="text-muted">No capabilities listed</span>
                     @endif
-                </div>
-
-                <hr>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6 class="text-muted">Created</h6>
-                        <p>{{ $equipment->created_at->format('M d, Y \a\t g:i A') }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="text-muted">Last Updated</h6>
-                        <p>{{ $equipment->updated_at->format('M d, Y \a\t g:i A') }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Facility Information -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="fas fa-building me-2"></i>Host Facility
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6 class="text-muted">Facility Name</h6>
-                        <p class="h6">
-                            <a href="{{ route('facilities.show', $equipment->facility) }}" class="text-decoration-none">
-                                <i class="fas fa-building me-1"></i>{{ $equipment->facility->name }}
-                            </a>
-                        </p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="text-muted">Facility Type</h6>
-                        <span class="badge bg-secondary">{{ $equipment->facility->getFacilityTypeOptions()[$equipment->facility->facility_type] ?? $equipment->facility->facility_type }}</span>
-                    </div>
-                </div>
-
-                <hr>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6 class="text-muted">Location</h6>
-                        <p class="mb-0">{{ $equipment->facility->location }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h6 class="text-muted">Partner Organization</h6>
-                        <p class="mb-0">{{ $equipment->facility->partner_organization }}</p>
-                    </div>
-                </div>
-
-                <hr>
-
-                <div class="mb-3">
-                    <h6 class="text-muted">Facility Description</h6>
-                    <p class="mb-0">{{ $equipment->facility->description }}</p>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="col-lg-4">
-        <!-- Quick Actions -->
         <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-bolt me-2"></i>Quick Actions
-                </h6>
-            </div>
+            <div class="card-header py-2 d-flex justify-content-between align-items-center"><span class="fw-semibold"><i class="fas fa-info-circle me-2"></i>Meta</span></div>
             <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('equipment.edit', $equipment) }}" class="btn btn-warning">
-                        <i class="fas fa-edit me-1"></i>Edit Equipment
-                    </a>
-                    <a href="{{ route('facilities.show', $equipment->facility) }}" class="btn btn-outline-primary">
-                        <i class="fas fa-building me-1"></i>View Facility
-                    </a>
-                    <a href="{{ route('equipment.index') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-list me-1"></i>All Equipment
-                    </a>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Created</small>
+                    <span>{{ $equipment->created_at->diffForHumans() }}</span><br>
+                    <small class="text-muted">{{ $equipment->created_at->format('Y-m-d H:i') }}</small>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted d-block">Last Updated</small>
+                    <span>{{ $equipment->updated_at->diffForHumans() }}</span><br>
+                    <small class="text-muted">{{ $equipment->updated_at->format('Y-m-d H:i') }}</small>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h4 class="text-success mb-0">{{ count($equipment->capabilities ?? []) }}</h4>
+                    <small class="text-muted">Capabilities</small>
                 </div>
             </div>
         </div>
-
-        <!-- Equipment Statistics -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-chart-bar me-2"></i>Statistics
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <h4 class="text-primary">{{ $equipment->facility->equipment->count() }}</h4>
-                        <small class="text-muted">Total Equipment</small>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="text-success">{{ $equipment->facility->services->count() }}</h4>
-                        <small class="text-muted">Total Services</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Related Equipment -->
         <div class="card">
-            <div class="card-header">
-                <h6 class="card-title mb-0">
-                    <i class="fas fa-tools me-2"></i>Other Equipment at {{ $equipment->facility->name }}
-                </h6>
-            </div>
             <div class="card-body">
-                @php
-                $otherEquipment = $equipment->facility->equipment->where('equipment_id', '!=', $equipment->equipment_id)->take(5);
-                @endphp
-
-                @if($otherEquipment->count() > 0)
-                <div class="list-group list-group-flush">
-                    @foreach($otherEquipment as $otherItem)
-                    <a href="{{ route('equipment.show', $otherItem) }}" class="list-group-item list-group-item-action">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">{{ $otherItem->name }}</h6>
-                            <small class="text-muted">{{ $otherItem->getUsageDomainOptions()[$otherItem->usage_domain] ?? $otherItem->usage_domain }}</small>
-                        </div>
-                        <small class="text-muted">{{ Str::limit($otherItem->description, 50) }}</small>
-                    </a>
-                    @endforeach
+                <h6 class="text-uppercase text-muted fw-semibold mb-3">Quick Actions</h6>
+                <div class="d-grid gap-2">
+                    <a href="{{ route('equipment.edit', $equipment) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit me-1"></i>Edit Equipment</a>
+                    <a href="{{ route('equipment.index') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-list me-1"></i>All Equipment</a>
+                    <a href="{{ route('equipment.create') }}" class="btn btn-sm btn-outline-success"><i class="fas fa-plus me-1"></i>New Equipment</a>
                 </div>
-                @if($equipment->facility->equipment->count() > 6)
-                <div class="text-center mt-2">
-                    <a href="{{ route('equipment.index', ['facility_id' => $equipment->facility->facility_id]) }}" class="btn btn-sm btn-outline-primary">
-                        View All Equipment
-                    </a>
-                </div>
-                @endif
-                @else
-                <p class="text-muted text-center mb-0">No other equipment at this facility</p>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete Equipment</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete the equipment "<strong>{{ $equipment->name }}</strong>"?</p>
-                <p class="text-danger"><small>This action cannot be undone.</small></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form action="{{ route('equipment.destroy', $equipment) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Delete Equipment</button>
-                </form>
             </div>
         </div>
     </div>
 </div>
 @endsection
 
-@push('scripts')
-<script>
-    // Delete confirmation
-    function confirmDelete() {
-        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        modal.show();
-    }
-</script>
+@push('styles')
+<style>.badge{font-size:.7rem;letter-spacing:.5px}code{font-size:.8rem}</style>
 @endpush

@@ -102,15 +102,15 @@ use Illuminate\Support\Str;
                         </td>
                         <td>
                             <div class="btn-group" role="group">
-                                <a href="{{ route('facilities.show', $facility) }}"
+                                <a href="{{ route('facilities.show', $facility->id) }}"
                                     class="btn btn-sm btn-outline-primary" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('facilities.edit', $facility) }}"
+                                <a href="{{ route('facilities.edit', $facility->id) }}"
                                     class="btn btn-sm btn-outline-warning" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('facilities.destroy', $facility) }}"
+                                <form action="{{ route('facilities.destroy', $facility->id) }}"
                                     method="POST" class="d-inline"
                                     onsubmit="return confirm('Are you sure you want to delete this facility?')">
                                     @csrf

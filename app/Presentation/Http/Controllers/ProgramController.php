@@ -21,17 +21,17 @@ class ProgramController extends Controller
                   ->orWhere('description', 'like', '%' . $request->search . '%');
         }
 
-        // Focus areas filter - using JSON_CONTAINS for proper JSON searching
+        // Focus areas filter - using LIKE for string fields
         if ($request->filled('focus_areas')) {
-            $query->whereJsonContains('focus_areas', $request->focus_areas);
+            $query->where('focus_areas', $request->focus_areas);
         }
 
-        // Phases filter - using JSON_CONTAINS for proper JSON searching
+        // Phases filter - using LIKE for string fields
         if ($request->filled('phases')) {
-            $query->whereJsonContains('phases', $request->phases);
+            $query->where('phases', $request->phases);
         }
 
-        $programs = $query->paginate(15);
+        $programs = $query->paginate(15)->appends($request->query());
         
         // Define focus areas and phases for filter dropdowns
         $focusAreas = [
@@ -97,10 +97,7 @@ class ProgramController extends Controller
             'phases' => 'required|string',
         ]);
 
-        // Convert single strings to arrays for JSON storage
-        $validated['focus_areas'] = [$validated['focus_areas']];
-        $validated['phases'] = [$validated['phases']];
-
+        // Store as single strings to match migration
         Program::create($validated);
 
         return redirect()->route('programs.index')->with('success', 'Program created successfully');
@@ -111,6 +108,7 @@ class ProgramController extends Controller
      */
     public function show(Program $program)
     {
+        $program->load('projects');
         return view('programs.show', compact('program'));
     }
 
@@ -155,10 +153,7 @@ class ProgramController extends Controller
             'phases' => 'required|string',
         ]);
 
-        // Convert single strings to arrays for JSON storage
-        $validated['focus_areas'] = [$validated['focus_areas']];
-        $validated['phases'] = [$validated['phases']];
-
+        // Store as single strings to match migration
         $program->update($validated);
 
         return redirect()->route('programs.index')->with('success', 'Program updated successfully');

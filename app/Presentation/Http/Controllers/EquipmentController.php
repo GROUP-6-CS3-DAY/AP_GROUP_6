@@ -5,220 +5,147 @@ namespace App\Presentation\Http\Controllers;
 use App\Models\Equipment;
 use App\Models\Facility;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
-use Illuminate\View\View;
-use Illuminate\Support\Facades\Log;
 
 class EquipmentController extends Controller
 {
     /**
-     * Display a listing of equipment with optional filtering and search.
+     * Display a listing of the resource.
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
-        try {
-            $query = Equipment::with('facility');
+        $query = Equipment::with(['facility']);
 
-            // Apply search filter
-            if ($request->has('search') && !empty($request->search)) {
-                $query->search($request->search);
-            }
-
-            // Apply usage domain filter
-            if ($request->has('usage_domain') && !empty($request->usage_domain)) {
-                $query->byUsageDomain($request->usage_domain);
-            }
-
-            // Apply support phase filter
-            if ($request->has('support_phase') && !empty($request->support_phase)) {
-                $query->bySupportPhase($request->support_phase);
-            }
-
-            // Apply facility filter
-            if ($request->has('facility_id') && !empty($request->facility_id)) {
-                $query->byFacility($request->facility_id);
-            }
-
-            // Apply capability filter
-            if ($request->has('capability') && !empty($request->capability)) {
-                $query->byCapability($request->capability);
-            }
-
-            // Pagination
-            $perPage = $request->get('per_page', 15);
-            $equipment = $query->orderBy('name')
-                ->paginate($perPage);
-
-            $usageDomains = Equipment::getUsageDomainOptions();
-            $supportPhases = Equipment::getSupportPhaseOptions();
-            $facilities = Facility::orderBy('name')->get();
-
-            return view('equipment.index', compact('equipment', 'usageDomains', 'supportPhases', 'facilities'));
-        } catch (\Exception $e) {
-            Log::error('Failed to retrieve equipment: ' . $e->getMessage());
-            return view('equipment.index')->with('error', 'Failed to retrieve equipment');
+        // Search functionality
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%')
+                  ->orWhere('inventory_code', 'like', '%' . $request->search . '%');
         }
+
+        // Usage domain filter
+        if ($request->filled('usage_domain')) {
+            $query->where('usage_domain', $request->usage_domain);
+        }
+
+        // Support phase filter
+        if ($request->filled('support_phase')) {
+            $query->where('support_phase', $request->support_phase);
+        }
+
+        // Facility filter
+        if ($request->filled('facility_id')) {
+            $query->where('facility_id', $request->facility_id);
+        }
+
+        $equipment = $query->paginate(15);
+        
+        // Define options for dropdowns
+        $usageDomains = Equipment::getUsageDomainOptions();
+        $supportPhases = Equipment::getSupportPhaseOptions();
+        $capabilities = Equipment::getCapabilityOptions();
+        $facilities = Facility::all();
+
+        return view('equipment.index', compact('equipment', 'usageDomains', 'supportPhases', 'capabilities', 'facilities'));
     }
 
     /**
-     * Show the form for creating a new equipment.
+     * Show the form for creating a new resource.
      */
-    public function create(): View
+    public function create()
     {
         $usageDomains = Equipment::getUsageDomainOptions();
         $supportPhases = Equipment::getSupportPhaseOptions();
-        $facilities = Facility::orderBy('name')->get();
+        $capabilities = Equipment::getCapabilityOptions();
+        $facilities = Facility::all();
 
-        return view('equipment.create', compact('usageDomains', 'supportPhases', 'facilities'));
+        return view('equipment.create', compact('usageDomains', 'supportPhases', 'capabilities', 'facilities'));
     }
 
     /**
-     * Store a newly created equipment.
+     * Store a newly created resource in storage.
      */
-    public function store(Request $request): \Illuminate\Http\RedirectResponse
+    public function store(Request $request)
     {
-        try {
-            $validator = Validator::make($request->all(), [
-                'facility_id' => 'required|exists:facilities,id',
-                'name' => 'required|string|max:255',
-                'capabilities' => 'required|array|min:1',
-                'capabilities.*' => 'string|max:255',
-                'description' => 'required|string|max:2000',
-                'inventory_code' => 'required|string|max:100|unique:equipment,inventory_code',
-                'usage_domain' => [
-                    'required',
-                    Rule::in(array_keys(Equipment::getUsageDomainOptions()))
-                ],
-                'support_phase' => [
-                    'required',
-                    Rule::in(array_keys(Equipment::getSupportPhaseOptions()))
-                ],
-            ]);
+        $validated = $request->validate([
+            'facility_id' => 'required|exists:facilities,id',
+            'name' => 'required|string|max:255',
+            'capabilities' => 'required|array|min:1',
+            'description' => 'required|string',
+            'inventory_code' => 'required|string|max:255|unique:equipment',
+            'usage_domain' => 'required|string',
+            'support_phase' => 'required|string',
+        ]);
 
-            if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
+        Equipment::create($validated);
 
-            $equipment = Equipment::create($validator->validated());
-
-            return redirect()->route('equipment.show', $equipment)
-                ->with('success', 'Equipment created successfully');
-        } catch (\Exception $e) {
-            Log::error('Failed to create equipment: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Failed to create equipment')
-                ->withInput();
-        }
+        return redirect()->route('equipment.index')->with('success', 'Equipment created successfully');
     }
 
     /**
-     * Display the specified equipment.
+     * Display the specified resource.
      */
-    public function show(Equipment $equipment): View
-    {
-        try {
-            $equipment->load('facility');
-
-            return view('equipment.show', compact('equipment'));
-        } catch (\Exception $e) {
-            Log::error('Failed to retrieve equipment: ' . $e->getMessage());
-            return view('equipment.show')->with('error', 'Failed to retrieve equipment details');
-        }
-    }
-
-    /**
-     * Show the form for editing the specified equipment.
-     */
-    public function edit(Equipment $equipment): View
+    public function show(Equipment $equipment)
     {
         $usageDomains = Equipment::getUsageDomainOptions();
         $supportPhases = Equipment::getSupportPhaseOptions();
-        $facilities = Facility::orderBy('name')->get();
+        $capabilities = Equipment::getCapabilityOptions();
 
-        return view('equipment.edit', compact('equipment', 'usageDomains', 'supportPhases', 'facilities'));
+        return view('equipment.show', compact('equipment', 'usageDomains', 'supportPhases', 'capabilities'));
     }
 
     /**
-     * Update the specified equipment.
+     * Show the form for editing the specified resource.
      */
-    public function update(Request $request, Equipment $equipment): \Illuminate\Http\RedirectResponse
+    public function edit(Equipment $equipment)
     {
-        try {
-            $validator = Validator::make($request->all(), [
-                'facility_id' => 'sometimes|required|exists:facilities,id',
-                'name' => 'sometimes|required|string|max:255',
-                'capabilities' => 'sometimes|required|array|min:1',
-                'capabilities.*' => 'string|max:255',
-                'description' => 'sometimes|required|string|max:2000',
-                'inventory_code' => [
-                    'sometimes',
-                    'required',
-                    'string',
-                    'max:100',
-                    Rule::unique('equipment', 'inventory_code')->ignore($equipment->equipment_id, 'equipment_id')
-                ],
-                'usage_domain' => [
-                    'sometimes',
-                    'required',
-                    Rule::in(array_keys(Equipment::getUsageDomainOptions()))
-                ],
-                'support_phase' => [
-                    'sometimes',
-                    'required',
-                    Rule::in(array_keys(Equipment::getSupportPhaseOptions()))
-                ],
-            ]);
+        $usageDomains = Equipment::getUsageDomainOptions();
+        $supportPhases = Equipment::getSupportPhaseOptions();
+        $capabilities = Equipment::getCapabilityOptions();
+        $facilities = Facility::all();
 
-            if ($validator->fails()) {
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
-            $equipment->update($validator->validated());
-
-            return redirect()->route('equipment.show', $equipment)
-                ->with('success', 'Equipment updated successfully');
-        } catch (\Exception $e) {
-            Log::error('Failed to update equipment: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Failed to update equipment')
-                ->withInput();
-        }
+        return view('equipment.edit', compact('equipment', 'usageDomains', 'supportPhases', 'capabilities', 'facilities'));
     }
 
     /**
-     * Remove the specified equipment.
+     * Update the specified resource in storage.
      */
-    public function destroy(Equipment $equipment): \Illuminate\Http\RedirectResponse
+    public function update(Request $request, Equipment $equipment)
     {
-        try {
-            $equipment->delete();
+        $validated = $request->validate([
+            'facility_id' => 'required|exists:facilities,id',
+            'name' => 'required|string|max:255',
+            'capabilities' => 'required|array|min:1',
+            'description' => 'required|string',
+            'inventory_code' => 'required|string|max:255|unique:equipment,inventory_code,' . $equipment->id,
+            'usage_domain' => 'required|string',
+            'support_phase' => 'required|string',
+        ]);
 
-            return redirect()->route('equipment.index')
-                ->with('success', 'Equipment deleted successfully');
-        } catch (\Exception $e) {
-            Log::error('Failed to delete equipment: ' . $e->getMessage());
-            return redirect()->back()
-                ->with('error', 'Failed to delete equipment');
-        }
+        $equipment->update($validated);
+
+        return redirect()->route('equipment.index')->with('success', 'Equipment updated successfully');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Equipment $equipment)
+    {
+        $equipment->delete();
+
+        return redirect()->route('equipment.index')->with('success', 'Equipment deleted successfully');
     }
 
     /**
      * Get equipment by facility.
      */
-    public function getByFacility(Facility $facility): View
+    public function getByFacility(Facility $facility)
     {
-        try {
-            $equipment = $facility->equipment()->orderBy('name')->get();
+        $equipment = $facility->equipment()->paginate(15);
+        $usageDomains = Equipment::getUsageDomainOptions();
+        $supportPhases = Equipment::getSupportPhaseOptions();
+        $capabilities = Equipment::getCapabilityOptions();
 
-            return view('equipment.by-facility', compact('equipment', 'facility'));
-        } catch (\Exception $e) {
-            Log::error('Failed to retrieve equipment for facility: ' . $e->getMessage());
-            return view('equipment.by-facility')->with('error', 'Failed to retrieve equipment for facility');
-        }
+        return view('equipment.by-facility', compact('equipment', 'facility', 'usageDomains', 'supportPhases', 'capabilities'));
     }
 }

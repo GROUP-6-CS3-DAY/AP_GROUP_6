@@ -12,14 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('outcomes', function (Blueprint $table) {
-            $table->id('outcome_id');
-            $table->foreignId('project_id')->constrained('projects', 'project_id')->onDelete('cascade');
+            $table->id(); // standard primary key
+            $table->foreignId('project_id')->constrained('projects', 'project_id')->cascadeOnDelete();
             $table->string('title');
             $table->text('description');
-            $table->string('artifact_link')->nullable(); // Link to the deliverable artifact
-            $table->enum('outcome_type', ['cad', 'pcb', 'prototype', 'report', 'business_plan']);
-            $table->string('quality_certification')->nullable(); // Compliance or test results
-            $table->enum('commercialization_status', ['demoed', 'market_linked', 'launched'])->default('demoed');
+            $table->string('artifact_link')->nullable();
+            $table->string('outcome_type');
+            $table->string('quality_certification')->nullable();
+            $table->string('commercialization_status')->nullable();
+            $table->text('impact')->nullable();
+            $table->date('date_achieved');
             $table->timestamps();
         });
     }

@@ -3,6 +3,9 @@
 @section('title', 'Equipment - InnoTrack')
 
 @section('content')
+@php
+use Illuminate\Support\Str;
+@endphp
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -30,9 +33,7 @@
                 <select class="form-select" id="usage_domain" name="usage_domain">
                     <option value="">All Domains</option>
                     @foreach($usageDomains as $key => $value)
-                    <option value="{{ $key }}" {{ request('usage_domain') == $key ? 'selected' : '' }}>
-                        {{ $value }}
-                    </option>
+                    <option value="{{ $key }}" {{ request('usage_domain') == $key ? 'selected' : '' }}>{{ $value }}</option>
                     @endforeach
                 </select>
             </div>
@@ -41,9 +42,7 @@
                 <select class="form-select" id="support_phase" name="support_phase">
                     <option value="">All Phases</option>
                     @foreach($supportPhases as $key => $value)
-                    <option value="{{ $key }}" {{ request('support_phase') == $key ? 'selected' : '' }}>
-                        {{ $value }}
-                    </option>
+                    <option value="{{ $key }}" {{ request('support_phase') == $key ? 'selected' : '' }}>{{ $value }}</option>
                     @endforeach
                 </select>
             </div>
@@ -52,9 +51,7 @@
                 <select class="form-select" id="facility_id" name="facility_id">
                     <option value="">All Facilities</option>
                     @foreach($facilities as $facility)
-                    <option value="{{ $facility->id }}" {{ request('facility_id') == $facility->id ? 'selected' : '' }}>
-                        {{ $facility->name }}
-                    </option>
+                    <option value="{{ $facility->id }}" {{ request('facility_id') == $facility->id ? 'selected' : '' }}>{{ $facility->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -85,10 +82,9 @@
                 <thead class="table-light">
                     <tr>
                         <th>Name</th>
+                        <th>Facility</th>
                         <th>Usage Domain</th>
                         <th>Support Phase</th>
-                        <th>Facility</th>
-                        <th>Capabilities</th>
                         <th>Inventory Code</th>
                         <th>Actions</th>
                     </tr>
@@ -101,32 +97,22 @@
                             <br><small class="text-muted">{{ Str::limit($item->description, 40) }}</small>
                         </td>
                         <td>
+                            @if($item->facility)
+                            <a href="{{ route('facilities.show', $item->facility) }}" class="text-decoration-none">
+                                <i class="fas fa-building me-1"></i>{{ $item->facility->name }}
+                            </a>
+                            @else
+                            <span class="text-muted">—</span>
+                            @endif
+                        </td>
+                        <td>
                             <span class="badge bg-info">{{ $usageDomains[$item->usage_domain] ?? $item->usage_domain }}</span>
                         </td>
                         <td>
                             <span class="badge bg-warning">{{ $supportPhases[$item->support_phase] ?? $item->support_phase }}</span>
                         </td>
                         <td>
-                            <a href="{{ route('facilities.show', $item->facility) }}" class="text-decoration-none">
-                                <i class="fas fa-building me-1"></i>{{ $item->facility->name }}
-                            </a>
-                        </td>
-                        <td>
-                            @if($item->capabilities && count($item->capabilities) > 0)
-                            <div class="d-flex flex-wrap gap-1">
-                                @foreach(array_slice($item->capabilities, 0, 3) as $capability)
-                                <span class="badge bg-light text-dark">{{ $capability }}</span>
-                                @endforeach
-                                @if(count($item->capabilities) > 3)
-                                <span class="badge bg-secondary">+{{ count($item->capabilities) - 3 }}</span>
-                                @endif
-                            </div>
-                            @else
-                            <span class="text-muted">No capabilities listed</span>
-                            @endif
-                        </td>
-                        <td>
-                            <code class="small">{{ $item->inventory_code }}</code>
+                            <code>{{ $item->inventory_code }}</code>
                         </td>
                         <td>
                             <div class="btn-group" role="group">
@@ -170,12 +156,12 @@
                 Try adjusting your search criteria or
                 <a href="{{ route('equipment.index') }}">clear all filters</a>.
                 @else
-                Get started by creating your first equipment record.
+                Get started by adding your first equipment.
                 @endif
             </p>
             @if(!request()->has('search') && !request()->has('usage_domain') && !request()->has('support_phase') && !request()->has('facility_id'))
             <a href="{{ route('equipment.create') }}" class="btn btn-success">
-                <i class="fas fa-plus me-1"></i>Create First Equipment
+                <i class="fas fa-plus me-1"></i>Add First Equipment
             </a>
             @endif
         </div>
@@ -202,22 +188,36 @@
     .badge {
         font-size: 0.75em;
     }
+
+    code {
+        font-size: 0.85em;
+    }
 </style>
 @endpush
 
 @push('scripts')
 <script>
     // Auto-submit form when filters change
-    document.getElementById('usage_domain').addEventListener('change', function() {
-        this.form.submit();
-    });
+    var usageDomainEl = document.getElementById('usage_domain');
+    var supportPhaseEl = document.getElementById('support_phase');
+    var facilityEl = document.getElementById('facility_id');
 
-    document.getElementById('support_phase').addEventListener('change', function() {
-        this.form.submit();
-    });
+    if (usageDomainEl) {
+        usageDomainEl.addEventListener('change', function() { this.form.submit(); });
+    }
+    if (supportPhaseEl) {
+        supportPhaseEl.addEventListener('change', function() { this.form.submit(); });
+    }
+    if (facilityEl) {
+        facilityEl.addEventListener('change', function() { this.form.submit(); });
+    }
 
-    document.getElementById('facility_id').addEventListener('change', function() {
-        this.form.submit();
+    // Search on enter
+    document.getElementById('search')?.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            this.form.submit();
+        }
     });
 </script>
 @endpush
