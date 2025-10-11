@@ -1,197 +1,89 @@
 @extends('layouts.app')
 
-@section('title', 'Project Details - InnoTrack')
+@section('title', $project->getTitle() . ' - InnoTrack')
 
 @section('content')
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0"><i class="fas fa-project-diagram me-2"></i>Project Details</h1>
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ route('projects.edit', $project) }}" class="btn btn-outline-warning"><i class="fas fa-edit me-1"></i>Edit</a>
-                <form action="{{ route('projects.destroy', $project) }}" method="POST" onsubmit="return confirm('Delete this project?');">
-                    @csrf @method('DELETE')
-                    <button class="btn btn-outline-danger" type="submit"><i class="fas fa-trash me-1"></i>Delete</button>
-                </form>
+            <h1 class="h3 mb-0">{{ $project->getTitle() }}</h1>
+            <div>
+                <a href="{{ route('projects.edit', $project->getId()) }}" class="btn btn-primary"><i class="fas fa-edit me-1"></i>Edit</a>
                 <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row g-4">
-    <div class="col-lg-8">
-        <div class="card h-100">
-            <div class="card-body">
-                <h4 class="mb-2">{{ $project->title }}</h4>
-                <p class="text-muted mb-4">{{ $project->description }}</p>
-
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <small class="text-muted d-block mb-1">Program</small>
-                            @if($project->program)
-                                <a href="{{ route('programs.show', $project->program) }}" class="text-decoration-none"><i class="fas fa-th-large me-1"></i>{{ $project->program->name }}</a>
-                            @else
-                                <span class="text-muted">—</span>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <small class="text-muted d-block mb-1">Facility</small>
-                            @if($project->facility)
-                                <a href="{{ route('facilities.show', $project->facility) }}" class="text-decoration-none"><i class="fas fa-building me-1"></i>{{ $project->facility->name }}</a>
-                            @else
-                                <span class="text-muted">—</span>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <small class="text-muted d-block mb-1">Innovation Focus</small>
-                            <span class="badge bg-info">{{ $innovationFocus[$project->innovation_focus] ?? $project->innovation_focus }}</span>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded bg-light h-100">
-                            <small class="text-muted d-block mb-1">Prototype Stage</small>
-                            <span class="badge bg-warning">{{ $prototypeStages[$project->prototype_stage] ?? $project->prototype_stage }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <h6 class="text-uppercase text-muted fw-semibold mb-2">Nature of Project</h6>
-                    <p class="text-muted mb-0">{{ $project->nature_of_project }}</p>
-                </div>
-
-                <div class="mb-4">
-                    <h6 class="text-uppercase text-muted fw-semibold mb-2">Testing Requirements</h6>
-                    <p class="text-muted mb-0">{{ $project->testing_requirements }}</p>
-                </div>
-
-                <div class="mb-4">
-                    <h6 class="text-uppercase text-muted fw-semibold mb-2">Commercialization Plan</h6>
-                    <p class="text-muted mb-0">{{ $project->commercialization_plan }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4">
+<div class="row">
+    <div class="col-md-8">
         <div class="card mb-4">
-            <div class="card-header py-2 d-flex justify-content-between align-items-center"><span class="fw-semibold"><i class="fas fa-info-circle me-2"></i>Meta</span></div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <small class="text-muted d-block">Created</small>
-                    <span>{{ $project->created_at->diffForHumans() }}</span><br>
-                    <small class="text-muted">{{ $project->created_at->format('Y-m-d H:i') }}</small>
-                </div>
-                <div class="mb-3">
-                    <small class="text-muted d-block">Last Updated</small>
-                    <span>{{ $project->updated_at->diffForHumans() }}</span><br>
-                    <small class="text-muted">{{ $project->updated_at->format('Y-m-d H:i') }}</small>
-                </div>
-                <hr>
-                <!-- Participants temporarily disabled -->
-                <!-- <div class="text-center">
-                    <h4 class="text-primary mb-0">—</h4>
-                    <small class="text-muted">Participants (disabled)</small>
-                </div> -->
+            <div class="card-header">
+                <h5 class="mb-0">Project Details</h5>
             </div>
-        </div>
-        <div class="card">
             <div class="card-body">
-                <h6 class="text-uppercase text-muted fw-semibold mb-3">Quick Actions</h6>
-                <div class="d-grid gap-2">
-                    <a href="{{ route('projects.edit', $project) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit me-1"></i>Edit Project</a>
-                    <a href="{{ route('projects.index') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-list me-1"></i>All Projects</a>
-                    <!-- Participant add disabled -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Innovation Focus:</strong>
+                        <span class="badge bg-primary ms-2">{{ $project->getInnovationFocus()->getDisplayName() }}</span>
+                    </div>
+                    <div class="col-md-6">
+                        <strong>Prototype Stage:</strong>
+                        <span class="badge bg-secondary ms-2">{{ $project->getPrototypeStage()->getDisplayName() }}</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Nature of Project:</strong>
+                    <p>{{ $project->getNatureOfProject() }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Description:</strong>
+                    <p>{{ $project->getDescription() }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Testing Requirements:</strong>
+                    <p>{{ $project->getTestingRequirements() }}</p>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Commercialization Plan:</strong>
+                    <p>{{ $project->getCommercializationPlan() }}</p>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<div class="row mt-4 g-4">
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Participants <span class="badge bg-primary">{{ $project->participants->count() }}</span></h5>
-                <a href="#" class="btn btn-sm btn-outline-secondary disabled" title="Add Participant disabled"><i class="fas fa-plus"></i></a>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Project Stats</h5>
             </div>
-            <div class="card-body p-0">
-                @if($project->participants->count())
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Name</th>
-                                <th>Affiliation</th>
-                                <th>Specialization</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($project->participants as $participant)
-                            <tr>
-                                <td><a href="{{ route('participants.show', $participant) }}" class="text-decoration-none">{{ $participant->full_name }}</a></td>
-                                <td>{{ ucfirst($participant->affiliation) }}</td>
-                                <td>{{ ucfirst($participant->specialization) }}</td>
-                                <td class="text-end"><a href="{{ route('participants.show', $participant) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a></td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Participants:</span>
+                    <span class="badge bg-info">{{ $project->getParticipantCount() }}</span>
                 </div>
-                @else
-                <div class="p-4 text-center text-muted">No participants assigned.</div>
-                @endif
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-flag-checkered me-2"></i>Outcomes <span class="badge bg-success">{{ $project->outcomes->count() }}</span></h5>
-                <a href="{{ route('outcomes.create', ['project_id' => $project->project_id]) }}" class="btn btn-sm btn-outline-success"><i class="fas fa-plus"></i></a>
-            </div>
-            <div class="card-body p-0">
-                @if($project->outcomes->count())
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0 align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Title</th>
-                                <th>Type</th>
-                                <th>Date</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($project->outcomes as $outcome)
-                            <tr>
-                                <td><a href="{{ route('outcomes.show', $outcome) }}" class="text-decoration-none">{{ $outcome->title }}</a></td>
-                                <td>{{ $outcome->outcome_type }}</td>
-                                <td>{{ $outcome->date_achieved?->format('Y-m-d') }}</td>
-                                <td class="text-end">
-                                    <a href="{{ route('outcomes.edit', $outcome) }}" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Outcomes:</span>
+                    <span class="badge bg-success">{{ $project->getOutcomeCount() }}</span>
                 </div>
-                @else
-                <div class="p-4 text-center text-muted">No outcomes recorded.</div>
-                @endif
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Ready for Commercialization:</span>
+                    <span class="badge bg-{{ $project->isReadyForCommercialization() ? 'success' : 'warning' }}">
+                        {{ $project->isReadyForCommercialization() ? 'Yes' : 'No' }}
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Can Advance Stage:</span>
+                    <span class="badge bg-{{ $project->canAdvanceToNextStage() ? 'success' : 'secondary' }}">
+                        {{ $project->canAdvanceToNextStage() ? 'Yes' : 'No' }}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
-
-@push('styles')
-<style>.badge{font-size:.7rem;letter-spacing:.5px}</style>
-@endpush

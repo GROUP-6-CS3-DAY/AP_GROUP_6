@@ -6,12 +6,8 @@
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3 mb-0">
-                <i class="fas fa-plus-circle me-2"></i>Create Project
-            </h1>
-            <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i>Back to Projects
-            </a>
+            <h1 class="h3 mb-0"><i class="fas fa-plus me-2"></i>Create Project</h1>
+            <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
         </div>
     </div>
 </div>
@@ -20,6 +16,33 @@
     <div class="card-body">
         <form action="{{ route('projects.store') }}" method="POST">
             @csrf
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="program_id">Program</label>
+                    <select id="program_id" name="program_id" class="form-select @error('program_id') is-invalid @enderror" required>
+                        <option value="">Select program</option>
+                        @foreach($programs as $program)
+                        <option value="{{ $program['id'] }}" {{ old('program_id') == $program['id'] ? 'selected' : '' }}>
+                            {{ $program['title'] }}
+                        </option>
+                        @endforeach
+                    </select>
+                    @error('program_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="facility_id">Facility</label>
+                    <select id="facility_id" name="facility_id" class="form-select @error('facility_id') is-invalid @enderror" required>
+                        <option value="">Select facility</option>
+                        @foreach($facilities as $facility)
+                        <option value="{{ $facility['id'] }}" {{ old('facility_id') == $facility['id'] ? 'selected' : '' }}>
+                            {{ $facility['name'] }}
+                        </option>
+                        @endforeach
+                    </select>
+                    @error('facility_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+            </div>
 
             <div class="mb-3">
                 <label for="title" class="form-label">Title</label>
@@ -31,29 +54,6 @@
                 <label for="description" class="form-label">Description</label>
                 <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="4" required>{{ old('description') }}</textarea>
                 @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-
-            <div class="row g-3 mb-3">
-                <div class="col-md-6">
-                    <label for="program_id" class="form-label">Program</label>
-                    <select class="form-select @error('program_id') is-invalid @enderror" id="program_id" name="program_id" required>
-                        <option value="">Select program</option>
-                        @foreach($programs as $program)
-                        <option value="{{ $program->id }}" {{ old('program_id') == $program->id ? 'selected' : '' }}>{{ $program->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('program_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-6">
-                    <label for="facility_id" class="form-label">Facility</label>
-                    <select class="form-select @error('facility_id') is-invalid @enderror" id="facility_id" name="facility_id" required>
-                        <option value="">Select facility</option>
-                        @foreach($facilities as $facility)
-                        <option value="{{ $facility->id }}" {{ old('facility_id') == $facility->id ? 'selected' : '' }}>{{ $facility->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('facility_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
             </div>
 
             <div class="mb-3">
@@ -98,12 +98,9 @@
             </div>
 
             <div class="text-end">
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-save me-1"></i>Create Project
-                </button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Create Project</button>
                 <a href="{{ route('projects.index') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
             </div>
-
         </form>
     </div>
 </div>

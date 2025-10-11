@@ -77,74 +77,32 @@ use Illuminate\Support\Str;
     </div>
     <div class="card-body">
         @if($projects->count() > 0)
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Title</th>
-                        <th>Program</th>
-                        <th>Innovation Focus</th>
-                        <th>Prototype Stage</th>
-                        <th>Facility</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($projects as $project)
-                    <tr>
-                        <td>
-                            <strong>{{ $project->title }}</strong>
-                            <br><small class="text-muted">{{ Str::limit($project->description, 40) }}</small>
-                        </td>
-                        <td>
-                            @if($project->program)
-                            <a href="{{ route('programs.show', $project->program) }}" class="text-decoration-none">
-                                <i class="fas fa-th-large me-1"></i>{{ $project->program->name }}
-                            </a>
-                            @else
-                            <span class="text-muted">—</span>
-                            @endif
-                        </td>
-                        <td>
-                            <span class="badge bg-info">{{ $innovationFocus[$project->innovation_focus] ?? $project->innovation_focus }}</span>
-                        </td>
-                        <td>
-                            <span class="badge bg-warning">{{ $prototypeStages[$project->prototype_stage] ?? $project->prototype_stage }}</span>
-                        </td>
-                        <td>
-                            @if($project->facility)
-                            <a href="{{ route('facilities.show', $project->facility) }}" class="text-decoration-none">
-                                <i class="fas fa-building me-1"></i>{{ $project->facility->name }}
-                            </a>
-                            @else
-                            <span class="text-muted">—</span>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <a href="{{ route('projects.show', $project) }}"
-                                    class="btn btn-sm btn-outline-primary" title="View">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{{ route('projects.edit', $project) }}"
-                                    class="btn btn-sm btn-outline-warning" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('projects.destroy', $project) }}"
-                                    method="POST" class="d-inline"
-                                    onsubmit="return confirm('Are you sure you want to delete this project?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div class="row">
+            @foreach($projects as $project)
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ $project->getTitle() }}</h5>
+                        <p class="card-text">{{ Str::limit($project->getDescription(), 100) }}</p>
+                        <div class="mb-2">
+                            <span class="badge bg-primary">{{ $project->getInnovationFocus()->getDisplayName() }}</span>
+                            <span class="badge bg-secondary">{{ $project->getPrototypeStage()->getDisplayName() }}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a href="{{ route('projects.show', $project->getId()) }}" class="btn btn-outline-primary btn-sm">View</a>
+                            <a href="{{ route('projects.edit', $project->getId()) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                            <form action="{{ route('projects.destroy', $project->getId()) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endforeach
         </div>
 
         <!-- Pagination -->

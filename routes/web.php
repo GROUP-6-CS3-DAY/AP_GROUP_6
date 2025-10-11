@@ -1,10 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\FacilityController;
-use App\Http\Controllers\ServiceController;
-use App\Http\Controllers\EquipmentController;
-use App\Http\Controllers\ParticipantController;
+use App\Presentation\Http\Controllers\FacilityController;
+use App\Presentation\Http\Controllers\ServiceController;
+use App\Presentation\Http\Controllers\EquipmentController;
+use App\Presentation\Http\Controllers\ParticipantController;
+use App\Presentation\Http\Controllers\ProjectController;
+use App\Presentation\Http\Controllers\ProgramController;
+use App\Presentation\Http\Controllers\OutcomeController;
 use App\Models\Facility;
 use App\Models\Service;
 use App\Models\Equipment;
@@ -12,9 +15,7 @@ use App\Models\Project;
 use App\Models\Participant;
 use App\Models\Program;
 use App\Models\Outcome;
-use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\ProgramController;
-use App\Presentation\Http\Controllers\OutcomeController;
+
 
 /*
 |--------------------------------------------------------------------------
