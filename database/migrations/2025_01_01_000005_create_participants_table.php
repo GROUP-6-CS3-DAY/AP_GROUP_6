@@ -11,16 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('participants', function (Blueprint $table) {
-            $table->id('participant_id');
-            $table->string('full_name');
-            $table->string('email')->unique();
-            $table->enum('affiliation', ['cs', 'se', 'engineering', 'other']);
-            $table->enum('specialization', ['software', 'hardware', 'business']);
-            $table->boolean('cross_skill_trained')->default(false);
-            $table->enum('institution', ['scit', 'cedat', 'unipod', 'uiri', 'lwera']);
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('participants')) {
+            Schema::create('participants', function (Blueprint $table) {
+                $table->id('participant_id');
+                $table->string('full_name');
+                $table->string('email')->unique();
+                $table->string('affiliation');
+                $table->boolean('cross_skill_trained')->default(false);
+                $table->string('specialization')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     /**
