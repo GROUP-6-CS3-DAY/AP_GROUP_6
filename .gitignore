@@ -27,4 +27,5 @@ node_modules
 *.md
 *.py
 *.txt
-/tests
+# /tests # tests folder is being pushed only in tests branch
+
