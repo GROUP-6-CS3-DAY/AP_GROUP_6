@@ -11,4 +11,5 @@ interface EquipmentRepositoryInterface
     public function findByFacility(string $facilityId): array;
     public function save(Equipment $equipment): void;
     public function delete(string $id): void;
+    public function findAllInventoryCodes(?string $excludeEquipmentId = null): array;
 }

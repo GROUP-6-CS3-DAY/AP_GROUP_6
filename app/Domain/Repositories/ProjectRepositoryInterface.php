@@ -11,4 +11,5 @@ interface ProjectRepositoryInterface
     public function save(Project $project): void;
     public function delete(string $id): void;
     public function findProjectNamesByProgramId(string $programId, ?string $excludeProjectId = null): array;
+    public function findActiveProjectsByFacilityId(string $facilityId): array;
 }

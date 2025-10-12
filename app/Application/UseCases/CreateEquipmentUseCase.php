@@ -20,6 +20,10 @@ class CreateEquipmentUseCase
 
     public function execute(CreateEquipmentDTO $dto): string
     {
+        // Business rule: Check inventory code uniqueness
+        $existingInventoryCodes = $this->equipmentRepository->findAllInventoryCodes();
+        
+        // Create equipment temporarily to validate inventory code uniqueness
         $equipment = new Equipment(
             id: Str::uuid()->toString(),
             facilityId: $dto->facilityId,
@@ -30,6 +34,8 @@ class CreateEquipmentUseCase
             usageDomain: new UsageDomain($dto->usageDomain),
             supportPhase: new SupportPhase($dto->supportPhase)
         );
+
+        $equipment->validateInventoryCodeUniqueness($existingInventoryCodes);
 
         $this->equipmentRepository->save($equipment);
         

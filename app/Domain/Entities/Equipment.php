@@ -26,6 +26,9 @@ class Equipment
         UsageDomain $usageDomain,
         SupportPhase $supportPhase
     ) {
+        $this->validateRequiredFields($facilityId, $name, $inventoryCode);
+        $this->validateUsageDomainSupportPhaseCoherence($usageDomain, $supportPhase);
+        
         $this->id = $id;
         $this->facilityId = $facilityId;
         $this->name = $name;
@@ -49,15 +52,30 @@ class Equipment
     // Business logic methods
     public function update(array $data): void
     {
-        $this->validateBusinessRules($data);
+        $facilityId = $data['facility_id'] ?? $this->facilityId;
+        $name = $data['name'] ?? $this->name;
+        $inventoryCode = $data['inventory_code'] ?? $this->inventoryCode;
+        $usageDomain = isset($data['usage_domain']) ? new UsageDomain($data['usage_domain']) : $this->usageDomain;
+        $supportPhase = isset($data['support_phase']) ? new SupportPhase($data['support_phase']) : $this->supportPhase;
         
-        $this->facilityId = $data['facility_id'] ?? $this->facilityId;
-        $this->name = $data['name'] ?? $this->name;
+        $this->validateRequiredFields($facilityId, $name, $inventoryCode);
+        $this->validateBusinessRules($data);
+        $this->validateUsageDomainSupportPhaseCoherence($usageDomain, $supportPhase);
+        
+        $this->facilityId = $facilityId;
+        $this->name = $name;
         $this->capabilities = $data['capabilities'] ?? $this->capabilities;
         $this->description = $data['description'] ?? $this->description;
-        $this->inventoryCode = $data['inventory_code'] ?? $this->inventoryCode;
-        $this->usageDomain = isset($data['usage_domain']) ? new UsageDomain($data['usage_domain']) : $this->usageDomain;
-        $this->supportPhase = isset($data['support_phase']) ? new SupportPhase($data['support_phase']) : $this->supportPhase;
+        $this->inventoryCode = $inventoryCode;
+        $this->usageDomain = $usageDomain;
+        $this->supportPhase = $supportPhase;
+    }
+
+    private function validateRequiredFields(string $facilityId, string $name, string $inventoryCode): void
+    {
+        if (empty($facilityId) || empty($name) || empty($inventoryCode)) {
+            throw new \DomainException('Equipment.FacilityId, Equipment.Name, and Equipment.InventoryCode are required');
+        }
     }
 
     private function validateBusinessRules(array $data): void
@@ -73,6 +91,53 @@ class Equipment
         if (isset($data['inventory_code']) && strlen($data['inventory_code']) < 3) {
             throw new \DomainException('Inventory code must be at least 3 characters long');
         }
+    }
+
+    private function validateUsageDomainSupportPhaseCoherence(UsageDomain $usageDomain, SupportPhase $supportPhase): void
+    {
+        // Business rule: Electronics equipment must support Prototyping or Testing
+        if ($usageDomain->getValue() === 'electronics') {
+            $supportPhaseValue = $supportPhase->getValue();
+            $allowedPhases = ['prototyping', 'testing'];
+            
+            if (!in_array($supportPhaseValue, $allowedPhases)) {
+                throw new \DomainException('Electronics equipment must support Prototyping or Testing');
+            }
+        }
+    }
+
+    public function validateInventoryCodeUniqueness(array $existingInventoryCodes): void
+    {
+        // Business rule: Inventory code must be unique across all equipment
+        $normalizedCode = strtolower(trim($this->inventoryCode));
+        $normalizedExistingCodes = array_map(fn($code) => strtolower(trim($code)), $existingInventoryCodes);
+        
+        if (in_array($normalizedCode, $normalizedExistingCodes)) {
+            throw new \DomainException('Equipment.InventoryCode already exists');
+        }
+    }
+
+    public function validateDeletionSafety(array $activeProjectsInFacility): void
+    {
+        // Business rule: Equipment cannot be deleted if referenced by active projects
+        if (!empty($activeProjectsInFacility)) {
+            foreach ($activeProjectsInFacility as $project) {
+                // Check if this equipment is referenced by any active project
+                if ($this->isReferencedByProject($project)) {
+                    throw new \DomainException('Equipment referenced by active Project');
+                }
+            }
+        }
+    }
+
+    private function isReferencedByProject(array $project): bool
+    {
+        // Check if equipment ID or inventory code is referenced in project's technical requirements
+        $technicalRequirements = $project['technical_requirements'] ?? [];
+        $equipmentReferences = $project['equipment_ids'] ?? [];
+        
+        return in_array($this->id, $equipmentReferences) || 
+               in_array($this->inventoryCode, $technicalRequirements);
     }
 
     public function hasCapability(string $capability): bool
@@ -96,5 +161,11 @@ class Equipment
         ];
 
         return in_array($phase, $availablePhases[$this->supportPhase->getValue()] ?? []);
+    }
+
+    public function canSupportElectronicsWork(): bool
+    {
+        return $this->usageDomain->getValue() === 'electronics' && 
+               in_array($this->supportPhase->getValue(), ['prototyping', 'testing']);
     }
 }
