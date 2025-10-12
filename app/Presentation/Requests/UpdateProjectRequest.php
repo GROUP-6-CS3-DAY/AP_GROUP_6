@@ -19,7 +19,7 @@ class UpdateProjectRequest extends FormRequest
             'title' => 'required|string|min:5|max:255',
             'nature_of_project' => 'required|string',
             'description' => 'required|string|min:20',
-            'innovation_focus' => 'required|string|in:medical_devices,renewable_energy,iot,software,materials,automation',
+            'innovation_focus' => 'required|string|in:product,renewable_energy,iot,software,materials,automation',
             'prototype_stage' => 'required|string|in:concept,design,prototype,testing,production',
             'testing_requirements' => 'required|string',
             'commercialization_plan' => 'required|string',

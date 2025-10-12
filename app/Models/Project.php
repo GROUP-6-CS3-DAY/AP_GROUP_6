@@ -21,7 +21,13 @@ class Project extends Model
         'innovation_focus',
         'prototype_stage',
         'testing_requirements',
-        'commercialization_plan'
+        'commercialization_plan',
+        'status',
+        'technical_requirements'
+    ];
+
+    protected $casts = [
+        'technical_requirements' => 'array'
     ];
 
     public function program()

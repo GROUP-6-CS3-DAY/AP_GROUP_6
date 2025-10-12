@@ -6,6 +6,7 @@ use App\Presentation\Http\Controllers\Controller as BaseController;
 use Illuminate\Http\Request;
 use App\Application\UseCases\CreateProjectUseCase;
 use App\Application\UseCases\UpdateProjectUseCase;
+use App\Application\UseCases\DeleteProjectUseCase;
 use App\Application\DTOs\CreateProjectDTO;
 use App\Application\DTOs\UpdateProjectDTO;
 use App\Presentation\Requests\CreateProjectRequest;
@@ -23,7 +24,8 @@ class ProjectController extends BaseController
         private ProgramRepositoryInterface $programRepository,
         private FacilityRepositoryInterface $facilityRepository,
         private CreateProjectUseCase $createProjectUseCase,
-        private UpdateProjectUseCase $updateProjectUseCase
+        private UpdateProjectUseCase $updateProjectUseCase,
+        private DeleteProjectUseCase $deleteProjectUseCase
     ) {}
 
     /**
@@ -154,8 +156,10 @@ class ProjectController extends BaseController
     public function destroy(string $id)
     {
         try {
-            $this->projectRepository->delete($id);
+            $this->deleteProjectUseCase->execute($id);
             return redirect()->route('projects.index')->with('success', 'Project deleted successfully');
+        } catch (\DomainException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to delete project: ' . $e->getMessage());
         }
