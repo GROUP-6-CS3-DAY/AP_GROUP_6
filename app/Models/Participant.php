@@ -29,8 +29,39 @@ class Participant extends Model
     ];
 
     protected $casts = [
-        'cross_skill_trained' => 'boolean'
+        'cross_skill_trained' => 'boolean',
     ];
+
+    // Define the valid options for dropdowns
+    public static function getAffiliationOptions(): array
+    {
+        return [
+            'cs' => 'Computer Science',
+            'ee' => 'Electrical Engineering',
+            'me' => 'Mechanical Engineering',
+            'ce' => 'Civil Engineering',
+            'other' => 'Other'
+        ];
+    }
+
+    public static function getInstitutionOptions(): array
+    {
+        return [
+            'scit' => 'SCIT',
+            'other' => 'Other'
+        ];
+    }
+
+    public static function getSpecializationOptions(): array
+    {
+        return [
+            'software' => 'Software Development',
+            'hardware' => 'Hardware Design',
+            'research' => 'Research & Development',
+            'testing' => 'Testing & Quality Assurance',
+            'project_management' => 'Project Management'
+        ];
+    }
 
     /**
      * Get the projects this participant is involved in.

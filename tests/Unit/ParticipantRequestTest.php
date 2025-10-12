@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Http\Requests\ParticipantRequest;
+use App\Presentation\Requests\ParticipantRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Participant;
@@ -31,6 +31,7 @@ class ParticipantRequestTest extends TestCase
         $this->assertTrue($errors->has('full_name'));
         $this->assertTrue($errors->has('email'));
         $this->assertTrue($errors->has('affiliation'));
+        $this->assertTrue($errors->has('institution'));
     }
 
     public function test_email_uniqueness_rule()
@@ -52,6 +53,7 @@ class ParticipantRequestTest extends TestCase
 
         $validator = Validator::make($data, $this->request->rules());
         $this->assertFalse($validator->passes());
+        $this->assertTrue($validator->errors()->has('email'));
     }
 
     public function test_specialization_requirement_rule()
@@ -66,11 +68,9 @@ class ParticipantRequestTest extends TestCase
         ];
 
         $validator = Validator::make($data, $this->request->rules());
-        $validator->after(function($validator) use ($data) {
-            if ($data['cross_skill_trained'] && empty($data['specialization'])) {
-                $validator->errors()->add('cross_skill_trained', 'Cross-skill flag requires Specialization.');
-            }
-        });
+        
+        // Apply the custom validation logic
+        $this->request->withValidator($validator);
 
         $this->assertFalse($validator->passes());
         $this->assertTrue($validator->errors()->has('cross_skill_trained'));
@@ -88,9 +88,56 @@ class ParticipantRequestTest extends TestCase
         ];
 
         $validator = Validator::make($data, $this->request->rules());
-        $validator->after(function($validator) use ($data) {
-            $this->request->withValidator($validator);
-        });
+        
+        // Apply the custom validation logic
+        $this->request->withValidator($validator);
+        
+        $this->assertTrue($validator->passes());
+    }
+
+    public function test_affiliation_values_are_restricted()
+    {
+        $data = [
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'affiliation' => 'invalid_affiliation',
+            'institution' => 'scit'
+        ];
+
+        $validator = Validator::make($data, $this->request->rules());
+        $this->assertFalse($validator->passes());
+        $this->assertTrue($validator->errors()->has('affiliation'));
+    }
+
+    public function test_institution_values_are_restricted()
+    {
+        $data = [
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'affiliation' => 'cs',
+            'institution' => 'invalid_institution'
+        ];
+
+        $validator = Validator::make($data, $this->request->rules());
+        $this->assertFalse($validator->passes());
+        $this->assertTrue($validator->errors()->has('institution'));
+    }
+
+    public function test_cross_skill_trained_can_be_false_without_specialization()
+    {
+        $data = [
+            'full_name' => 'Test User',
+            'email' => 'test@example.com',
+            'affiliation' => 'cs',
+            'institution' => 'scit',
+            'cross_skill_trained' => false,
+            'specialization' => null
+        ];
+
+        $validator = Validator::make($data, $this->request->rules());
+        
+        // Apply the custom validation logic
+        $this->request->withValidator($validator);
         
         $this->assertTrue($validator->passes());
     }
