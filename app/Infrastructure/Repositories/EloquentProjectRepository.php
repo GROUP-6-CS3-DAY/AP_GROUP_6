@@ -135,6 +135,22 @@ class EloquentProjectRepository implements ProjectRepositoryInterface
         ProjectModel::destroy($id);
     }
 
+    public function findActiveProjectsByFacilityId(string $facilityId): array
+    {
+        return ProjectModel::where('facility_id', $facilityId)
+            ->whereIn('status', ['active', 'planning']) // Consider active and planning as active
+            ->get()
+            ->map(function($model) {
+                return [
+                    'id' => (string) $model->getKey(),
+                    'status' => $model->status ?? 'planning',
+                    'equipment_ids' => $model->equipment_ids ? json_decode($model->equipment_ids, true) : [],
+                    'technical_requirements' => $model->technical_requirements ? json_decode($model->technical_requirements, true) : []
+                ];
+            })
+            ->toArray();
+    }
+
     private function mapToEntity(ProjectModel $model): Project
     {
         return new Project(

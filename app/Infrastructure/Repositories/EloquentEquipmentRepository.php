@@ -102,6 +102,17 @@ class EloquentEquipmentRepository implements EquipmentRepositoryInterface
         EquipmentModel::destroy($id);
     }
 
+    public function findAllInventoryCodes(?string $excludeEquipmentId = null): array
+    {
+        $query = EquipmentModel::query();
+        
+        if ($excludeEquipmentId) {
+            $query->where('id', '!=', $excludeEquipmentId);
+        }
+        
+        return $query->pluck('inventory_code')->toArray();
+    }
+
     private function mapToEntity(EquipmentModel $model): Equipment
     {
         return new Equipment(
