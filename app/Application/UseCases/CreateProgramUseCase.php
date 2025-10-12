@@ -19,6 +19,12 @@ class CreateProgramUseCase
 
     public function execute(CreateProgramDTO $dto): string
     {
+        // Business rule: Program name must be unique (case-insensitive)
+        $existingProgram = $this->programRepository->findByName($dto->name);
+        if ($existingProgram) {
+            throw new \DomainException('Program.Name already exists');
+        }
+
         $program = new Program(
             id: Str::uuid()->toString(),
             name: $dto->name,

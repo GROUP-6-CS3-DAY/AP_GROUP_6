@@ -6,6 +6,8 @@ use App\Domain\ValueObjects\ProgramPhase;
 
 class Program
 {
+    private const VALID_NATIONAL_ALIGNMENTS = ['NDPIII', 'DigitalRoadmap2023_2028', '4IR'];
+
     private string $id;
     private string $name;
     private string $description;
@@ -23,6 +25,9 @@ class Program
         array $phases,
         array $projects = []
     ) {
+        $this->validateRequiredFields($name, $description);
+        $this->validateConstructorRules($name, $description, $nationalAlignment, $focusAreas);
+        
         $this->id = $id;
         $this->name = $name;
         $this->description = $description;
@@ -44,30 +49,107 @@ class Program
     // Business logic methods
     public function update(array $data): void
     {
-        $this->validateBusinessRules($data);
+        $name = $data['name'] ?? $this->name;
+        $description = $data['description'] ?? $this->description;
+        $nationalAlignment = $data['national_alignment'] ?? $this->nationalAlignment;
+        $focusAreas = $data['focus_areas'] ?? $this->focusAreas;
         
-        $this->name = $data['name'] ?? $this->name;
-        $this->description = $data['description'] ?? $this->description;
-        $this->nationalAlignment = $data['national_alignment'] ?? $this->nationalAlignment;
-        $this->focusAreas = $data['focus_areas'] ?? $this->focusAreas;
+        $this->validateUpdateRules($name, $description, $nationalAlignment, $focusAreas);
+        
+        $this->name = $name;
+        $this->description = $description;
+        $this->nationalAlignment = $nationalAlignment;
+        $this->focusAreas = $focusAreas;
         
         if (isset($data['phases'])) {
             $this->phases = array_map(fn($phase) => $phase instanceof ProgramPhase ? $phase : new ProgramPhase($phase), $data['phases']);
         }
     }
 
-    private function validateBusinessRules(array $data): void
+    private function validateRequiredFields(string $name, string $description): void
     {
-        if (isset($data['name']) && strlen($data['name']) < 3) {
+        if (empty(trim($name))) {
+            throw new \DomainException('Program.Name is required');
+        }
+
+        if (empty(trim($description))) {
+            throw new \DomainException('Program.Description is required');
+        }
+    }
+
+    private function validateConstructorRules(string $name, string $description, string $nationalAlignment, array $focusAreas): void
+    {
+        if (strlen($name) < 3) {
+            throw new \DomainException('Program name must be at least 3 characters long', strlen($name));
+        }
+
+        if (strlen($description) < 10) {
+            throw new \DomainException('Program description must be at least 10 characters long, but was ' . strlen($description) .  $description);
+        }
+
+        // National Alignment rule: required when focus areas are specified
+        if (!empty($focusAreas)) {
+            if (empty(trim($nationalAlignment))) {
+                throw new \DomainException('Program.NationalAlignment must include at least one recognized alignment when FocusAreas are specified');
+            }
+            
+            if (!$this->hasValidNationalAlignment($nationalAlignment)) {
+                throw new \DomainException('Program.NationalAlignment must include at least one recognized alignment when FocusAreas are specified');
+            }
+        }
+
+        // Allow empty focus areas during construction (for programs that might be set up later)
+    }
+
+    private function validateUpdateRules(string $name, string $description, string $nationalAlignment, array $focusAreas): void
+    {
+        if (strlen($name) < 3) {
             throw new \DomainException('Program name must be at least 3 characters long');
         }
 
-        if (isset($data['description']) && strlen($data['description']) < 10) {
+        if (strlen($description) < 10) {
             throw new \DomainException('Program description must be at least 10 characters long');
         }
 
-        if (isset($data['focus_areas']) && empty($data['focus_areas'])) {
+        // National Alignment rule: required when focus areas are specified
+        if (!empty($focusAreas)) {
+            if (empty(trim($nationalAlignment))) {
+                throw new \DomainException('Program.NationalAlignment must include at least one recognized alignment when FocusAreas are specified');
+            }
+            
+            if (!$this->hasValidNationalAlignment($nationalAlignment)) {
+                throw new \DomainException('Program.NationalAlignment must include at least one recognized alignment when FocusAreas are specified');
+            }
+        }
+
+        // During update, explicitly setting empty focus areas should fail
+        if (isset($focusAreas) && empty($focusAreas)) {
             throw new \DomainException('Program must have at least one focus area');
+        }
+    }
+
+    private function hasValidNationalAlignment(string $nationalAlignment): bool
+    {
+        $alignmentTokens = array_map('trim', explode(',', $nationalAlignment));
+        
+        foreach ($alignmentTokens as $token) {
+            if (in_array($token, self::VALID_NATIONAL_ALIGNMENTS)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    public function canBeDeleted(): bool
+    {
+        return empty($this->projects);
+    }
+
+    public function validateDeletion(): void
+    {
+        if (!$this->canBeDeleted()) {
+            throw new \DomainException('Program has Projects; archive or reassign before delete');
         }
     }
 

@@ -28,4 +28,3 @@ node_modules
 *.py
 *.txt
 /tests
-tests/*

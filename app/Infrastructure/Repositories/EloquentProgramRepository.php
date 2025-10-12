@@ -48,6 +48,18 @@ class EloquentProgramRepository implements ProgramRepositoryInterface
         ProgramModel::destroy($id);
     }
 
+    public function findByName(string $name): ?Program
+    {
+        // Case-insensitive search for program name
+        $model = ProgramModel::whereRaw('LOWER(name) = LOWER(?)', [$name])->first();
+        
+        if (!$model) {
+            return null;
+        }
+
+        return $this->mapToEntity($model);
+    }
+
     private function mapToEntity(ProgramModel $model): Program
     {
         // Parse focus areas and phases from string format
