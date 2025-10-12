@@ -32,10 +32,10 @@ class ParticipantRequestTest extends TestCase
         $rules = $this->request->rules();
         
         // Test that required fields contain 'required'
-        $this->assertStringContains('required', $rules['full_name']);
-        $this->assertStringContains('required', $rules['email'][0]);
-        $this->assertStringContains('required', $rules['affiliation']);
-        $this->assertStringContains('required', $rules['institution']);
+        $this->assertStringContainsString('required', $rules['full_name']);
+        $this->assertStringContainsString('required', $rules['email'][0]);
+        $this->assertStringContainsString('required', $rules['affiliation']);
+        $this->assertStringContainsString('required', $rules['institution']);
     }
 
     public function test_email_validation_rules()
@@ -51,21 +51,21 @@ class ParticipantRequestTest extends TestCase
     {
         $rules = $this->request->rules();
         
-        $this->assertStringContains('in:cs,ee,me,ce,other', $rules['affiliation']);
+        $this->assertStringContainsString('in:cs,ee,me,ce,other', $rules['affiliation']);
     }
 
     public function test_institution_has_enumeration_validation()
     {
         $rules = $this->request->rules();
         
-        $this->assertStringContains('in:scit,other', $rules['institution']);
+        $this->assertStringContainsString('in:scit,other', $rules['institution']);
     }
 
     public function test_specialization_is_nullable()
     {
         $rules = $this->request->rules();
         
-        $this->assertStringContains('nullable', $rules['specialization']);
+        $this->assertStringContainsString('nullable', $rules['specialization']);
     }
 
     public function test_cross_skill_trained_is_boolean()
@@ -134,8 +134,8 @@ class ParticipantRequestTest extends TestCase
     {
         $rules = $this->request->rules();
         
-        $this->assertStringContains('max:255', $rules['full_name']);
-        $this->assertStringContains('max:255', $rules['specialization']);
+        $this->assertStringContainsString('max:255', $rules['full_name']);
+        $this->assertStringContainsString('max:255', $rules['specialization']);
     }
 
     public function test_affiliation_enum_values()
