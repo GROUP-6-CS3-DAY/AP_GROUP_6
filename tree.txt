@@ -6,7 +6,7 @@
 │   │   └── Handler.php
 │   ├── Http
 │   │   ├── Controllers
-│   │   │   ├── Auth
+│   │   │   ├── p
 │   │   │   │   ├── AuthenticatedSessionController.php
 │   │   │   │   ├── ConfirmablePasswordController.php
 │   │   │   │   ├── EmailVerificationNotificationController.php
