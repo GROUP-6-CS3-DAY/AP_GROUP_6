@@ -70,7 +70,9 @@ class CreateOutcomeUseCaseTest extends TestCase
             outcomeType: 'publication',
             qualityCertification: '',
             dateAchieved: '2024-01-15',
-            commercializationStatus: 'not_applicable'
+            commercializationStatus: 'not_applicable',
+            impact: '',
+            artifactLink: ''
         );
 
         $this->mockProjectRepository
@@ -98,7 +100,9 @@ class CreateOutcomeUseCaseTest extends TestCase
             outcomeType: 'publication',
             qualityCertification: '',
             dateAchieved: '2024-01-15',
-            commercializationStatus: 'not_applicable'
+            commercializationStatus: 'not_applicable',
+            impact: '',
+            artifactLink: ''
         );
 
         $mockProject = $this->createMock(Project::class);
@@ -129,7 +133,9 @@ class CreateOutcomeUseCaseTest extends TestCase
             outcomeType: 'publication',
             qualityCertification: '',
             dateAchieved: $futureDate,
-            commercializationStatus: 'not_applicable'
+            commercializationStatus: 'not_applicable',
+            impact: '',
+            artifactLink: ''
         );
 
         $mockProject = $this->createMock(Project::class);
