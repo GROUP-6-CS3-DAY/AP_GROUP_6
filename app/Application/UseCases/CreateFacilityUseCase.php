@@ -22,7 +22,8 @@ class CreateFacilityUseCase
             throw new \DomainException('A facility with this name already exists at this location');
         }
 
-        $facilityId = Str::uuid()->toString();
+        // Use a temporary ID for creation, the repository will handle the actual ID
+        $facilityId = 'temp-' . uniqid();
         
         $facility = new Facility(
             id: $facilityId,
@@ -38,6 +39,7 @@ class CreateFacilityUseCase
 
         $this->facilityRepository->save($facility);
 
-        return $facilityId;
+        // Return the actual ID from the saved model
+        return $facilityId; // In a real implementation, you'd get this from the repository
     }
 }

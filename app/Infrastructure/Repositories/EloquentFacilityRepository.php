@@ -54,12 +54,17 @@ class EloquentFacilityRepository implements FacilityRepositoryInterface
             throw new \DomainException('A facility with this name already exists at this location');
         }
 
-        $model = $facility->getId() 
-            ? FacilityModel::find($facility->getId()) ?? new FacilityModel()
-            : new FacilityModel();
+        // For updates, find existing model by ID, for new records create new model
+        $model = null;
+        if ($facility->getId() && is_numeric($facility->getId())) {
+            $model = FacilityModel::find($facility->getId());
+        }
+        
+        if (!$model) {
+            $model = new FacilityModel();
+        }
 
         $model->fill([
-            'id' => $facility->getId(),
             'name' => $facility->getName(),
             'description' => $facility->getDescription(),
             'location' => $facility->getLocation(),
@@ -95,5 +100,6 @@ class EloquentFacilityRepository implements FacilityRepositoryInterface
             capabilities: $model->capabilities ?? [],
             availabilityStatus: $model->availability_status ?? 'available'
         );
-    }
-}
+
+
+    }}

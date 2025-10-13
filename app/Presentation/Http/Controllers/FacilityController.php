@@ -156,7 +156,7 @@ class FacilityController extends Controller
     }
 
     /** Show facility */
-    public function show(string $id): View
+    public function show(string $id)
     {
         try {
             $facility = $this->getFacility->execute($id);
@@ -165,12 +165,12 @@ class FacilityController extends Controller
             return redirect()->route('facilities.index')->with('error', 'Facility not found');
         } catch (\Exception $e) {
             Log::error('Facility show failed: '.$e->getMessage());
-            return view('facilities.show')->with('error', 'Failed to retrieve facility details');
+            return redirect()->route('facilities.index')->with('error', 'Failed to retrieve facility details');
         }
     }
 
     /** Edit form */
-    public function edit(string $id): View
+    public function edit(string $id)
     {
         try {
             $facility = $this->getFacility->execute($id);

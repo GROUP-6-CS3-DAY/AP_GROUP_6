@@ -67,11 +67,11 @@ use Illuminate\Support\Str;
     <div class="card-header">
         <h5 class="card-title mb-0">
             <i class="fas fa-list me-2"></i>Facilities List
-            <span class="badge bg-secondary ms-2">{{ is_array($facilities) ? count($facilities) : $facilities->count() }}</span>
+            <span class="badge bg-secondary ms-2">{{ count($facilities) }}</span>
         </h5>
     </div>
     <div class="card-body">
-        @if((is_array($facilities) ? count($facilities) : $facilities->count()) > 0)
+        @if(count($facilities) > 0)
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead class="table-light">
@@ -150,12 +150,8 @@ use Illuminate\Support\Str;
             </table>
         </div>
 
-        <!-- Pagination (if using paginated results) -->
-        @if(method_exists($facilities, 'hasPages') && $facilities->hasPages())
-        <div class="d-flex justify-content-center mt-4">
-            {{ $facilities->appends(request()->query())->links() }}
-        </div>
-        @endif
+        <!-- Note: No pagination for array results -->
+        <!-- If you want pagination, update ListFacilitiesUseCase to return paginated results -->
         @else
         <div class="text-center py-5">
             <i class="fas fa-building fa-3x text-muted mb-3"></i>

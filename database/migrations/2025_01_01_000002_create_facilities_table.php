@@ -12,11 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('facilities', function (Blueprint $table) {
-            $table->id(); // Changed from facility_id to standard id
+            $table->id(); // Auto-incrementing integer ID
             $table->string('name');
-            $table->string('location');
             $table->text('description')->nullable();
+            $table->string('location');
+            $table->string('facility_type');
+            $table->integer('capacity')->default(0);
+            $table->json('equipment_list')->nullable();
+            $table->json('capabilities')->nullable();
+            $table->string('availability_status')->default('available');
             $table->timestamps();
+            
+            // Indexes for better query performance
+            $table->index(['facility_type']);
+            $table->index(['availability_status']);
+            $table->index(['name', 'location']); // For uniqueness constraint
         });
     }
 
