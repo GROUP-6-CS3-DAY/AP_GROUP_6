@@ -5,6 +5,7 @@ namespace Tests\Unit\Application\UseCases;
 use App\Application\UseCases\DeleteOutcomeUseCase;
 use App\Domain\Repositories\OutcomeRepositoryInterface;
 use App\Domain\Entities\Outcome;
+use App\Domain\ValueObjects\CommercializationStatus;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
@@ -23,9 +24,11 @@ class DeleteOutcomeUseCaseTest extends TestCase
     {
         $outcomeId = 'outcome-123';
         
-        // Create mock outcome
+        // Create mock outcome with non-commercialized status
         $mockOutcome = $this->createMock(Outcome::class);
-        $mockOutcome->expects($this->once())->method('validateDeletion');
+        $mockCommercializationStatus = $this->createMock(CommercializationStatus::class);
+        $mockCommercializationStatus->method('getValue')->willReturn('ready');
+        $mockOutcome->method('getCommercializationStatus')->willReturn($mockCommercializationStatus);
 
         $this->mockRepository
             ->expects($this->once())
@@ -45,11 +48,11 @@ class DeleteOutcomeUseCaseTest extends TestCase
     {
         $outcomeId = 'outcome-123';
         
-        // Create mock outcome that throws exception during validation
+        // Create mock outcome with commercialized status
         $mockOutcome = $this->createMock(Outcome::class);
-        $mockOutcome->expects($this->once())
-            ->method('validateDeletion')
-            ->willThrowException(new \DomainException('Cannot delete outcome that is referenced by active commercialization'));
+        $mockCommercializationStatus = $this->createMock(CommercializationStatus::class);
+        $mockCommercializationStatus->method('getValue')->willReturn('commercialized');
+        $mockOutcome->method('getCommercializationStatus')->willReturn($mockCommercializationStatus);
 
         $this->mockRepository
             ->expects($this->once())
