@@ -1,8 +1,9 @@
 <?php
 
-namespace Tests\Feature\Application\UseCases;
+namespace Tests\Unit\Application\UseCases;
 
-use Tests\TestCase;
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 use App\Application\UseCases\CreateServiceUseCase;
 use App\Application\UseCases\UpdateServiceUseCase;
 use App\Application\UseCases\DeleteServiceUseCase;
@@ -12,286 +13,314 @@ use App\Domain\Repositories\ServiceRepositoryInterface;
 use App\Domain\Repositories\FacilityRepositoryInterface;
 use App\Domain\Entities\Service;
 use App\Domain\Entities\Facility;
-use DomainException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Application\Exceptions\ServiceNotFoundException;
+use App\Application\Exceptions\FacilityNotFoundException;
 
 class ServiceUseCasesTest extends TestCase
 {
-    use RefreshDatabase;
-
-    private ServiceRepositoryInterface $serviceRepository;
-    private FacilityRepositoryInterface $facilityRepository;
-    private CreateServiceUseCase $createServiceUseCase;
-    private UpdateServiceUseCase $updateServiceUseCase;
-    private DeleteServiceUseCase $deleteServiceUseCase;
-    private string $facilityId;
+    private ServiceRepositoryInterface|MockObject $mockServiceRepository;
+    private FacilityRepositoryInterface|MockObject $mockFacilityRepository;
+    private CreateServiceUseCase $createUseCase;
+    private UpdateServiceUseCase $updateUseCase;
+    private DeleteServiceUseCase $deleteUseCase;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->serviceRepository = app(ServiceRepositoryInterface::class);
-        $this->facilityRepository = app(FacilityRepositoryInterface::class);
-        $this->createServiceUseCase = app(CreateServiceUseCase::class);
-        $this->updateServiceUseCase = app(UpdateServiceUseCase::class);
-        $this->deleteServiceUseCase = app(DeleteServiceUseCase::class);
-
-        // Create a test facility
-        $this->facilityId = $this->createTestFacility();
-    }
-
-    private function createTestFacility(): string
-    {
-        $facility = new Facility(
-            id: 'facility-1',
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining', '3d_printing']
+        $this->mockServiceRepository = $this->createMock(ServiceRepositoryInterface::class);
+        $this->mockFacilityRepository = $this->createMock(FacilityRepositoryInterface::class);
+        
+        $this->createUseCase = new CreateServiceUseCase(
+            $this->mockServiceRepository,
+            $this->mockFacilityRepository
         );
-
-        $this->facilityRepository->save($facility);
-        return $facility->getId();
+        $this->updateUseCase = new UpdateServiceUseCase($this->mockServiceRepository);
+        $this->deleteUseCase = new DeleteServiceUseCase($this->mockServiceRepository);
     }
 
     public function test_can_create_service()
     {
         $dto = new CreateServiceDTO(
-            facilityId: $this->facilityId,
+            facilityId: 'facility-1',
             name: 'Test Service',
             description: 'Test Description',
             category: 'testing',
-            skillType: 'hardware'
+            skillType: 'technical',
+            requirements: ['requirement1'],
+            availabilityStatus: 'available',
+            cost: 100.50
         );
 
-        $serviceId = $this->createServiceUseCase->execute($dto);
+        $mockFacility = $this->createMock(Facility::class);
+        $this->mockFacilityRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('facility-1')
+            ->willReturn($mockFacility);
 
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('findByNameAndFacility')
+            ->with('Test Service', 'facility-1')
+            ->willReturn(null);
+
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->callback(function (Service $service) {
+                return $service->getFacilityId() === 'facility-1' &&
+                       $service->getName() === 'Test Service' &&
+                       $service->getCategory()->getValue() === 'testing';
+            }));
+
+        $serviceId = $this->createUseCase->execute($dto);
+
+        $this->assertIsString($serviceId);
         $this->assertNotEmpty($serviceId);
-
-        $service = $this->serviceRepository->findById($serviceId);
-        $this->assertInstanceOf(Service::class, $service);
-        $this->assertEquals($this->facilityId, $service->getFacilityId());
-        $this->assertEquals('Test Service', $service->getName());
-        $this->assertEquals('Test Description', $service->getDescription());
-        $this->assertEquals('testing', $service->getCategory());
-        $this->assertEquals('hardware', $service->getSkillType());
     }
 
     public function test_cannot_create_service_with_nonexistent_facility()
     {
         $dto = new CreateServiceDTO(
-            facilityId: 'nonexistent-facility-id',
+            facilityId: 'nonexistent-facility',
             name: 'Test Service',
             description: 'Test Description',
             category: 'testing',
-            skillType: 'hardware'
+            skillType: 'technical',
+            requirements: [],
+            availabilityStatus: 'available',
+            cost: 0.0
         );
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Facility not found');
+        $this->mockFacilityRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('nonexistent-facility')
+            ->willReturn(null);
 
-        $this->createServiceUseCase->execute($dto);
+        $this->mockServiceRepository
+            ->expects($this->never())
+            ->method('save');
+
+        $this->expectException(FacilityNotFoundException::class);
+        $this->expectExceptionMessage('Facility with ID nonexistent-facility not found');
+
+        $this->createUseCase->execute($dto);
     }
 
     public function test_cannot_create_service_with_duplicate_name_in_facility()
     {
-        // Create first service
-        $dto1 = new CreateServiceDTO(
-            facilityId: $this->facilityId,
+        $dto = new CreateServiceDTO(
+            facilityId: 'facility-1',
             name: 'Test Service',
             description: 'Test Description',
             category: 'testing',
-            skillType: 'hardware'
+            skillType: 'technical',
+            requirements: [],
+            availabilityStatus: 'available',
+            cost: 0.0
         );
 
-        $this->createServiceUseCase->execute($dto1);
+        $mockFacility = $this->createMock(Facility::class);
+        $mockExistingService = $this->createMock(Service::class);
 
-        // Try to create second service with same name in same facility
-        $dto2 = new CreateServiceDTO(
-            facilityId: $this->facilityId,
-            name: 'Test Service',
-            description: 'Another Description',
-            category: 'training',
-            skillType: 'software'
-        );
+        $this->mockFacilityRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('facility-1')
+            ->willReturn($mockFacility);
 
-        $this->expectException(DomainException::class);
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('findByNameAndFacility')
+            ->with('Test Service', 'facility-1')
+            ->willReturn($mockExistingService);
+
+        $this->mockServiceRepository
+            ->expects($this->never())
+            ->method('save');
+
+        $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('A service with this name already exists in this facility');
 
-        $this->createServiceUseCase->execute($dto2);
-    }
-
-    public function test_can_create_services_with_same_name_in_different_facilities()
-    {
-        // Create second facility
-        $facility2 = new Facility(
-            id: 'facility-2',
-            name: 'Test Facility 2',
-            location: 'Test Location 2',
-            description: 'Test Description 2',
-            partnerOrganization: 'Test Partner 2',
-            facilityType: 'laboratory',
-            capabilities: ['analysis']
-        );
-
-        $this->facilityRepository->save($facility2);
-
-        // Create service in first facility
-        $dto1 = new CreateServiceDTO(
-            facilityId: $this->facilityId,
-            name: 'Test Service',
-            description: 'Test Description',
-            category: 'testing',
-            skillType: 'hardware'
-        );
-
-        $serviceId1 = $this->createServiceUseCase->execute($dto1);
-
-        // Create service with same name in second facility
-        $dto2 = new CreateServiceDTO(
-            facilityId: $facility2->getId(),
-            name: 'Test Service',
-            description: 'Another Description',
-            category: 'training',
-            skillType: 'software'
-        );
-
-        $serviceId2 = $this->createServiceUseCase->execute($dto2);
-
-        $this->assertNotEquals($serviceId1, $serviceId2);
-
-        $service1 = $this->serviceRepository->findById($serviceId1);
-        $service2 = $this->serviceRepository->findById($serviceId2);
-
-        $this->assertEquals('Test Service', $service1->getName());
-        $this->assertEquals('Test Service', $service2->getName());
-        $this->assertEquals($this->facilityId, $service1->getFacilityId());
-        $this->assertEquals($facility2->getId(), $service2->getFacilityId());
+        $this->createUseCase->execute($dto);
     }
 
     public function test_can_update_service()
     {
-        // Create service first
-        $createDto = new CreateServiceDTO(
-            facilityId: $this->facilityId,
-            name: 'Test Service',
-            description: 'Test Description',
-            category: 'testing',
-            skillType: 'hardware'
-        );
+        $serviceId = 'service-123';
+        
+        $mockService = $this->createMock(Service::class);
+        $mockService->method('getFacilityId')->willReturn('facility-1');
+        $mockService->expects($this->once())
+            ->method('update')
+            ->with([
+                'name' => 'Updated Service',
+                'description' => 'Updated Description',
+                'cost' => 200.00
+            ]);
 
-        $serviceId = $this->createServiceUseCase->execute($createDto);
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($serviceId)
+            ->willReturn($mockService);
 
-        // Update service
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('findByNameAndFacility')
+            ->with('Updated Service', 'facility-1')
+            ->willReturn(null);
+
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($mockService);
+
         $updateDto = new UpdateServiceDTO(
+            id: $serviceId,
             name: 'Updated Service',
             description: 'Updated Description',
-            category: 'training'
+            cost: 200.00
         );
 
-        $this->updateServiceUseCase->execute($serviceId, $updateDto);
-
-        $service = $this->serviceRepository->findById($serviceId);
-        $this->assertEquals('Updated Service', $service->getName());
-        $this->assertEquals('Updated Description', $service->getDescription());
-        $this->assertEquals('training', $service->getCategory());
-        $this->assertEquals('hardware', $service->getSkillType()); // Unchanged
-    }
-
-    public function test_can_delete_service_without_active_projects()
-    {
-        // Create service
-        $dto = new CreateServiceDTO(
-            facilityId: $this->facilityId,
-            name: 'Test Service',
-            description: 'Test Description',
-            category: 'testing',
-            skillType: 'hardware'
-        );
-
-        $serviceId = $this->createServiceUseCase->execute($dto);
-
-        // Verify service exists
-        $service = $this->serviceRepository->findById($serviceId);
-        $this->assertInstanceOf(Service::class, $service);
-
-        // Delete service
-        $this->deleteServiceUseCase->execute($serviceId);
-
-        // Verify service is deleted
-        $deletedService = $this->serviceRepository->findById($serviceId);
-        $this->assertNull($deletedService);
-    }
-
-    public function test_cannot_delete_service_with_active_projects()
-    {
-        // Create service
-        $dto = new CreateServiceDTO(
-            facilityId: $this->facilityId,
-            name: 'Test Service',
-            description: 'Test Description',
-            category: 'testing',
-            skillType: 'hardware'
-        );
-
-        $serviceId = $this->createServiceUseCase->execute($dto);
-
-        // Mock active projects using this service category
-        $this->mock(\App\Domain\Repositories\ServiceRepositoryInterface::class)
-            ->shouldReceive('findActiveProjectsUsingServiceCategory')
-            ->with($this->facilityId, 'testing')
-            ->andReturn(['project-1']);
-
-        // Try to delete service with active projects
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Service in use by Project testing requirements');
-
-        $this->deleteServiceUseCase->execute($serviceId);
+        $this->updateUseCase->execute($updateDto);
     }
 
     public function test_throws_exception_when_updating_nonexistent_service()
     {
+        $serviceId = 'nonexistent-id';
+        
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($serviceId)
+            ->willReturn(null);
+
+        $this->mockServiceRepository
+            ->expects($this->never())
+            ->method('save');
+
         $updateDto = new UpdateServiceDTO(
+            id: $serviceId,
             name: 'Updated Service'
         );
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Service not found');
+        $this->expectException(ServiceNotFoundException::class);
+        $this->expectExceptionMessage("Service with ID {$serviceId} not found");
 
-        $this->updateServiceUseCase->execute('nonexistent-id', $updateDto);
+        $this->updateUseCase->execute($updateDto);
+    }
+
+    public function test_can_delete_service_without_project_references()
+    {
+        $serviceId = 'service-123';
+        
+        $mockService = $this->createMock(Service::class);
+
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($serviceId)
+            ->willReturn($mockService);
+
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('isReferencedByProjectTestingRequirements')
+            ->with($serviceId)
+            ->willReturn(false);
+
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('delete')
+            ->with($serviceId);
+
+        $this->deleteUseCase->execute($serviceId);
+    }
+
+    public function test_cannot_delete_service_with_project_references()
+    {
+        $serviceId = 'service-123';
+        
+        $mockService = $this->createMock(Service::class);
+
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($serviceId)
+            ->willReturn($mockService);
+
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('isReferencedByProjectTestingRequirements')
+            ->with($serviceId)
+            ->willReturn(true);
+
+        $this->mockServiceRepository
+            ->expects($this->never())
+            ->method('delete');
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Service in use by Project testing requirements');
+
+        $this->deleteUseCase->execute($serviceId);
     }
 
     public function test_throws_exception_when_deleting_nonexistent_service()
     {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Service not found');
+        $serviceId = 'nonexistent-id';
+        
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($serviceId)
+            ->willReturn(null);
 
-        $this->deleteServiceUseCase->execute('nonexistent-id');
+        $this->mockServiceRepository
+            ->expects($this->never())
+            ->method('delete');
+
+        $this->expectException(ServiceNotFoundException::class);
+        $this->expectExceptionMessage("Service with ID {$serviceId} not found");
+
+        $this->deleteUseCase->execute($serviceId);
     }
 
-    public function test_throws_exception_when_updating_to_nonexistent_facility()
+    public function test_cannot_update_service_name_to_duplicate_in_facility()
     {
-        // Create service first
-        $createDto = new CreateServiceDTO(
-            facilityId: $this->facilityId,
-            name: 'Test Service',
-            description: 'Test Description',
-            category: 'testing',
-            skillType: 'hardware'
-        );
+        $serviceId = 'service-123';
+        
+        $mockService = $this->createMock(Service::class);
+        $mockService->method('getFacilityId')->willReturn('facility-1');
+        
+        $mockExistingService = $this->createMock(Service::class);
+        $mockExistingService->method('getId')->willReturn('different-service-id');
 
-        $serviceId = $this->createServiceUseCase->execute($createDto);
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($serviceId)
+            ->willReturn($mockService);
 
-        // Try to update to nonexistent facility
+        $this->mockServiceRepository
+            ->expects($this->once())
+            ->method('findByNameAndFacility')
+            ->with('Existing Service', 'facility-1')
+            ->willReturn($mockExistingService);
+
+        $this->mockServiceRepository
+            ->expects($this->never())
+            ->method('save');
+
         $updateDto = new UpdateServiceDTO(
-            facilityId: 'nonexistent-facility-id'
+            id: $serviceId,
+            name: 'Existing Service'
         );
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Facility not found');
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('A service with this name already exists in this facility');
 
-        $this->updateServiceUseCase->execute($serviceId, $updateDto);
+        $this->updateUseCase->execute($updateDto);
     }
 }
