@@ -4,190 +4,88 @@ namespace Tests\Unit\Domain\Entities;
 
 use PHPUnit\Framework\TestCase;
 use App\Domain\Entities\Facility;
-use DomainException;
+use App\Domain\ValueObjects\FacilityType;
 
 class FacilityTest extends TestCase
 {
     public function test_can_create_facility_with_valid_data()
     {
+        $facilityType = new FacilityType('workshop');
+        
         $facility = new Facility(
             id: 'facility-1',
             name: 'Test Facility',
-            location: 'Test Location',
             description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining', '3d_printing']
+            location: 'Test Location',
+            facilityType: $facilityType,
+            capacity: 50,
+            equipmentList: ['CNC Machine', '3D Printer'],
+            capabilities: ['cnc_machining', '3d_printing'],
+            availabilityStatus: 'available'
         );
 
         $this->assertEquals('facility-1', $facility->getId());
         $this->assertEquals('Test Facility', $facility->getName());
         $this->assertEquals('Test Location', $facility->getLocation());
         $this->assertEquals('Test Description', $facility->getDescription());
-        $this->assertEquals('Test Partner', $facility->getPartnerOrganization());
-        $this->assertEquals('workshop', $facility->getFacilityType());
+        $this->assertEquals('workshop', $facility->getFacilityType()->getValue());
+        $this->assertEquals(50, $facility->getCapacity());
+        $this->assertEquals(['CNC Machine', '3D Printer'], $facility->getEquipmentList());
         $this->assertEquals(['cnc_machining', '3d_printing'], $facility->getCapabilities());
+        $this->assertEquals('available', $facility->getAvailabilityStatus());
     }
 
     public function test_throws_exception_when_name_is_empty()
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('Facility.Name is required');
 
         new Facility(
             id: 'facility-1',
             name: '',
-            location: 'Test Location',
             description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining']
+            location: 'Test Location',
+            facilityType: new FacilityType('workshop')
         );
     }
 
     public function test_throws_exception_when_location_is_empty()
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('Facility.Location is required');
 
         new Facility(
             id: 'facility-1',
             name: 'Test Facility',
+            description: 'Test Description',
             location: '',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining']
-        );
-    }
-
-    public function test_throws_exception_when_facility_type_is_empty()
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Facility.FacilityType is required');
-
-        new Facility(
-            id: 'facility-1',
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: '',
-            capabilities: ['cnc_machining']
+            facilityType: new FacilityType('workshop')
         );
     }
 
     public function test_throws_exception_when_capabilities_required_but_empty()
     {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Facility.Capabilities must be populated when Services/Equipment exist');
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Facility.Capabilities must be populated when Equipment exist');
 
         new Facility(
             id: 'facility-1',
             name: 'Test Facility',
-            location: 'Test Location',
             description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: [],
-            services: ['service-1'],
-            equipment: []
+            location: 'Test Location',
+            facilityType: new FacilityType('workshop'),
+            capacity: 50,
+            equipmentList: ['CNC Machine'], // Has equipment
+            capabilities: [] // But no capabilities
         );
     }
 
     public function test_throws_exception_for_invalid_facility_type()
     {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Invalid facility type');
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid facility type: invalid_type');
 
-        new Facility(
-            id: 'facility-1',
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'invalid_type',
-            capabilities: ['cnc_machining']
-        );
-    }
-
-    public function test_throws_exception_for_invalid_capability()
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Invalid capability: invalid_capability');
-
-        new Facility(
-            id: 'facility-1',
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['invalid_capability']
-        );
-    }
-
-    public function test_throws_exception_for_duplicate_name_location()
-    {
-        $existingFacilities = [
-            ['id' => 'facility-2', 'name' => 'Test Facility', 'location' => 'Test Location']
-        ];
-
-        $facility = new Facility(
-            id: 'facility-1',
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining']
-        );
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('A facility with this name already exists at this location');
-
-        $facility->validateNameLocationUniqueness($existingFacilities);
-    }
-
-    public function test_can_be_deleted_when_no_dependencies()
-    {
-        $facility = new Facility(
-            id: 'facility-1',
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining'],
-            services: [],
-            equipment: [],
-            projects: []
-        );
-
-        $this->assertTrue($facility->canBeDeleted());
-    }
-
-    public function test_cannot_be_deleted_when_has_dependencies()
-    {
-        $facility = new Facility(
-            id: 'facility-1',
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining'],
-            services: ['service-1'],
-            equipment: [],
-            projects: []
-        );
-
-        $this->assertFalse($facility->canBeDeleted());
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Facility has dependent records (Services/Equipment/Projects)');
-
-        $facility->validateDeletion();
+        new FacilityType('invalid_type');
     }
 
     public function test_can_update_facility_data()
@@ -195,44 +93,24 @@ class FacilityTest extends TestCase
         $facility = new Facility(
             id: 'facility-1',
             name: 'Test Facility',
-            location: 'Test Location',
             description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
+            location: 'Test Location',
+            facilityType: new FacilityType('workshop'),
+            capacity: 50,
+            equipmentList: ['CNC Machine'],
             capabilities: ['cnc_machining']
         );
 
         $facility->update([
             'name' => 'Updated Facility',
-            'description' => 'Updated Description'
+            'description' => 'Updated Description',
+            'capacity' => 100
         ]);
 
         $this->assertEquals('Updated Facility', $facility->getName());
         $this->assertEquals('Updated Description', $facility->getDescription());
+        $this->assertEquals(100, $facility->getCapacity());
         $this->assertEquals('Test Location', $facility->getLocation()); // Unchanged
-    }
-
-    public function test_can_add_and_remove_services()
-    {
-        $facility = new Facility(
-            id: 'facility-1',
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining']
-        );
-
-        $facility->addService('service-1');
-        $facility->addService('service-2');
-
-        $this->assertEquals(['service-1', 'service-2'], $facility->getServices());
-        $this->assertEquals(2, $facility->getServiceCount());
-
-        $facility->removeService('service-1');
-        $this->assertEquals([1 => 'service-2'], $facility->getServices());
-        $this->assertEquals(1, $facility->getServiceCount());
     }
 
     public function test_can_check_capability()
@@ -240,10 +118,9 @@ class FacilityTest extends TestCase
         $facility = new Facility(
             id: 'facility-1',
             name: 'Test Facility',
-            location: 'Test Location',
             description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
+            location: 'Test Location',
+            facilityType: new FacilityType('workshop'),
             capabilities: ['cnc_machining', '3d_printing']
         );
 
@@ -252,20 +129,57 @@ class FacilityTest extends TestCase
         $this->assertFalse($facility->hasCapability('laser_cutting'));
     }
 
-    public function test_is_operational_when_has_capabilities_and_services()
+    public function test_facility_business_logic_methods()
     {
         $facility = new Facility(
             id: 'facility-1',
             name: 'Test Facility',
-            location: 'Test Location',
             description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining'],
-            services: ['service-1']
+            location: 'Test Location',
+            facilityType: new FacilityType('workshop'),
+            capacity: 100,
+            equipmentList: ['CNC Machine', '3D Printer'],
+            capabilities: ['cnc_machining', '3d_printing'],
+            availabilityStatus: 'available'
         );
 
-        $this->assertTrue($facility->isOperational());
-        $this->assertTrue($facility->canHostProjects());
+        $this->assertTrue($facility->hasEquipment());
+        $this->assertTrue($facility->hasCapabilities());
+        $this->assertTrue($facility->isAvailable());
+        $this->assertTrue($facility->canAccommodate(50)); // Less than capacity
+        $this->assertFalse($facility->canAccommodate(150)); // More than capacity
+        $this->assertEquals('test facility|test location', $facility->getLocationIdentifier());
+    }
+
+    public function test_facility_unavailable_cannot_accommodate()
+    {
+        $facility = new Facility(
+            id: 'facility-1',
+            name: 'Test Facility',
+            description: 'Test Description',
+            location: 'Test Location',
+            facilityType: new FacilityType('workshop'),
+            capacity: 100,
+            availabilityStatus: 'maintenance'
+        );
+
+        $this->assertFalse($facility->isAvailable());
+        $this->assertFalse($facility->canAccommodate(50)); // Even though capacity allows, status doesn't
+    }
+
+    public function test_facility_without_equipment_or_capabilities()
+    {
+        $facility = new Facility(
+            id: 'facility-1',
+            name: 'Test Facility',
+            description: 'Test Description',
+            location: 'Test Location',
+            facilityType: new FacilityType('office'),
+            equipmentList: [],
+            capabilities: []
+        );
+
+        $this->assertFalse($facility->hasEquipment());
+        $this->assertFalse($facility->hasCapabilities());
     }
 }

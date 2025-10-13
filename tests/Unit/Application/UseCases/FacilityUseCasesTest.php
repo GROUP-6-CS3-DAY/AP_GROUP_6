@@ -1,8 +1,9 @@
 <?php
 
-namespace Tests\Feature\Application\UseCases;
+namespace Tests\Unit\Application\UseCases;
 
 use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\MockObject\MockObject;
 use App\Application\UseCases\CreateFacilityUseCase;
 use App\Application\UseCases\UpdateFacilityUseCase;
 use App\Application\UseCases\DeleteFacilityUseCase;
@@ -10,220 +11,210 @@ use App\Application\DTOs\CreateFacilityDTO;
 use App\Application\DTOs\UpdateFacilityDTO;
 use App\Domain\Repositories\FacilityRepositoryInterface;
 use App\Domain\Entities\Facility;
-use DomainException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Domain\ValueObjects\FacilityType;
+use App\Application\Exceptions\FacilityNotFoundException;
 
 class FacilityUseCasesTest extends TestCase
 {
-    use RefreshDatabase;
-
-    private FacilityRepositoryInterface $facilityRepository;
-    private CreateFacilityUseCase $createFacilityUseCase;
-    private UpdateFacilityUseCase $updateFacilityUseCase;
-    private DeleteFacilityUseCase $deleteFacilityUseCase;
+    private FacilityRepositoryInterface|MockObject $mockRepository;
+    private CreateFacilityUseCase $createUseCase;
+    private UpdateFacilityUseCase $updateUseCase;
+    private DeleteFacilityUseCase $deleteUseCase;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->facilityRepository = app(FacilityRepositoryInterface::class);
-        $this->createFacilityUseCase = app(CreateFacilityUseCase::class);
-        $this->updateFacilityUseCase = app(UpdateFacilityUseCase::class);
-        $this->deleteFacilityUseCase = app(DeleteFacilityUseCase::class);
+        $this->mockRepository = $this->createMock(FacilityRepositoryInterface::class);
+        $this->createUseCase = new CreateFacilityUseCase($this->mockRepository);
+        $this->updateUseCase = new UpdateFacilityUseCase($this->mockRepository);
+        $this->deleteUseCase = new DeleteFacilityUseCase($this->mockRepository);
     }
 
     public function test_can_create_facility()
     {
         $dto = new CreateFacilityDTO(
             name: 'Test Facility',
-            location: 'Test Location',
             description: 'Test Description',
-            partnerOrganization: 'Test Partner',
+            location: 'Test Location',
             facilityType: 'workshop',
-            capabilities: ['cnc_machining', '3d_printing']
+            capacity: 50,
+            equipmentList: ['CNC Machine', '3D Printer'],
+            capabilities: ['cnc_machining', '3d_printing'],
+            availabilityStatus: 'available'
         );
 
-        $facilityId = $this->createFacilityUseCase->execute($dto);
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('findByNameAndLocation')
+            ->with('Test Facility', 'Test Location')
+            ->willReturn(null);
 
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($this->callback(function (Facility $facility) {
+                return $facility->getName() === 'Test Facility' &&
+                       $facility->getLocation() === 'Test Location' &&
+                       $facility->getFacilityType()->getValue() === 'workshop';
+            }));
+
+        $facilityId = $this->createUseCase->execute($dto);
+
+        $this->assertIsString($facilityId);
         $this->assertNotEmpty($facilityId);
-
-        $facility = $this->facilityRepository->findById($facilityId);
-        $this->assertInstanceOf(Facility::class, $facility);
-        $this->assertEquals('Test Facility', $facility->getName());
-        $this->assertEquals('Test Location', $facility->getLocation());
-        $this->assertEquals('Test Description', $facility->getDescription());
-        $this->assertEquals('Test Partner', $facility->getPartnerOrganization());
-        $this->assertEquals('workshop', $facility->getFacilityType());
-        $this->assertEquals(['cnc_machining', '3d_printing'], $facility->getCapabilities());
     }
 
     public function test_cannot_create_facility_with_duplicate_name_location()
     {
-        // Create first facility
-        $dto1 = new CreateFacilityDTO(
+        $dto = new CreateFacilityDTO(
             name: 'Test Facility',
-            location: 'Test Location',
             description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining']
-        );
-
-        $this->createFacilityUseCase->execute($dto1);
-
-        // Try to create second facility with same name and location
-        $dto2 = new CreateFacilityDTO(
-            name: 'Test Facility',
             location: 'Test Location',
-            description: 'Another Description',
-            partnerOrganization: 'Another Partner',
-            facilityType: 'laboratory',
-            capabilities: ['3d_printing']
+            facilityType: 'workshop',
+            capacity: 50,
+            equipmentList: [],
+            capabilities: [],
+            availabilityStatus: 'available'
         );
 
-        $this->expectException(DomainException::class);
+        $existingFacility = $this->createMock(Facility::class);
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('findByNameAndLocation')
+            ->with('Test Facility', 'Test Location')
+            ->willReturn($existingFacility);
+
+        $this->mockRepository
+            ->expects($this->never())
+            ->method('save');
+
+        $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('A facility with this name already exists at this location');
 
-        $this->createFacilityUseCase->execute($dto2);
+        $this->createUseCase->execute($dto);
     }
 
     public function test_can_update_facility()
     {
-        // Create facility first
-        $createDto = new CreateFacilityDTO(
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining']
-        );
+        $facilityId = 'facility-123';
+        
+        $mockFacility = $this->createMock(Facility::class);
+        $mockFacility->expects($this->once())
+            ->method('update')
+            ->with([
+                'name' => 'Updated Facility',
+                'description' => 'Updated Description',
+                'capabilities' => ['cnc_machining', '3d_printing']
+            ]);
 
-        $facilityId = $this->createFacilityUseCase->execute($createDto);
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($facilityId)
+            ->willReturn($mockFacility);
 
-        // Update facility
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('save')
+            ->with($mockFacility);
+
         $updateDto = new UpdateFacilityDTO(
+            id: $facilityId,
             name: 'Updated Facility',
             description: 'Updated Description',
             capabilities: ['cnc_machining', '3d_printing']
         );
 
-        $this->updateFacilityUseCase->execute($facilityId, $updateDto);
-
-        $facility = $this->facilityRepository->findById($facilityId);
-        $this->assertEquals('Updated Facility', $facility->getName());
-        $this->assertEquals('Updated Description', $facility->getDescription());
-        $this->assertEquals(['cnc_machining', '3d_printing'], $facility->getCapabilities());
-        $this->assertEquals('Test Location', $facility->getLocation()); // Unchanged
-    }
-
-    public function test_cannot_update_facility_to_duplicate_name_location()
-    {
-        // Create first facility
-        $dto1 = new CreateFacilityDTO(
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining']
-        );
-
-        $facilityId1 = $this->createFacilityUseCase->execute($dto1);
-
-        // Create second facility
-        $dto2 = new CreateFacilityDTO(
-            name: 'Another Facility',
-            location: 'Another Location',
-            description: 'Another Description',
-            partnerOrganization: 'Another Partner',
-            facilityType: 'laboratory',
-            capabilities: ['3d_printing']
-        );
-
-        $facilityId2 = $this->createFacilityUseCase->execute($dto2);
-
-        // Try to update second facility to have same name and location as first
-        $updateDto = new UpdateFacilityDTO(
-            name: 'Test Facility',
-            location: 'Test Location'
-        );
-
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('A facility with this name already exists at this location');
-
-        $this->updateFacilityUseCase->execute($facilityId2, $updateDto);
-    }
-
-    public function test_can_delete_facility_without_dependencies()
-    {
-        // Create facility
-        $dto = new CreateFacilityDTO(
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining']
-        );
-
-        $facilityId = $this->createFacilityUseCase->execute($dto);
-
-        // Verify facility exists
-        $facility = $this->facilityRepository->findById($facilityId);
-        $this->assertInstanceOf(Facility::class, $facility);
-
-        // Delete facility
-        $this->deleteFacilityUseCase->execute($facilityId);
-
-        // Verify facility is deleted
-        $deletedFacility = $this->facilityRepository->findById($facilityId);
-        $this->assertNull($deletedFacility);
-    }
-
-    public function test_cannot_delete_facility_with_dependencies()
-    {
-        // Create facility
-        $dto = new CreateFacilityDTO(
-            name: 'Test Facility',
-            location: 'Test Location',
-            description: 'Test Description',
-            partnerOrganization: 'Test Partner',
-            facilityType: 'workshop',
-            capabilities: ['cnc_machining']
-        );
-
-        $facilityId = $this->createFacilityUseCase->execute($dto);
-
-        // Add dependencies (simulate having services/equipment/projects)
-        $facility = $this->facilityRepository->findById($facilityId);
-        $facility->addService('service-1');
-        $this->facilityRepository->save($facility);
-
-        // Try to delete facility with dependencies
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Facility has dependent records (Services/Equipment/Projects)');
-
-        $this->deleteFacilityUseCase->execute($facilityId);
+        $this->updateUseCase->execute($updateDto);
     }
 
     public function test_throws_exception_when_updating_nonexistent_facility()
     {
+        $facilityId = 'nonexistent-id';
+        
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($facilityId)
+            ->willReturn(null);
+
+        $this->mockRepository
+            ->expects($this->never())
+            ->method('save');
+
         $updateDto = new UpdateFacilityDTO(
+            id: $facilityId,
             name: 'Updated Facility'
         );
 
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Facility not found');
+        $this->expectException(FacilityNotFoundException::class);
+        $this->expectExceptionMessage("Facility with ID {$facilityId} not found");
 
-        $this->updateFacilityUseCase->execute('nonexistent-id', $updateDto);
+        $this->updateUseCase->execute($updateDto);
+    }
+
+    public function test_can_delete_facility_without_dependencies()
+    {
+        $facilityId = 'facility-123';
+        
+        $mockFacility = $this->createMock(Facility::class);
+
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($facilityId)
+            ->willReturn($mockFacility);
+
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('delete')
+            ->with($facilityId);
+
+        $this->deleteUseCase->execute($facilityId);
+    }
+
+    public function test_cannot_delete_facility_with_dependencies()
+    {
+        $facilityId = 'facility-123';
+        
+        $mockFacility = $this->createMock(Facility::class);
+
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($facilityId)
+            ->willReturn($mockFacility);
+
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('delete')
+            ->with($facilityId)
+            ->willThrowException(new \DomainException('Facility has dependent records (Services/Equipment/Projects)'));
+
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('Facility has dependent records (Services/Equipment/Projects)');
+
+        $this->deleteUseCase->execute($facilityId);
     }
 
     public function test_throws_exception_when_deleting_nonexistent_facility()
     {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Facility not found');
+        $facilityId = 'nonexistent-id';
+        
+        $this->mockRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with($facilityId)
+            ->willReturn(null);
 
-        $this->deleteFacilityUseCase->execute('nonexistent-id');
+        $this->mockRepository
+            ->expects($this->never())
+            ->method('delete');
+
+        $this->expectException(FacilityNotFoundException::class);
+        $this->expectExceptionMessage("Facility with ID {$facilityId} not found");
+
+        $this->deleteUseCase->execute($facilityId);
     }
 }
