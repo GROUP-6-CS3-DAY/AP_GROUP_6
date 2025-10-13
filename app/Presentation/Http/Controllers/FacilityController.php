@@ -81,7 +81,13 @@ class FacilityController extends Controller
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
         try {
-            $validated = $request->validate([
+            // Decode equipment_list JSON before validation
+            $requestData = $request->all();
+            if (isset($requestData['equipment_list']) && is_string($requestData['equipment_list'])) {
+                $requestData['equipment_list'] = json_decode($requestData['equipment_list'], true) ?? [];
+            }
+
+            $validated = validator($requestData, [
                 'name' => 'required|string|max:255',
                 'location' => 'required|string|max:1000',
                 'description' => 'required|string|max:2000',
@@ -90,7 +96,10 @@ class FacilityController extends Controller
                 'equipment_list' => 'array',
                 'capabilities' => 'array',
                 'availability_status' => 'string|in:available,maintenance,unavailable',
-            ]);
+            ])->validate();
+
+            // Debug: Log the validated data
+            Log::info('Creating facility with data:', $validated);
 
             $dto = new CreateFacilityDTO(
                 name: $validated['name'],
@@ -103,15 +112,45 @@ class FacilityController extends Controller
                 availabilityStatus: $validated['availability_status'] ?? 'available'
             );
 
+            // Debug: Log DTO creation
+            Log::info('DTO created successfully');
+
             $facilityId = $this->createFacility->execute($dto);
+
+            // Debug: Log success
+            Log::info('Facility created with ID: ' . $facilityId);
 
             return redirect()->route('facilities.show', $facilityId)
                 ->with('success', 'Facility created successfully');
 
+        } catch (\InvalidArgumentException $e) {
+            // Value object validation errors
+            Log::error('Invalid argument error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->all()
+            ]);
+            return back()->withErrors(['error' => 'Invalid input: ' . $e->getMessage()])->withInput();
         } catch (\DomainException $e) {
+            // Domain business rule violations
+            Log::error('Domain error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->all()
+            ]);
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
         } catch (\Exception $e) {
-            Log::error('Facility store failed: '.$e->getMessage());
+            // Any other errors
+            Log::error('Facility store failed: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->all(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
+            // In development, show the actual error
+            if (config('app.debug')) {
+                return back()->withErrors(['error' => 'Error: ' . $e->getMessage() . ' (Line: ' . $e->getLine() . ')'])->withInput();
+            }
+            
             return back()->with('error', 'Failed to create facility')->withInput();
         }
     }
@@ -156,7 +195,13 @@ class FacilityController extends Controller
     public function update(Request $request, string $id): \Illuminate\Http\RedirectResponse
     {
         try {
-            $validated = $request->validate([
+            // Decode equipment_list JSON before validation
+            $requestData = $request->all();
+            if (isset($requestData['equipment_list']) && is_string($requestData['equipment_list'])) {
+                $requestData['equipment_list'] = json_decode($requestData['equipment_list'], true) ?? [];
+            }
+
+            $validated = validator($requestData, [
                 'name' => 'sometimes|required|string|max:255',
                 'location' => 'sometimes|required|string|max:1000',
                 'description' => 'sometimes|required|string|max:2000',
@@ -165,7 +210,7 @@ class FacilityController extends Controller
                 'equipment_list' => 'sometimes|array',
                 'capabilities' => 'sometimes|array',
                 'availability_status' => 'sometimes|string|in:available,maintenance,unavailable',
-            ]);
+            ])->validate();
 
             $dto = new UpdateFacilityDTO(
                 id: $id,

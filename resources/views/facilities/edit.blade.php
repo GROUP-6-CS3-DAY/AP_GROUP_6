@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
-@section('title', 'Edit ' . $facility->name . ' - InnoTrack')
+@section('title', 'Edit ' . $facility->getName() . ' - InnoTrack')
 
 @section('content')
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 mb-0">
-                <i class="fas fa-edit me-2"></i>Edit Facility: {{ $facility->name }}
+                <i class="fas fa-edit me-2"></i>Edit Facility: {{ $facility->getName() }}
             </h1>
             <div>
-                <a href="{{ route('facilities.show', $facility) }}" class="btn btn-outline-primary me-2">
+                <a href="{{ route('facilities.show', $facility->getId()) }}" class="btn btn-outline-primary me-2">
                     <i class="fas fa-eye me-1"></i>View Facility
                 </a>
                 <a href="{{ route('facilities.index') }}" class="btn btn-outline-secondary">
@@ -30,7 +30,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('facilities.update', $facility) }}" method="POST" id="facilityForm">
+                <form action="{{ route('facilities.update', $facility->getId()) }}" method="POST" id="facilityForm">
                     @csrf
                     @method('PUT')
 
@@ -38,7 +38,7 @@
                         <div class="col-md-6">
                             <label for="name" class="form-label">Facility Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                id="name" name="name" value="{{ old('name', $facility->name) }}" required>
+                                id="name" name="name" value="{{ old('name', $facility->getName()) }}" required>
                             @error('name')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -50,7 +50,7 @@
                                 <option value="">Select Facility Type</option>
                                 @foreach($facilityTypes as $key => $value)
                                 <option value="{{ $key }}"
-                                    {{ old('facility_type', $facility->facility_type) == $key ? 'selected' : '' }}>
+                                    {{ old('facility_type', $facility->getFacilityType()->getValue()) == $key ? 'selected' : '' }}>
                                     {{ $value }}
                                 </option>
                                 @endforeach
@@ -63,54 +63,88 @@
 
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="partner_organization" class="form-label">Partner Organization <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('partner_organization') is-invalid @enderror"
-                                id="partner_organization" name="partner_organization"
-                                value="{{ old('partner_organization', $facility->partner_organization) }}" required>
-                            @error('partner_organization')
+                            <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('location') is-invalid @enderror"
+                                id="location" name="location" value="{{ old('location', $facility->getLocation()) }}" required>
+                            @error('location')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <label for="capabilities" class="form-label">Capabilities <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="capabilityInput" placeholder="Add capability...">
-                                <button type="button" class="btn btn-outline-secondary" id="addCapability">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                            <div id="capabilitiesList" class="mt-2">
-                                <!-- Dynamic capabilities will be added here -->
-                            </div>
-                            <input type="hidden" name="capabilities" id="capabilitiesInput" value="{{ old('capabilities', json_encode($facility->capabilities ?? [])) }}">
-                            @error('capabilities')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            <label for="capacity" class="form-label">Capacity</label>
+                            <input type="number" class="form-control @error('capacity') is-invalid @enderror"
+                                id="capacity" name="capacity" value="{{ old('capacity', $facility->getCapacity()) }}" min="0">
+                            @error('capacity')
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error('location') is-invalid @enderror"
-                            id="location" name="location" value="{{ old('location', $facility->location) }}" required>
-                        @error('location')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                        <div class="form-text">Provide the physical address or location description of the facility.</div>
                     </div>
 
                     <div class="mb-3">
                         <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
                         <textarea class="form-control @error('description') is-invalid @enderror"
-                            id="description" name="description" rows="4" required>{{ old('description', $facility->description) }}</textarea>
+                            id="description" name="description" rows="4" required>{{ old('description', $facility->getDescription()) }}</textarea>
                         @error('description')
                         <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        <div class="form-text">Provide a detailed description of the facility's purpose, features, and capabilities.</div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Capabilities</label>
+                            <div class="row">
+                                @foreach($capabilities as $key => $value)
+                                <div class="col-md-6 mb-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input @error('capabilities') is-invalid @enderror"
+                                            type="checkbox" name="capabilities[]"
+                                            value="{{ $key }}" id="capability_{{ $key }}"
+                                            {{ in_array($key, old('capabilities', $facility->getCapabilities())) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="capability_{{ $key }}">
+                                            {{ $value }}
+                                        </label>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                            @error('capabilities')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6">
+                            <label for="availability_status" class="form-label">Availability Status</label>
+                            <select class="form-select @error('availability_status') is-invalid @enderror"
+                                id="availability_status" name="availability_status">
+                                <option value="available" {{ old('availability_status', $facility->getAvailabilityStatus()) == 'available' ? 'selected' : '' }}>Available</option>
+                                <option value="maintenance" {{ old('availability_status', $facility->getAvailabilityStatus()) == 'maintenance' ? 'selected' : '' }}>Under Maintenance</option>
+                                <option value="unavailable" {{ old('availability_status', $facility->getAvailabilityStatus()) == 'unavailable' ? 'selected' : '' }}>Unavailable</option>
+                            </select>
+                            @error('availability_status')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Equipment List -->
+                    <div class="mb-3">
+                        <label class="form-label">Equipment List</label>
+                        <div class="input-group mb-2">
+                            <input type="text" class="form-control" id="equipmentInput" placeholder="Add equipment...">
+                            <button type="button" class="btn btn-outline-secondary" id="addEquipment">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="equipmentList" class="mb-2">
+                            <!-- Dynamic equipment will be added here -->
+                        </div>
+                        <input type="hidden" name="equipment_list" id="equipmentListInput" value="{{ json_encode(old('equipment_list', $facility->getEquipmentList())) }}">
+                        @error('equipment_list')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="d-flex justify-content-between">
-                        <a href="{{ route('facilities.show', $facility) }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('facilities.show', $facility->getId()) }}" class="btn btn-outline-secondary">
                             <i class="fas fa-times me-1"></i>Cancel
                         </a>
                         <button type="submit" class="btn btn-warning">
@@ -133,12 +167,11 @@
             <div class="card-body">
                 <h6>Facility Details</h6>
                 <ul class="list-unstyled small text-muted">
-                    <li><strong>Name:</strong> {{ $facility->name }}</li>
-                    <li><strong>Type:</strong> {{ $facility->getFacilityTypeOptions()[$facility->facility_type] ?? $facility->facility_type }}</li>
-                    <li><strong>Partner:</strong> {{ $facility->partner_organization }}</li>
-                    <li><strong>Location:</strong> {{ $facility->location }}</li>
-                    <li><strong>Created:</strong> {{ $facility->created_at->format('M d, Y') }}</li>
-                    <li><strong>Updated:</strong> {{ $facility->updated_at->format('M d, Y') }}</li>
+                    <li><strong>Name:</strong> {{ $facility->getName() }}</li>
+                    <li><strong>Type:</strong> {{ $facility->getFacilityType()->getDisplayName() }}</li>
+                    <li><strong>Location:</strong> {{ $facility->getLocation() }}</li>
+                    <li><strong>Capacity:</strong> {{ $facility->getCapacity() > 0 ? $facility->getCapacity() : 'Not specified' }}</li>
+                    <li><strong>Status:</strong> {{ ucfirst($facility->getAvailabilityStatus()) }}</li>
                 </ul>
             </div>
         </div>
@@ -153,22 +186,12 @@
             <div class="card-body">
                 <h6>Facility Types</h6>
                 <ul class="list-unstyled small text-muted">
-                    <li><strong>Lab:</strong> Research and testing laboratories</li>
+                    <li><strong>Laboratory:</strong> Research and testing laboratories</li>
                     <li><strong>Workshop:</strong> Manufacturing and assembly spaces</li>
-                    <li><strong>Testing Center:</strong> Quality assurance facilities</li>
-                    <li><strong>Maker Space:</strong> Creative prototyping areas</li>
-                    <li><strong>Training Center:</strong> Educational facilities</li>
-                    <li><strong>Innovation Hub:</strong> Collaborative workspaces</li>
-                </ul>
-
-                <h6 class="mt-3">Capability Examples</h6>
-                <ul class="list-unstyled small text-muted">
-                    <li><strong>CNC:</strong> Computer numerical control machining</li>
-                    <li><strong>PCB Fabrication:</strong> Circuit board production</li>
-                    <li><strong>3D Printing:</strong> Additive manufacturing</li>
-                    <li><strong>Materials Testing:</strong> Quality validation</li>
-                    <li><strong>Prototyping:</strong> Rapid development</li>
-                    <li><strong>Training:</strong> Skill development programs</li>
+                    <li><strong>Office:</strong> Administrative facilities</li>
+                    <li><strong>Manufacturing:</strong> Production facilities</li>
+                    <li><strong>Storage:</strong> Equipment storage</li>
+                    <li><strong>Testing:</strong> Quality assurance facilities</li>
                 </ul>
             </div>
         </div>
@@ -185,76 +208,74 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const capabilityInput = document.getElementById('capabilityInput');
-        const addCapabilityBtn = document.getElementById('addCapability');
-        const capabilitiesList = document.getElementById('capabilitiesList');
-        const capabilitiesInput = document.getElementById('capabilitiesInput');
-        const form = document.getElementById('facilityForm');
+        const equipmentInput = document.getElementById('equipmentInput');
+        const addEquipmentBtn = document.getElementById('addEquipment');
+        const equipmentList = document.getElementById('equipmentList');
+        const equipmentListInput = document.getElementById('equipmentListInput');
 
-        let capabilities = [];
+        let equipment = [];
 
-        // Load existing capabilities
+        // Load existing equipment
         try {
-            const existingCapabilities = JSON.parse(capabilitiesInput.value);
-            if (Array.isArray(existingCapabilities)) {
-                capabilities = existingCapabilities;
-                updateCapabilitiesDisplay();
+            const existingEquipment = JSON.parse(equipmentListInput.value);
+            if (Array.isArray(existingEquipment)) {
+                equipment = existingEquipment;
+                updateEquipmentDisplay();
             }
         } catch (e) {
-            capabilities = [];
+            equipment = [];
         }
 
-        // Add capability
-        addCapabilityBtn.addEventListener('click', function() {
-            addCapability();
+        // Add equipment
+        addEquipmentBtn.addEventListener('click', function() {
+            addEquipment();
         });
 
-        // Add capability on Enter key
-        capabilityInput.addEventListener('keypress', function(e) {
+        // Add equipment on Enter key
+        equipmentInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                addCapability();
+                addEquipment();
             }
         });
 
-        function addCapability() {
-            const capability = capabilityInput.value.trim();
-            if (capability && !capabilities.includes(capability)) {
-                capabilities.push(capability);
-                capabilityInput.value = '';
-                updateCapabilitiesDisplay();
-                updateCapabilitiesInput();
+        function addEquipment() {
+            const equipmentItem = equipmentInput.value.trim();
+            if (equipmentItem && !equipment.includes(equipmentItem)) {
+                equipment.push(equipmentItem);
+                equipmentInput.value = '';
+                updateEquipmentDisplay();
+                updateEquipmentInput();
             }
         }
 
-        function removeCapability(index) {
-            capabilities.splice(index, 1);
-            updateCapabilitiesDisplay();
-            updateCapabilitiesInput();
+        function removeEquipment(index) {
+            equipment.splice(index, 1);
+            updateEquipmentDisplay();
+            updateEquipmentInput();
         }
 
-        function updateCapabilitiesDisplay() {
-            capabilitiesList.innerHTML = '';
-            capabilities.forEach((capability, index) => {
+        function updateEquipmentDisplay() {
+            equipmentList.innerHTML = '';
+            equipment.forEach((equipmentItem, index) => {
                 const badge = document.createElement('span');
                 badge.className = 'badge bg-primary me-2 mb-2';
                 badge.innerHTML = `
-                    ${capability}
-                    <i class="fas fa-times ms-1" style="cursor: pointer;" onclick="removeCapability(${index})"></i>
+                    ${equipmentItem}
+                    <i class="fas fa-times ms-1" style="cursor: pointer;" onclick="removeEquipment(${index})"></i>
                 `;
-                capabilitiesList.appendChild(badge);
+                equipmentList.appendChild(badge);
             });
         }
 
-        function updateCapabilitiesInput() {
-            capabilitiesInput.value = JSON.stringify(capabilities);
+        function updateEquipmentInput() {
+            equipmentListInput.value = JSON.stringify(equipment);
         }
 
         // Form validation
         form.addEventListener('submit', function(e) {
             const name = document.getElementById('name').value;
             const facilityType = document.getElementById('facility_type').value;
-            const partnerOrg = document.getElementById('partner_organization').value;
             const location = document.getElementById('location').value;
             const description = document.getElementById('description').value;
 
@@ -270,12 +291,6 @@
                 return false;
             }
 
-            if (!partnerOrg.trim()) {
-                e.preventDefault();
-                alert('Please enter a partner organization.');
-                return false;
-            }
-
             if (!location.trim()) {
                 e.preventDefault();
                 alert('Please enter a location.');
@@ -288,15 +303,15 @@
                 return false;
             }
 
-            if (capabilities.length === 0) {
+            if (equipment.length === 0) {
                 e.preventDefault();
-                alert('Please add at least one capability.');
+                alert('Please add at least one equipment item.');
                 return false;
             }
         });
 
-        // Make removeCapability function global
-        window.removeCapability = removeCapability;
+        // Make removeEquipment function global
+        window.removeEquipment = removeEquipment;
     });
 </script>
 @endpush
