@@ -12,7 +12,11 @@ class ProfileTest extends TestCase
 
     public function test_profile_page_is_displayed(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
 
         $response = $this
             ->actingAs($user)
@@ -91,7 +95,7 @@ class ProfileTest extends TestCase
             ]);
 
         $response
-            ->assertSessionHasErrors('password')
+            ->assertSessionHasErrorsIn('userDeletion', 'password')
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->fresh());

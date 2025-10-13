@@ -12,13 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('facilities', function (Blueprint $table) {
-            $table->id();
+            $table->id(); // Changed from facility_id to standard id
             $table->string('name');
             $table->string('location');
-            $table->text('description');
-            $table->string('partner_organization'); // Partner such as UniPod, UIRI, Lwera
-            $table->string('facility_type');
-            $table->json('capabilities'); // CNC, PCB fabrication, materials testing
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

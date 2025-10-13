@@ -1,0 +1,113 @@
+app
+├── Application
+│   ├── DTOs
+│   │   ├── CreateEquipmentDTO.php
+│   │   ├── CreateOutcomeDTO.php
+│   │   ├── CreateProgramDTO.php
+│   │   ├── CreateProjectDTO.php
+│   │   ├── UpdateEquipmentDTO.php
+│   │   ├── UpdateOutcomeDTO.php
+│   │   ├── UpdateProgramDTO.php
+│   │   └── UpdateProjectDTO.php
+│   ├── Services
+│   └── UseCases
+│       ├── CreateEquipmentUseCase.php
+│       ├── CreateOutcomeUseCase.php
+│       ├── CreateProgramUseCase.php
+│       ├── CreateProjectUseCase.php
+│       ├── UpdateEquipmentUseCase.php
+│       ├── UpdateOutcomeUseCase.php
+│       ├── UpdateProgramUseCase.php
+│       └── UpdateProjectUseCase.php
+├── Console
+│   └── Kernel.php
+├── Domain
+│   ├── Entities
+│   │   ├── Equipment.php
+│   │   ├── Outcome.php
+│   │   ├── Program.php
+│   │   └── Project.php
+│   ├── Repositories
+│   │   ├── EquipmentRepositoryInterface.php
+│   │   ├── FacilityRepositoryInterface.php
+│   │   ├── OutcomeRepositoryInterface.php
+│   │   ├── ProgramRepositoryInterface.php
+│   │   └── ProjectRepositoryInterface.php
+│   ├── Services
+│   └── ValueObjects
+│       ├── InnovationFocus.php
+│       ├── ProgramPhase.php
+│       ├── PrototypeStage.php
+│       ├── SupportPhase.php
+│       └── UsageDomain.php
+├── Exceptions
+│   └── Handler.php
+├── Infrastructure
+│   └── Repositories
+│       ├── EloquentEquipmentRepository.php
+│       ├── EloquentFacilityRepository.php
+│       ├── EloquentOutcomeRepository.php
+│       ├── EloquentProgramRepository.php
+│       └── EloquentProjectRepository.php
+├── Models
+│   ├── Equipment.php
+│   ├── Facility.php
+│   ├── Outcome.php
+│   ├── Participant.php
+│   ├── Program.php
+│   ├── Project.php
+│   ├── Service.php
+│   └── User.php
+├── Presentation
+│   ├── Http
+│   │   ├── Controllers
+│   │   │   ├── Auth
+│   │   │   │   ├── AuthenticatedSessionController.php
+│   │   │   │   ├── ConfirmablePasswordController.php
+│   │   │   │   ├── EmailVerificationNotificationController.php
+│   │   │   │   ├── EmailVerificationPromptController.php
+│   │   │   │   ├── NewPasswordController.php
+│   │   │   │   ├── PasswordController.php
+│   │   │   │   ├── PasswordResetLinkController.php
+│   │   │   │   ├── RegisteredUserController.php
+│   │   │   │   └── VerifyEmailController.php
+│   │   │   ├── Controller.php
+│   │   │   ├── EquipmentController.php
+│   │   │   ├── FacilityController.php
+│   │   │   ├── OutcomeController.php
+│   │   │   ├── ParticipantController.php
+│   │   │   ├── ProfileController.php
+│   │   │   ├── ProgramController.php
+│   │   │   ├── ProjectController.php
+│   │   │   └── ServiceController.php
+│   │   ├── Kernel.php
+│   │   ├── Middleware
+│   │   │   ├── Authenticate.php
+│   │   │   ├── EncryptCookies.php
+│   │   │   ├── HandleInertiaRequests.php
+│   │   │   ├── PreventRequestsDuringMaintenance.php
+│   │   │   ├── RedirectIfAuthenticated.php
+│   │   │   ├── TrimStrings.php
+│   │   │   ├── TrustHosts.php
+│   │   │   ├── TrustProxies.php
+│   │   │   ├── ValidateSignature.php
+│   │   │   └── VerifyCsrfToken.php
+│   │   └── Requests
+│   │       ├── Auth
+│   │       │   └── LoginRequest.php
+│   │       └── ProfileUpdateRequest.php
+│   └── Requests
+│       ├── CreateEquipmentRequest.php
+│       ├── CreateOutcomeRequest.php
+│       ├── CreateProjectRequest.php
+│       ├── UpdateEquipmentRequest.php
+│       ├── UpdateOutcomeRequest.php
+│       └── UpdateProjectRequest.php
+└── Providers
+    ├── AppServiceProvider.php
+    ├── AuthServiceProvider.php
+    ├── BroadcastServiceProvider.php
+    ├── EventServiceProvider.php
+    └── RouteServiceProvider.php
+
+24 directories, 87 files

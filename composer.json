@@ -19,6 +19,11 @@
             "Database\\Seeders\\": "database/seeders/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -61,6 +66,8 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require-dev": {
-        "phpunit/phpunit": "^10.5"
+        "fakerphp/faker": "^1.24",
+        "phpunit/phpunit": "^10.5",
+        "mockery/mockery": "^1.6"
     }
 }
