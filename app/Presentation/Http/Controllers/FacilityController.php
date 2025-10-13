@@ -2,47 +2,56 @@
 
 namespace App\Presentation\Http\Controllers;
 
-use App\Models\Facility;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use App\Application\UseCases\CreateFacilityUseCase;
+use App\Application\UseCases\UpdateFacilityUseCase;
+use App\Application\UseCases\DeleteFacilityUseCase;
+use App\Application\UseCases\GetFacilityUseCase;
+use App\Application\UseCases\ListFacilitiesUseCase;
+use App\Application\DTOs\CreateFacilityDTO;
+use App\Application\DTOs\UpdateFacilityDTO;
+use App\Domain\ValueObjects\FacilityType;
+use App\Application\Exceptions\FacilityNotFoundException;
 
 class FacilityController extends Controller
 {
+    public function __construct(
+        private CreateFacilityUseCase $createFacility,
+        private UpdateFacilityUseCase $updateFacility,
+        private DeleteFacilityUseCase $deleteFacility,
+        private GetFacilityUseCase $getFacility,
+        private ListFacilitiesUseCase $listFacilities
+    ) {}
+
     /**
      * Display a listing of facilities with optional filtering and search.
      */
     public function index(Request $request): View
     {
         try {
-            $query = Facility::query();
+            $filters = [
+                'search' => $request->get('search'),
+                'facility_type' => $request->get('facility_type'),
+                'partner_organization' => $request->get('partner_organization'),
+                'capability' => $request->get('capability'),
+                'per_page' => max(1, (int) $request->get('per_page', 15))
+            ];
 
-            if ($request->filled('search')) {
-                $query->search($request->get('search'));
-            }
-            if ($request->filled('facility_type')) {
-                $query->byType($request->get('facility_type'));
-            }
-            if ($request->filled('partner_organization')) {
-                $query->byPartner($request->get('partner_organization'));
-            }
-            if ($request->filled('capability')) {
-                $query->whereJsonContains('capabilities', $request->get('capability'));
-            }
-
-            $perPage = (int) $request->get('per_page', 15);
-            if ($perPage <= 0) { $perPage = 15; }
-
-            $facilities = $query->with(['services', 'equipment'])
-                ->orderBy('name')
-                ->paginate($perPage)
-                ->appends($request->query());
-
-            $facilityTypes = Facility::getFacilityTypeOptions();
-            $capabilities = Facility::getCapabilityOptions();
+            $facilities = $this->listFacilities->execute($filters);
+            
+            $facilityTypes = FacilityType::getAllOptions();
+            $capabilities = [
+                'cnc_machining' => 'CNC Machining',
+                'laser_cutting' => 'Laser Cutting',
+                '3d_printing' => '3D Printing',
+                'welding' => 'Welding',
+                'assembly' => 'Assembly',
+                'testing' => 'Testing',
+                'packaging' => 'Packaging'
+            ];
 
             return view('facilities.index', compact('facilities', 'facilityTypes', 'capabilities'));
         } catch (\Exception $e) {
@@ -54,8 +63,17 @@ class FacilityController extends Controller
     /** Show create form */
     public function create(): View
     {
-        $facilityTypes = Facility::getFacilityTypeOptions();
-        $capabilities = Facility::getCapabilityOptions();
+        $facilityTypes = FacilityType::getAllOptions();
+        $capabilities = [
+            'cnc_machining' => 'CNC Machining',
+            'laser_cutting' => 'Laser Cutting',
+            '3d_printing' => '3D Printing',
+            'welding' => 'Welding',
+            'assembly' => 'Assembly',
+            'testing' => 'Testing',
+            'packaging' => 'Packaging'
+        ];
+        
         return view('facilities.create', compact('facilityTypes', 'capabilities'));
     }
 
@@ -63,28 +81,35 @@ class FacilityController extends Controller
     public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string|max:255|unique:facilities,name',
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
                 'location' => 'required|string|max:1000',
                 'description' => 'required|string|max:2000',
-                'partner_organization' => 'required|string|max:255',
-                'facility_type' => ['required', Rule::in(array_keys(Facility::getFacilityTypeOptions()))],
-                'capabilities' => 'required|array|min:1',
-                'capabilities.*' => [Rule::in(array_keys(Facility::getCapabilityOptions()))],
+                'facility_type' => 'required|string',
+                'capacity' => 'integer|min:0',
+                'equipment_list' => 'array',
+                'capabilities' => 'array',
+                'availability_status' => 'string|in:available,maintenance,unavailable',
             ]);
 
-            if ($validator->fails()) {
-                return back()->withErrors($validator)->withInput();
-            }
+            $dto = new CreateFacilityDTO(
+                name: $validated['name'],
+                description: $validated['description'],
+                location: $validated['location'],
+                facilityType: $validated['facility_type'],
+                capacity: $validated['capacity'] ?? 0,
+                equipmentList: $validated['equipment_list'] ?? [],
+                capabilities: $validated['capabilities'] ?? [],
+                availabilityStatus: $validated['availability_status'] ?? 'available'
+            );
 
-            $data = $validator->validated();
-            // Ensure numeric keys removed for clean JSON storage
-            $data['capabilities'] = array_values($data['capabilities']);
+            $facilityId = $this->createFacility->execute($dto);
 
-            $facility = Facility::create($data);
-
-            return redirect()->route('facilities.show', $facility)
+            return redirect()->route('facilities.show', $facilityId)
                 ->with('success', 'Facility created successfully');
+
+        } catch (\DomainException $e) {
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
         } catch (\Exception $e) {
             Log::error('Facility store failed: '.$e->getMessage());
             return back()->with('error', 'Failed to create facility')->withInput();
@@ -92,11 +117,13 @@ class FacilityController extends Controller
     }
 
     /** Show facility */
-    public function show(Facility $facility): View
+    public function show(string $id): View
     {
         try {
-            $facility->load(['services', 'equipment', 'projects']);
+            $facility = $this->getFacility->execute($id);
             return view('facilities.show', compact('facility'));
+        } catch (FacilityNotFoundException $e) {
+            return redirect()->route('facilities.index')->with('error', 'Facility not found');
         } catch (\Exception $e) {
             Log::error('Facility show failed: '.$e->getMessage());
             return view('facilities.show')->with('error', 'Failed to retrieve facility details');
@@ -104,43 +131,63 @@ class FacilityController extends Controller
     }
 
     /** Edit form */
-    public function edit(Facility $facility): View
+    public function edit(string $id): View
     {
-        $facilityTypes = Facility::getFacilityTypeOptions();
-        $capabilities = Facility::getCapabilityOptions();
-        return view('facilities.edit', compact('facility', 'facilityTypes', 'capabilities'));
+        try {
+            $facility = $this->getFacility->execute($id);
+            $facilityTypes = FacilityType::getAllOptions();
+            $capabilities = [
+                'cnc_machining' => 'CNC Machining',
+                'laser_cutting' => 'Laser Cutting',
+                '3d_printing' => '3D Printing',
+                'welding' => 'Welding',
+                'assembly' => 'Assembly',
+                'testing' => 'Testing',
+                'packaging' => 'Packaging'
+            ];
+            
+            return view('facilities.edit', compact('facility', 'facilityTypes', 'capabilities'));
+        } catch (FacilityNotFoundException $e) {
+            return redirect()->route('facilities.index')->with('error', 'Facility not found');
+        }
     }
 
     /** Update facility */
-    public function update(Request $request, Facility $facility): \Illuminate\Http\RedirectResponse
+    public function update(Request $request, string $id): \Illuminate\Http\RedirectResponse
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'name' => [
-                    'sometimes','required','string','max:255',
-                    Rule::unique('facilities', 'name')->ignore($facility->id)
-                ],
+            $validated = $request->validate([
+                'name' => 'sometimes|required|string|max:255',
                 'location' => 'sometimes|required|string|max:1000',
                 'description' => 'sometimes|required|string|max:2000',
-                'partner_organization' => 'sometimes|required|string|max:255',
-                'facility_type' => ['sometimes','required', Rule::in(array_keys(Facility::getFacilityTypeOptions()))],
-                'capabilities' => 'sometimes|required|array|min:1',
-                'capabilities.*' => [Rule::in(array_keys(Facility::getCapabilityOptions()))],
+                'facility_type' => 'sometimes|required|string',
+                'capacity' => 'sometimes|integer|min:0',
+                'equipment_list' => 'sometimes|array',
+                'capabilities' => 'sometimes|array',
+                'availability_status' => 'sometimes|string|in:available,maintenance,unavailable',
             ]);
 
-            if ($validator->fails()) {
-                return back()->withErrors($validator)->withInput();
-            }
+            $dto = new UpdateFacilityDTO(
+                id: $id,
+                name: $validated['name'] ?? null,
+                description: $validated['description'] ?? null,
+                location: $validated['location'] ?? null,
+                facilityType: $validated['facility_type'] ?? null,
+                capacity: $validated['capacity'] ?? null,
+                equipmentList: $validated['equipment_list'] ?? null,
+                capabilities: $validated['capabilities'] ?? null,
+                availabilityStatus: $validated['availability_status'] ?? null
+            );
 
-            $data = $validator->validated();
-            if (isset($data['capabilities'])) {
-                $data['capabilities'] = array_values($data['capabilities']);
-            }
+            $this->updateFacility->execute($dto);
 
-            $facility->update($data);
-
-            return redirect()->route('facilities.show', $facility)
+            return redirect()->route('facilities.show', $id)
                 ->with('success', 'Facility updated successfully');
+
+        } catch (\DomainException $e) {
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
+        } catch (FacilityNotFoundException $e) {
+            return redirect()->route('facilities.index')->with('error', 'Facility not found');
         } catch (\Exception $e) {
             Log::error('Facility update failed: '.$e->getMessage());
             return back()->with('error', 'Failed to update facility')->withInput();
@@ -148,17 +195,16 @@ class FacilityController extends Controller
     }
 
     /** Destroy facility */
-    public function destroy(Facility $facility): \Illuminate\Http\RedirectResponse
+    public function destroy(string $id): \Illuminate\Http\RedirectResponse
     {
         try {
-            if ($facility->projects()->exists()) {
-                return back()->with('error', 'Cannot delete facility with active projects');
-            }
-            if ($facility->services()->exists() || $facility->equipment()->exists()) {
-                return back()->with('error', 'Cannot delete facility with services or equipment');
-            }
-            $facility->delete();
+            $this->deleteFacility->execute($id);
             return redirect()->route('facilities.index')->with('success', 'Facility deleted successfully');
+            
+        } catch (\DomainException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (FacilityNotFoundException $e) {
+            return redirect()->route('facilities.index')->with('error', 'Facility not found');
         } catch (\Exception $e) {
             Log::error('Facility delete failed: '.$e->getMessage());
             return back()->with('error', 'Failed to delete facility');
@@ -173,7 +219,7 @@ class FacilityController extends Controller
         try {
             return response()->json([
                 'success' => true,
-                'data' => Facility::getFacilityTypeOptions(),
+                'data' => FacilityType::getAllOptions(),
                 'message' => 'Facility types retrieved successfully'
             ]);
         } catch (\Exception $e) {
@@ -191,9 +237,19 @@ class FacilityController extends Controller
     public function getCapabilities(): JsonResponse
     {
         try {
+            $capabilities = [
+                'cnc_machining' => 'CNC Machining',
+                'laser_cutting' => 'Laser Cutting',
+                '3d_printing' => '3D Printing',
+                'welding' => 'Welding',
+                'assembly' => 'Assembly',
+                'testing' => 'Testing',
+                'packaging' => 'Packaging'
+            ];
+
             return response()->json([
                 'success' => true,
-                'data' => Facility::getCapabilityOptions(),
+                'data' => $capabilities,
                 'message' => 'Capabilities retrieved successfully'
             ]);
         } catch (\Exception $e) {
@@ -211,17 +267,9 @@ class FacilityController extends Controller
     public function getStats(): JsonResponse
     {
         try {
-            $stats = [
-                'total_facilities' => Facility::count(),
-                'by_type' => Facility::selectRaw('facility_type, COUNT(*) as count')
-                    ->groupBy('facility_type')
-                    ->pluck('count', 'facility_type'),
-                'by_partner' => Facility::selectRaw('partner_organization, COUNT(*) as count')
-                    ->groupBy('partner_organization')
-                    ->pluck('count', 'partner_organization'),
-                'total_services' => Facility::withCount('services')->get()->sum('services_count'),
-                'total_equipment' => Facility::withCount('equipment')->get()->sum('equipment_count'),
-            ];
+            // This would typically use a dedicated use case for statistics
+            // For now, keeping the existing logic but this should be refactored
+            $stats = $this->listFacilities->getStatistics();
 
             return response()->json([
                 'success' => true,

@@ -35,12 +35,8 @@ class ProgramController extends Controller
         
         // Define focus areas and phases for filter dropdowns
         $focusAreas = [
-            'research' => 'Research',
-            'development' => 'Development', 
-            'innovation' => 'Innovation',
-            'technology' => 'Technology',
             'iot' => 'IoT',
-            'automation' => 'Automation',
+            'ai' => 'Artificial Intelligence',
             'renewable_energy' => 'Renewable Energy'
         ];
 

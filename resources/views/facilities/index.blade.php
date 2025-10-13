@@ -40,9 +40,15 @@ use Illuminate\Support\Str;
                 </select>
             </div>
             <div class="col-md-3">
-                <label for="partner_organization" class="form-label">Partner Organization</label>
-                <input type="text" class="form-control" id="partner_organization" name="partner_organization"
-                    value="{{ request('partner_organization') }}" placeholder="e.g., UniPod, UIRI">
+                <label for="capability" class="form-label">Capability</label>
+                <select class="form-select" id="capability" name="capability">
+                    <option value="">All Capabilities</option>
+                    @foreach($capabilities as $key => $value)
+                    <option value="{{ $key }}" {{ request('capability') == $key ? 'selected' : '' }}>
+                        {{ $value }}
+                    </option>
+                    @endforeach
+                </select>
             </div>
             <div class="col-md-2">
                 <label class="form-label">&nbsp;</label>
@@ -61,11 +67,11 @@ use Illuminate\Support\Str;
     <div class="card-header">
         <h5 class="card-title mb-0">
             <i class="fas fa-list me-2"></i>Facilities List
-            <span class="badge bg-secondary ms-2">{{ $facilities->total() }}</span>
+            <span class="badge bg-secondary ms-2">{{ is_array($facilities) ? count($facilities) : $facilities->count() }}</span>
         </h5>
     </div>
     <div class="card-body">
-        @if($facilities->count() > 0)
+        @if((is_array($facilities) ? count($facilities) : $facilities->count()) > 0)
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead class="table-light">
@@ -73,9 +79,9 @@ use Illuminate\Support\Str;
                         <th>Name</th>
                         <th>Type</th>
                         <th>Location</th>
-                        <th>Partner Organization</th>
-                        <th>Services</th>
-                        <th>Equipment</th>
+                        <th>Capacity</th>
+                        <th>Capabilities</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -83,34 +89,51 @@ use Illuminate\Support\Str;
                     @foreach($facilities as $facility)
                     <tr>
                         <td>
-                            <strong>{{ $facility->name }}</strong>
+                            <strong>{{ $facility->getName() }}</strong>
                             <br>
-                            <small class="text-muted">{{ Str::limit($facility->description, 60) }}</small>
+                            <small class="text-muted">{{ Str::limit($facility->getDescription(), 60) }}</small>
                         </td>
                         <td>
-                            <span class="badge bg-info">{{ $facilityTypes[$facility->facility_type] ?? $facility->facility_type }}</span>
+                            <span class="badge bg-info">{{ $facility->getFacilityType()->getDisplayName() }}</span>
                         </td>
-                        <td>{{ Str::limit($facility->location, 40) }}</td>
+                        <td>{{ Str::limit($facility->getLocation(), 40) }}</td>
                         <td>
-                            <span class="badge bg-secondary">{{ $facility->partner_organization }}</span>
+                            @if($facility->getCapacity() > 0)
+                                <span class="badge bg-primary">{{ $facility->getCapacity() }}</span>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
                         </td>
                         <td>
-                            <span class="badge bg-success">{{ $facility->services_count ?? $facility->services->count() }}</span>
+                            @if($facility->hasCapabilities())
+                                @foreach(array_slice($facility->getCapabilities(), 0, 2) as $capability)
+                                    <span class="badge bg-success me-1">{{ $capabilities[$capability] ?? $capability }}</span>
+                                @endforeach
+                                @if(count($facility->getCapabilities()) > 2)
+                                    <span class="badge bg-light text-dark">+{{ count($facility->getCapabilities()) - 2 }} more</span>
+                                @endif
+                            @else
+                                <span class="text-muted">None</span>
+                            @endif
                         </td>
                         <td>
-                            <span class="badge bg-info">{{ $facility->equipment_count ?? $facility->equipment->count() }}</span>
+                            @if($facility->isAvailable())
+                                <span class="badge bg-success">Available</span>
+                            @else
+                                <span class="badge bg-warning">{{ ucfirst($facility->getAvailabilityStatus()) }}</span>
+                            @endif
                         </td>
                         <td>
                             <div class="btn-group" role="group">
-                                <a href="{{ route('facilities.show', $facility->id) }}"
+                                <a href="{{ route('facilities.show', $facility->getId()) }}"
                                     class="btn btn-sm btn-outline-primary" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('facilities.edit', $facility->id) }}"
+                                <a href="{{ route('facilities.edit', $facility->getId()) }}"
                                     class="btn btn-sm btn-outline-warning" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('facilities.destroy', $facility->id) }}"
+                                <form action="{{ route('facilities.destroy', $facility->getId()) }}"
                                     method="POST" class="d-inline"
                                     onsubmit="return confirm('Are you sure you want to delete this facility?')">
                                     @csrf
@@ -127,8 +150,8 @@ use Illuminate\Support\Str;
             </table>
         </div>
 
-        <!-- Pagination -->
-        @if($facilities->hasPages())
+        <!-- Pagination (if using paginated results) -->
+        @if(method_exists($facilities, 'hasPages') && $facilities->hasPages())
         <div class="d-flex justify-content-center mt-4">
             {{ $facilities->appends(request()->query())->links() }}
         </div>
@@ -138,14 +161,14 @@ use Illuminate\Support\Str;
             <i class="fas fa-building fa-3x text-muted mb-3"></i>
             <h5 class="text-muted">No facilities found</h5>
             <p class="text-muted">
-                @if(request()->has('search') || request()->has('facility_type') || request()->has('partner_organization'))
+                @if(request()->has('search') || request()->has('facility_type') || request()->has('capability'))
                 Try adjusting your search criteria or
                 <a href="{{ route('facilities.index') }}">clear all filters</a>.
                 @else
                 Get started by creating your first facility.
                 @endif
             </p>
-            @if(!request()->has('search') && !request()->has('facility_type') && !request()->has('partner_organization'))
+            @if(!request()->has('search') && !request()->has('facility_type') && !request()->has('capability'))
             <a href="{{ route('facilities.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus me-1"></i>Create First Facility
             </a>
@@ -170,6 +193,10 @@ use Illuminate\Support\Str;
     .btn-group .btn:last-child {
         margin-right: 0;
     }
+
+    .badge {
+        font-size: 0.75em;
+    }
 </style>
 @endpush
 
@@ -177,6 +204,10 @@ use Illuminate\Support\Str;
 <script>
     // Auto-submit form when filters change
     document.getElementById('facility_type').addEventListener('change', function() {
+        this.form.submit();
+    });
+
+    document.getElementById('capability').addEventListener('change', function() {
         this.form.submit();
     });
 
