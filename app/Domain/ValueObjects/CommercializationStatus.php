@@ -4,7 +4,7 @@ namespace App\Domain\ValueObjects;
 
 class CommercializationStatus
 {
-    private const VALID_STATUSES = ['not_ready', 'ready', 'in_progress', 'commercialized'];
+    private const VALID_STATUSES = ['not_applicable', 'not_ready', 'ready', 'in_progress', 'commercialized'];
     
     private string $value;
 
@@ -25,6 +25,7 @@ class CommercializationStatus
     public function getDisplayName(): string
     {
         return match($this->value) {
+            'not_applicable' => 'Not Applicable',
             'not_ready' => 'Not Ready',
             'ready' => 'Ready',
             'in_progress' => 'In Progress',
@@ -40,6 +41,7 @@ class CommercializationStatus
     public static function getAllOptions(): array
     {
         return [
+            'not_applicable' => 'Not Applicable',
             'not_ready' => 'Not Ready',
             'ready' => 'Ready',
             'in_progress' => 'In Progress',

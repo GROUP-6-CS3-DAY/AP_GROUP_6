@@ -226,6 +226,7 @@ class OutcomeTest extends TestCase
         
         $mockCommercializationStatus = $this->createMock(CommercializationStatus::class);
         $mockCommercializationStatus->method('getValue')->willReturn('ready');
+        $mockCommercializationStatus->method('isCommercializable')->willReturn(true);
 
         $outcome = new Outcome(
             id: 'outcome-123',
@@ -336,6 +337,7 @@ class OutcomeTest extends TestCase
         
         $mockCommercializationStatus = $this->createMock(CommercializationStatus::class);
         $mockCommercializationStatus->method('getValue')->willReturn('commercialized');
+        $mockCommercializationStatus->method('isCommercializable')->willReturn(true);
 
         $outcome = new Outcome(
             id: 'outcome-123',
