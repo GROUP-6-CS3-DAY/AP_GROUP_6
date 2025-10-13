@@ -12,8 +12,8 @@ class UpdateOutcomeDTO
         public readonly string $qualityCertification,
         public readonly string $dateAchieved,
         public readonly string $commercializationStatus,
-        public readonly string $impact,
-        public readonly string $artifactLink
+        public readonly string $impact = '',
+        public readonly string $artifactLink = ''
     ) {}
 
     public function toArray(): array
