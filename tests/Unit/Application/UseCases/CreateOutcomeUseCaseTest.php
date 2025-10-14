@@ -33,7 +33,7 @@ class CreateOutcomeUseCaseTest extends TestCase
             outcomeType: 'publication',
             qualityCertification: 'Peer Reviewed',
             dateAchieved: '2024-01-15',
-            commercializationStatus: 'not_applicable',
+            commercializationStatus: 'Not Applicable', // Use valid status from CommercializationStatus
             impact: 'Significant contribution to AI research field',
             artifactLink: 'https://example.com/paper.pdf'
         );
@@ -100,7 +100,7 @@ class CreateOutcomeUseCaseTest extends TestCase
             outcomeType: 'publication',
             qualityCertification: '',
             dateAchieved: '2024-01-15',
-            commercializationStatus: 'not_applicable',
+            commercializationStatus: '', // Use empty string instead of invalid status
             impact: '',
             artifactLink: ''
         );
@@ -133,7 +133,7 @@ class CreateOutcomeUseCaseTest extends TestCase
             outcomeType: 'publication',
             qualityCertification: '',
             dateAchieved: $futureDate,
-            commercializationStatus: 'not_applicable',
+            commercializationStatus: '', // Use empty string instead of invalid status
             impact: '',
             artifactLink: ''
         );
@@ -151,6 +151,37 @@ class CreateOutcomeUseCaseTest extends TestCase
 
         $this->expectException(\DomainException::class);
         $this->expectExceptionMessage('Outcome date achieved cannot be in the future');
+
+        $this->useCase->execute($dto);
+    }
+
+    public function test_throws_exception_for_invalid_commercialization_status()
+    {
+        $dto = new CreateOutcomeDTO(
+            projectId: 'proj-1',
+            title: 'Valid Title',
+            description: 'Valid description here',
+            outcomeType: 'publication',
+            qualityCertification: '',
+            dateAchieved: '2024-01-15',
+            commercializationStatus: 'invalid_status', // Invalid status to test validation
+            impact: '',
+            artifactLink: ''
+        );
+
+        $mockProject = $this->createMock(Project::class);
+        $this->mockProjectRepository
+            ->expects($this->once())
+            ->method('findById')
+            ->with('proj-1')
+            ->willReturn($mockProject);
+
+        $this->mockOutcomeRepository
+            ->expects($this->never())
+            ->method('save');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid commercialization status: invalid_status');
 
         $this->useCase->execute($dto);
     }

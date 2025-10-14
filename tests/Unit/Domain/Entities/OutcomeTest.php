@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use App\Domain\Entities\Outcome;
 use App\Domain\ValueObjects\OutcomeType;
 use App\Domain\ValueObjects\CommercializationStatus;
+use Carbon\Carbon;
 
 class OutcomeTest extends TestCase
 {
@@ -19,14 +20,16 @@ class OutcomeTest extends TestCase
         $mockCommercializationStatus->method('getValue')->willReturn('ready');
         $mockCommercializationStatus->method('getDisplayName')->willReturn('Ready');
 
+        $dateAchieved = Carbon::parse('2024-01-15');
+
         $outcome = new Outcome(
             id: 'outcome-123',
-            projectId: 'proj-1',
             title: 'Research Publication on AI Innovation',
             description: 'Published research paper on artificial intelligence innovations in healthcare',
+            projectId: 'proj-1',
             outcomeType: $mockOutcomeType,
             qualityCertification: 'ISO 9001',
-            dateAchieved: '2024-01-15',
+            dateAchieved: $dateAchieved,
             commercializationStatus: $mockCommercializationStatus,
             impact: 'Significant contribution to healthcare AI research',
             artifactLink: 'https://example.com/publication.pdf'
@@ -35,7 +38,7 @@ class OutcomeTest extends TestCase
         $this->assertEquals('outcome-123', $outcome->getId());
         $this->assertEquals('proj-1', $outcome->getProjectId());
         $this->assertEquals('Research Publication on AI Innovation', $outcome->getTitle());
-        $this->assertEquals('2024-01-15', $outcome->getDateAchieved());
+        $this->assertEquals($dateAchieved->format('Y-m-d'), $outcome->getDateAchieved()->format('Y-m-d'));
         $this->assertEquals('publication', $outcome->getOutcomeType()->getValue());
         $this->assertEquals('ready', $outcome->getCommercializationStatus()->getValue());
     }
@@ -50,12 +53,12 @@ class OutcomeTest extends TestCase
 
         new Outcome(
             id: 'outcome-123',
-            projectId: '', // Empty project ID should fail
             title: 'Valid Title',
             description: 'Valid description here',
+            projectId: '', // Empty project ID should fail
             outcomeType: $mockOutcomeType,
             qualityCertification: '',
-            dateAchieved: '2024-01-15',
+            dateAchieved: Carbon::parse('2024-01-15'),
             commercializationStatus: $mockCommercializationStatus
         );
     }
@@ -70,12 +73,12 @@ class OutcomeTest extends TestCase
 
         new Outcome(
             id: 'outcome-123',
-            projectId: 'proj-1',
             title: '', // Empty title should fail
             description: 'Valid description here',
+            projectId: 'proj-1',
             outcomeType: $mockOutcomeType,
             qualityCertification: '',
-            dateAchieved: '2024-01-15',
+            dateAchieved: Carbon::parse('2024-01-15'),
             commercializationStatus: $mockCommercializationStatus
         );
     }
@@ -90,12 +93,12 @@ class OutcomeTest extends TestCase
 
         new Outcome(
             id: 'outcome-123',
-            projectId: 'proj-1',
             title: 'Valid Title',
             description: '', // Empty description should fail
+            projectId: 'proj-1',
             outcomeType: $mockOutcomeType,
             qualityCertification: '',
-            dateAchieved: '2024-01-15',
+            dateAchieved: Carbon::parse('2024-01-15'),
             commercializationStatus: $mockCommercializationStatus
         );
     }
@@ -110,12 +113,12 @@ class OutcomeTest extends TestCase
 
         new Outcome(
             id: 'outcome-123',
-            projectId: 'proj-1',
             title: 'ABC', // Too short
             description: 'Valid description here',
+            projectId: 'proj-1',
             outcomeType: $mockOutcomeType,
             qualityCertification: '',
-            dateAchieved: '2024-01-15',
+            dateAchieved: Carbon::parse('2024-01-15'),
             commercializationStatus: $mockCommercializationStatus
         );
     }
@@ -130,12 +133,12 @@ class OutcomeTest extends TestCase
 
         new Outcome(
             id: 'outcome-123',
-            projectId: 'proj-1',
             title: 'Valid Title',
             description: 'Short desc', // Too short
+            projectId: 'proj-1',
             outcomeType: $mockOutcomeType,
             qualityCertification: '',
-            dateAchieved: '2024-01-15',
+            dateAchieved: Carbon::parse('2024-01-15'),
             commercializationStatus: $mockCommercializationStatus
         );
     }
@@ -152,9 +155,9 @@ class OutcomeTest extends TestCase
 
         new Outcome(
             id: 'outcome-123',
-            projectId: 'proj-1',
             title: 'Valid Title',
             description: 'Valid description here',
+            projectId: 'proj-1',
             outcomeType: $mockOutcomeType,
             qualityCertification: '',
             dateAchieved: $futureDate, // Future date should fail

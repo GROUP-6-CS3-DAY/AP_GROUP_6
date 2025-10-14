@@ -52,12 +52,14 @@ class ParticipantTest extends TestCase
     public function test_participant_fillable_attributes()
     {
         $expectedFillable = [
+            'id',
             'full_name',
             'email',
             'affiliation',
             'specialization',
             'institution',
-            'cross_skill_trained'
+            'cross_skill_trained',
+            'project_id'
         ];
 
         $participant = new Participant();

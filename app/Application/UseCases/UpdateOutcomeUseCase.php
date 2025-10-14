@@ -5,6 +5,9 @@ namespace App\Application\UseCases;
 use App\Domain\Repositories\OutcomeRepositoryInterface;
 use App\Domain\Repositories\ProjectRepositoryInterface;
 use App\Application\DTOs\UpdateOutcomeDTO;
+use App\Domain\ValueObjects\OutcomeType;
+use App\Domain\ValueObjects\CommercializationStatus;
+use Carbon\Carbon;
 
 class UpdateOutcomeUseCase
 {
@@ -33,10 +36,10 @@ class UpdateOutcomeUseCase
             title: $dto->title,
             description: $dto->description,
             projectId: $dto->projectId,
-            outcomeType: $dto->outcomeType,
+            outcomeType: new OutcomeType($dto->outcomeType),
             qualityCertification: $dto->qualityCertification ?? '',
-            dateAchieved: \Carbon\Carbon::parse($dto->dateAchieved),
-            commercializationStatus: $dto->commercializationStatus ?? '',
+            dateAchieved: Carbon::parse($dto->dateAchieved),
+            commercializationStatus: new CommercializationStatus($dto->commercializationStatus ?? ''),
             impact: $dto->impact ?? '',
             artifactLink: $dto->artifactLink ?? ''
         );
