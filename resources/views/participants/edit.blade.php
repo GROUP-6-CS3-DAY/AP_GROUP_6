@@ -1,21 +1,42 @@
 @extends('layouts.app')
 
-@section('title', 'Edit ' . $participant->full_name . ' - InnoTrack')
+@section('title', 'Edit ' . $participant->getFullName() . ' - InnoTrack')
 
 @section('content')
 @php
 use Illuminate\Support\Str;
 @endphp
-<div class="row g-4 align-items-start"> <!-- changed row -->
-    <div class="col-lg-8 d-flex"> <!-- added d-flex -->
-        <div class="card w-100 h-100"> <!-- full height card -->
+
+<!-- Add error display at the top -->
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+@if($errors->any())
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <h6 class="alert-heading">Please fix the following errors:</h6>
+    <ul class="mb-0">
+        @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+<div class="row g-4 align-items-start">
+    <div class="col-lg-8 d-flex">
+        <div class="card w-100 h-100">
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="fas fa-user me-2"></i>Edit Participant Information
                 </h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('participants.update', $participant) }}" method="POST" id="participantForm">
+                <form action="{{ route('participants.update', $participant->getId()) }}" method="POST" id="participantForm">
                     @csrf
                     @method('PUT')
 
@@ -23,7 +44,7 @@ use Illuminate\Support\Str;
                         <div class="col-md-6">
                             <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('full_name') is-invalid @enderror"
-                                id="full_name" name="full_name" value="{{ old('full_name', $participant->full_name) }}" required>
+                                id="full_name" name="full_name" value="{{ old('full_name', $participant->getFullName()) }}" required>
                             @error('full_name')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -31,7 +52,7 @@ use Illuminate\Support\Str;
                         <div class="col-md-6">
                             <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
                             <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                id="email" name="email" value="{{ old('email', $participant->email) }}" required>
+                                id="email" name="email" value="{{ old('email', $participant->getEmail()) }}" required>
                             @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -44,23 +65,26 @@ use Illuminate\Support\Str;
                             <select class="form-select @error('affiliation') is-invalid @enderror"
                                 id="affiliation" name="affiliation" required>
                                 <option value="">Select Affiliation</option>
-                                <option value="cs" {{ old('affiliation', $participant->affiliation) == 'cs' ? 'selected' : '' }}>Computer Science</option>
-                                <option value="se" {{ old('affiliation', $participant->affiliation) == 'se' ? 'selected' : '' }}>Software Engineering</option>
-                                <option value="engineering" {{ old('affiliation', $participant->affiliation) == 'engineering' ? 'selected' : '' }}>Engineering</option>
-                                <option value="other" {{ old('affiliation', $participant->affiliation) == 'other' ? 'selected' : '' }}>Other</option>
+                                @foreach($affiliations as $key => $value)
+                                <option value="{{ $key }}" {{ old('affiliation', $participant->getAffiliation()->getValue()) == $key ? 'selected' : '' }}>
+                                    {{ $value }}
+                                </option>
+                                @endforeach
                             </select>
                             @error('affiliation')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <label for="specialization" class="form-label">Specialization <span class="text-danger">*</span></label>
+                            <label for="specialization" class="form-label">Specialization</label>
                             <select class="form-select @error('specialization') is-invalid @enderror"
-                                id="specialization" name="specialization" required>
-                                <option value="">Select Specialization</option>
-                                <option value="software" {{ old('specialization', $participant->specialization) == 'software' ? 'selected' : '' }}>Software</option>
-                                <option value="hardware" {{ old('specialization', $participant->specialization) == 'hardware' ? 'selected' : '' }}>Hardware</option>
-                                <option value="business" {{ old('specialization', $participant->specialization) == 'business' ? 'selected' : '' }}>Business</option>
+                                id="specialization" name="specialization">
+                                <option value="">Select Specialization (Optional)</option>
+                                @foreach($specializations as $key => $value)
+                                <option value="{{ $key }}" {{ old('specialization', $participant->getSpecialization()?->getValue()) == $key ? 'selected' : '' }}>
+                                    {{ $value }}
+                                </option>
+                                @endforeach
                             </select>
                             @error('specialization')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -74,35 +98,31 @@ use Illuminate\Support\Str;
                             <select class="form-select @error('institution') is-invalid @enderror"
                                 id="institution" name="institution" required>
                                 <option value="">Select Institution</option>
-                                <option value="scit" {{ old('institution', $participant->institution) == 'scit' ? 'selected' : '' }}>SCIT</option>
-                                <option value="cedat" {{ old('institution', $participant->institution) == 'cedat' ? 'selected' : '' }}>CEDAT</option>
-                                <option value="unipod" {{ old('institution', $participant->institution) == 'unipod' ? 'selected' : '' }}>UniPod</option>
-                                <option value="uiri" {{ old('institution', $participant->institution) == 'uiri' ? 'selected' : '' }}>UIRI</option>
-                                <option value="lwera" {{ old('institution', $participant->institution) == 'lwera' ? 'selected' : '' }}>Lwera</option>
+                                @foreach($institutions as $key => $value)
+                                <option value="{{ $key }}" {{ old('institution', $participant->getInstitution()) == $key ? 'selected' : '' }}>
+                                    {{ $value }}
+                                </option>
+                                @endforeach
                             </select>
                             @error('institution')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">Select the institution or organization.</div>
                         </div>
                         <div class="col-md-6">
                             <label for="project_id" class="form-label">Assign to Project</label>
                             <select class="form-select @error('project_id') is-invalid @enderror"
                                 id="project_id" name="project_id">
                                 <option value="">No project assignment</option>
-                                @if(isset($projects))
-                                    @foreach($projects as $project)
-                                        <option value="{{ $project->project_id }}" 
-                                            {{ (old('project_id') ?? $participant->project_id ?? '') == $project->project_id ? 'selected' : '' }}>
-                                            {{ $project->title }}
-                                        </option>
-                                    @endforeach
-                                @endif
+                                @foreach($projects as $project)
+                                    <option value="{{ $project->getId() }}" 
+                                        {{ (old('project_id') ?? $participant->getProjectId()) == $project->getId() ? 'selected' : '' }}>
+                                        {{ $project->getTitle() }}
+                                    </option>
+                                @endforeach
                             </select>
                             @error('project_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">Change project assignment if needed.</div>
                         </div>
                     </div>
 
@@ -110,7 +130,7 @@ use Illuminate\Support\Str;
                         <div class="form-check form-switch">
                             <input class="form-check-input @error('cross_skill_trained') is-invalid @enderror" 
                                 type="checkbox" role="switch" id="cross_skill_trained" name="cross_skill_trained" 
-                                value="1" {{ old('cross_skill_trained', $participant->cross_skill_trained) ? 'checked' : '' }}>
+                                value="1" {{ old('cross_skill_trained', $participant->isCrossSkillTrained()) ? 'checked' : '' }}>
                             <label class="form-check-label" for="cross_skill_trained">
                                 Cross Skill Trained
                             </label>
@@ -118,11 +138,11 @@ use Illuminate\Support\Str;
                         @error('cross_skill_trained')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
-                        <div class="form-text">Check if the participant has completed cross-skill training.</div>
+                        <div class="form-text">Check if the participant has completed cross-skill training. Required when specialization is specified.</div>
                     </div>
 
                     <div class="d-flex justify-content-between mt-4">
-                        <a href="{{ route('participants.show', $participant) }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('participants.show', $participant->getId()) }}" class="btn btn-outline-secondary">
                             <i class="fas fa-times me-1"></i>Cancel
                         </a>
                         <button type="submit" class="btn btn-warning">
@@ -134,7 +154,7 @@ use Illuminate\Support\Str;
         </div>
     </div>
 
-    <div class="col-lg-4 d-flex flex-column gap-4"> <!-- right column stacked -->
+    <div class="col-lg-4 d-flex flex-column gap-4">
         <div class="card">
             <div class="card-header">
                 <h6 class="card-title mb-0">
@@ -144,18 +164,20 @@ use Illuminate\Support\Str;
             <div class="card-body">
                 <h6>Participant Details</h6>
                 <ul class="list-unstyled small text-muted mb-0">
-                    <li><strong>Name:</strong> {{ $participant->full_name }}</li>
-                    <li><strong>Email:</strong> {{ $participant->email }}</li>
-                    <li><strong>Affiliation:</strong> {{ ucfirst($participant->affiliation) }}</li>
-                    <li><strong>Specialization:</strong> {{ ucfirst($participant->specialization) }}</li>
-                    <li><strong>Institution:</strong> {{ strtoupper($participant->institution) }}</li>
-                    <li><strong>Cross Skill Trained:</strong> {{ $participant->cross_skill_trained ? 'Yes' : 'No' }}</li>
-                    <li><strong>Created:</strong> {{ $participant->created_at->format('M d, Y') }}</li>
-                    <li><strong>Updated:</strong> {{ $participant->updated_at->format('M d, Y') }}</li>
+                    <li><strong>Name:</strong> {{ $participant->getFullName() }}</li>
+                    <li><strong>Email:</strong> {{ $participant->getEmail() }}</li>
+                    <li><strong>Affiliation:</strong> {{ $participant->getAffiliation()->getDisplayName() }}</li>
+                    <li><strong>Institution:</strong> {{ strtoupper($participant->getInstitution()) }}</li>
+                    @if($participant->hasSpecialization())
+                    <li><strong>Specialization:</strong> {{ $participant->getSpecialization()->getDisplayName() }}</li>
+                    @endif
+                    <li><strong>Cross Skill Trained:</strong> {{ $participant->isCrossSkillTrained() ? 'Yes' : 'No' }}</li>
+                    <li><strong>Project Assignment:</strong> {{ $participant->isAssignedToProject() ? 'Assigned' : 'Unassigned' }}</li>
                 </ul>
             </div>
         </div>
-        @if($participant->project)
+
+        @if($participant->isAssignedToProject())
         <div class="card">
             <div class="card-header">
                 <h6 class="card-title mb-0">
@@ -163,17 +185,24 @@ use Illuminate\Support\Str;
                 </h6>
             </div>
             <div class="card-body">
-                <h6>{{ $participant->project->name }}</h6>
-                <ul class="list-unstyled small text-muted mb-3">
-                    <li><strong>Status:</strong> {{ ucfirst($participant->project->status ?? 'Active') }}</li>
-                    <li><strong>Description:</strong> {{ Str::limit($participant->project->description ?? 'N/A', 100) }}</li>
-                </ul>
-                <a href="{{ route('projects.show', $participant->project) }}" class="btn btn-sm btn-outline-primary">
+                @php
+                    $assignedProject = collect($projects)->firstWhere(fn($p) => $p->getId() === $participant->getProjectId());
+                @endphp
+                @if($assignedProject)
+                <h6>{{ $assignedProject->getTitle() }}</h6>
+                <p class="small text-muted mb-3">{{ Str::limit($assignedProject->getDescription(), 100) }}</p>
+                <a href="{{ route('projects.show', $assignedProject->getId()) }}" class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-eye me-1"></i>View Project
                 </a>
+                @else
+                <div class="alert alert-warning">
+                    <small>Project assignment exists but project not found.</small>
+                </div>
+                @endif
             </div>
         </div>
         @endif
+
         <div class="card">
             <div class="card-header">
                 <h6 class="card-title mb-0">
@@ -181,29 +210,23 @@ use Illuminate\Support\Str;
                 </h6>
             </div>
             <div class="card-body small text-muted">
-                <h6>Affiliations</h6>
+                <h6>Business Rules</h6>
                 <ul class="list-unstyled mb-3">
-                    <li><strong>Computer Science:</strong> CS students and professionals</li>
-                    <li><strong>Software Engineering:</strong> SE focused individuals</li>
-                    <li><strong>Engineering:</strong> General engineering disciplines</li>
-                    <li><strong>Other:</strong> Non-technical or interdisciplinary</li>
+                    <li><i class="fas fa-check text-success me-1"></i>Cross-skill training is required when specialization is specified</li>
+                    <li><i class="fas fa-check text-success me-1"></i>Email must be unique across all participants</li>
+                    <li><i class="fas fa-info text-info me-1"></i>Participants can be assigned to one project at a time</li>
                 </ul>
-                <h6>Specializations</h6>
-                <ul class="list-unstyled mb-3">
-                    <li><strong>Software:</strong> Programming and software development</li>
-                    <li><strong>Hardware:</strong> Electronics and physical systems</li>
-                    <li><strong>Business:</strong> Entrepreneurship and business development</li>
-                </ul>
-                <h6>Institutions</h6>
+                
+                <h6>Field Descriptions</h6>
                 <ul class="list-unstyled mb-0">
-                    <li><strong>SCIT:</strong> School of Computing and IT</li>
-                    <li><strong>CEDAT:</strong> College of Engineering</li>
-                    <li><strong>UniPod:</strong> University Innovation Hub</li>
-                    <li><strong>UIRI:</strong> Uganda Industrial Research Institute</li>
-                    <li><strong>Lwera:</strong> Lwera Electronics Laboratory</li>
+                    <li><strong>Affiliation:</strong> Academic or professional background</li>
+                    <li><strong>Specialization:</strong> Primary skill area (optional)</li>
+                    <li><strong>Cross-Skill:</strong> Ability to work across domains</li>
+                    <li><strong>Institution:</strong> Organizational affiliation</li>
                 </ul>
             </div>
         </div>
+
         <div class="alert alert-warning mb-0">
             <i class="fas fa-exclamation-triangle me-2"></i>
             <strong>Note:</strong> Changing participant details may affect project assignments and collaborations.
@@ -217,67 +240,107 @@ use Illuminate\Support\Str;
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('participantForm');
         const emailField = document.getElementById('email');
+        const specializationField = document.getElementById('specialization');
+        const crossSkillField = document.getElementById('cross_skill_trained');
 
-        // Email validation
-        emailField.addEventListener('blur', function() {
-            const email = this.value.trim();
-            if (email && !isValidEmail(email)) {
-                this.classList.add('is-invalid');
-                let feedback = this.parentNode.querySelector('.invalid-feedback');
-                if (!feedback) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    this.parentNode.appendChild(feedback);
-                }
-                feedback.textContent = 'Please enter a valid email address.';
+        // Debug: Log form data before submission
+        form.addEventListener('submit', function(e) {
+            console.log('Form submission data:');
+            console.log('Full Name:', document.getElementById('full_name').value);
+            console.log('Email:', emailField.value);
+            console.log('Affiliation:', document.getElementById('affiliation').value);
+            console.log('Institution:', document.getElementById('institution').value);
+            console.log('Specialization:', specializationField.value);
+            console.log('Cross Skill Trained:', crossSkillField.checked);
+            console.log('Project ID:', document.getElementById('project_id').value);
+            
+            // Validate business rules
+            let valid = true;
+            let errors = [];
+
+            // Check if cross-skill training requires specialization
+            if (crossSkillField.checked && !specializationField.value) {
+                errors.push('Specialization is required when cross-skill training is selected.');
+                showFieldError(specializationField, 'Specialization is required when cross-skill training is selected.');
+                valid = false;
             } else {
-                this.classList.remove('is-invalid');
+                clearFieldError(specializationField);
+            }
+
+            // Email validation
+            const email = emailField.value.trim();
+            if (email && !isValidEmail(email)) {
+                errors.push('Please enter a valid email address.');
+                showFieldError(emailField, 'Please enter a valid email address.');
+                valid = false;
+            } else {
+                clearFieldError(emailField);
+            }
+
+            if (!valid) {
+                e.preventDefault();
+                alert('Please fix the following errors:\n' + errors.join('\n'));
+                return false;
             }
         });
+
+        // Real-time validation
+        crossSkillField.addEventListener('change', function() {
+            validateCrossSkillSpecialization();
+        });
+
+        specializationField.addEventListener('change', function() {
+            validateCrossSkillSpecialization();
+        });
+
+        emailField.addEventListener('blur', function() {
+            validateEmail();
+        });
+
+        function validateCrossSkillSpecialization() {
+            if (crossSkillField.checked && !specializationField.value) {
+                showFieldError(specializationField, 'Specialization is required when cross-skill training is selected.');
+                return false;
+            } else {
+                clearFieldError(specializationField);
+                return true;
+            }
+        }
+
+        function validateEmail() {
+            const email = emailField.value.trim();
+            if (email && !isValidEmail(email)) {
+                showFieldError(emailField, 'Please enter a valid email address.');
+                return false;
+            } else {
+                clearFieldError(emailField);
+                return true;
+            }
+        }
 
         function isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
         }
 
-        // Form validation
-        form.addEventListener('submit', function(e) {
-            const fullName = document.getElementById('full_name').value;
-            const email = document.getElementById('email').value;
-            const affiliation = document.getElementById('affiliation').value;
-            const specialization = document.getElementById('specialization').value;
-            const institution = document.getElementById('institution').value;
-
-            if (!fullName.trim()) {
-                e.preventDefault();
-                alert('Please enter the participant\'s full name.');
-                return false;
+        function showFieldError(field, message) {
+            field.classList.add('is-invalid');
+            let feedback = field.parentNode.querySelector('.invalid-feedback');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.className = 'invalid-feedback';
+                field.parentNode.appendChild(feedback);
             }
+            feedback.textContent = message;
+        }
 
-            if (!email.trim() || !isValidEmail(email.trim())) {
-                e.preventDefault();
-                alert('Please enter a valid email address.');
-                return false;
+        function clearFieldError(field) {
+            field.classList.remove('is-invalid');
+            const feedback = field.parentNode.querySelector('.invalid-feedback');
+            if (feedback) {
+                feedback.remove();
             }
-
-            if (!affiliation) {
-                e.preventDefault();
-                alert('Please select an affiliation.');
-                return false;
-            }
-
-            if (!specialization) {
-                e.preventDefault();
-                alert('Please select a specialization.');
-                return false;
-            }
-
-            if (!institution) {
-                e.preventDefault();
-                alert('Please select an institution.');
-                return false;
-            }
-        });
+        }
     });
 </script>
 @endpush

@@ -4,14 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Program extends Model
 {
     use HasFactory;
-
-    // Using default 'id' primary key to match migration
+    
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
+        'id',
         'name',
         'description',
         'national_alignment',
@@ -19,13 +23,7 @@ class Program extends Model
         'phases'
     ];
 
-    // Remove casts since migration uses string fields, not JSON
-    // protected $casts = [
-    //     'focus_areas' => 'array',
-    //     'phases' => 'array',
-    // ];
-
-    public function projects()
+    public function projects(): HasMany
     {
         return $this->hasMany(Project::class, 'program_id', 'id');
     }

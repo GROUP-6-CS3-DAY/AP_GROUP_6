@@ -4,32 +4,29 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Participant extends Model
 {
     use HasFactory;
-
-    protected $primaryKey = 'participant_id';
+    
+    protected $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
+        'id',
         'full_name',
         'email',
         'affiliation',
         'specialization',
         'institution',
-        'cross_skill_trained'
-    ];
-
-    public static $rules = [
-        'full_name' => 'required',
-        'email' => 'required|unique:participants,email',
-        'affiliation' => 'required',
-        'specialization' => 'required_if:cross_skill_trained,true|nullable',
-        'cross_skill_trained' => 'boolean'
+        'cross_skill_trained',
+        'project_id'
     ];
 
     protected $casts = [
-        'cross_skill_trained' => 'boolean',
+        'cross_skill_trained' => 'boolean'
     ];
 
     // Define the valid options for dropdowns
@@ -66,9 +63,8 @@ class Participant extends Model
     /**
      * Get the projects this participant is involved in.
      */
-    public function project()
-{
-return $this->belongsTo(Project::class, 'project_id', 'project_id');
-}
-
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'project_id', 'id');
+    }
 }

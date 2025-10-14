@@ -53,7 +53,16 @@ class Outcome
     public function getProjectId(): string { return $this->projectId; }
     public function getOutcomeType(): OutcomeType { return $this->outcomeType; }
     public function getQualityCertification(): string { return $this->qualityCertification; }
-    public function getDateAchieved(): string { return $this->dateAchieved->format('Y-m-d'); }
+    public function getDateAchieved(): Carbon
+    {
+        // Ensure we always return a Carbon instance
+        if ($this->dateAchieved instanceof Carbon) {
+            return $this->dateAchieved;
+        }
+        
+        // If it's a string, parse it to Carbon
+        return Carbon::parse($this->dateAchieved);
+    }
     public function getCommercializationStatus(): CommercializationStatus { return $this->commercializationStatus; }
     public function getImpact(): string { return $this->impact; }
     public function getArtifactLink(): string { return $this->artifactLink; }

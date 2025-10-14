@@ -6,11 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Participant;
 use App\Models\Outcome;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
     use HasFactory;
-    protected $primaryKey = 'project_id';
+    
+    protected $table = 'projects';
+    protected $primaryKey = 'id';
+    public $incrementing = true; // Change to true if using integer IDs
+    protected $keyType = 'int';  // Change to 'int' if using integer IDs
 
     protected $fillable = [
         'program_id',
@@ -30,24 +36,24 @@ class Project extends Model
         'technical_requirements' => 'array'
     ];
 
-    public function program()
+    public function program(): BelongsTo
     {
-        return $this->belongsTo(Program::class, 'program_id');
+        return $this->belongsTo(Program::class, 'program_id', 'id');
     }
 
-    public function facility()
+    public function facility(): BelongsTo
     {
-        return $this->belongsTo(Facility::class, 'facility_id');
+        return $this->belongsTo(Facility::class, 'facility_id', 'id');
     }
 
-    public function participants()
+    public function participants(): HasMany
     {
-        return $this->hasMany(Participant::class, 'project_id', 'project_id');
+        return $this->hasMany(Participant::class, 'project_id', 'id');
     }
 
     public function outcomes()
     {
-        return $this->hasMany(Outcome::class, 'project_id', 'project_id');
+        return $this->hasMany(Outcome::class, 'project_id', 'id');
     }
 
 

@@ -8,23 +8,17 @@ use App\Application\DTOs\UpdateOutcomeDTO;
 
 class UpdateOutcomeUseCase
 {
-    private OutcomeRepositoryInterface $outcomeRepository;
-    private ProjectRepositoryInterface $projectRepository;
-
     public function __construct(
-        OutcomeRepositoryInterface $outcomeRepository,
-        ProjectRepositoryInterface $projectRepository
-    ) {
-        $this->outcomeRepository = $outcomeRepository;
-        $this->projectRepository = $projectRepository;
-    }
+        private OutcomeRepositoryInterface $outcomeRepository,
+        private ProjectRepositoryInterface $projectRepository
+    ) {}
 
-    public function execute(string $outcomeId, UpdateOutcomeDTO $dto): void
+    public function execute(string $id, UpdateOutcomeDTO $dto): void
     {
-        $outcome = $this->outcomeRepository->findById($outcomeId);
-        
+        // Business rule: Outcome must exist
+        $outcome = $this->outcomeRepository->findById($id);
         if (!$outcome) {
-            throw new \Exception('Outcome not found');
+            throw new \DomainException('Outcome not found');
         }
 
         // Business rule: Project must exist
@@ -33,7 +27,20 @@ class UpdateOutcomeUseCase
             throw new \DomainException('Project not found');
         }
 
-        $outcome->update($dto->toArray());
-        $this->outcomeRepository->save($outcome);
+        // Update outcome with new data
+        $updatedOutcome = new \App\Domain\Entities\Outcome(
+            id: $id,
+            title: $dto->title,
+            description: $dto->description,
+            projectId: $dto->projectId,
+            outcomeType: $dto->outcomeType,
+            qualityCertification: $dto->qualityCertification ?? '',
+            dateAchieved: \Carbon\Carbon::parse($dto->dateAchieved),
+            commercializationStatus: $dto->commercializationStatus ?? '',
+            impact: $dto->impact ?? '',
+            artifactLink: $dto->artifactLink ?? ''
+        );
+
+        $this->outcomeRepository->save($updatedOutcome);
     }
 }

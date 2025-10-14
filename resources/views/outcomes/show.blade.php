@@ -29,11 +29,17 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <strong>Type:</strong>
-                        <span class="badge bg-primary ms-2">{{ ucfirst($outcome->getOutcomeType()) }}</span>
+                        <span class="badge bg-primary ms-2">{{ ucfirst($outcome->getOutcomeType()->getValue()) }}</span>
                     </div>
                     <div class="col-md-6">
                         <strong>Date Achieved:</strong>
-                        <span class="ms-2">{{ $outcome->getDateAchieved()->format('F d, Y') }}</span>
+                        <span class="ms-2">
+                            @php
+                                $dateAchieved = $outcome->getDateAchieved();
+                                $formattedDate = $dateAchieved instanceof \Carbon\Carbon ? $dateAchieved->format('F d, Y') : \Carbon\Carbon::parse($dateAchieved)->format('F d, Y');
+                            @endphp
+                            {{ $formattedDate }}
+                        </span>
                     </div>
                 </div>
                 
@@ -56,10 +62,10 @@
                 </div>
                 @endif
                 
-                @if($outcome->getCommercializationStatus())
+                @if($outcome->getCommercializationStatus()->getValue())
                 <div class="mb-3">
                     <strong>Commercialization Status:</strong>
-                    <p>{{ $outcome->getCommercializationStatus() }}</p>
+                    <p>{{ $outcome->getCommercializationStatus()->getValue() }}</p>
                 </div>
                 @endif
                 
@@ -99,7 +105,12 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <span>Days Since Achievement:</span>
                     <span class="badge bg-info">
-                        {{ abs($outcome->getDaysToAchievement()) }} days
+                        @php
+                            $dateAchieved = $outcome->getDateAchieved();
+                            $dateAchievedCarbon = $dateAchieved instanceof \Carbon\Carbon ? $dateAchieved : \Carbon\Carbon::parse($dateAchieved);
+                            $daysSince = abs($dateAchievedCarbon->diffInDays(now()));
+                        @endphp
+                        {{ $daysSince }} days
                     </span>
                 </div>
             </div>

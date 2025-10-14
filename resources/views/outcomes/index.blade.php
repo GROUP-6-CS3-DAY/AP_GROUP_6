@@ -97,15 +97,21 @@ use Illuminate\Support\Str;
                         </div>
                         <p class="card-text">{{ Str::limit($outcome->getDescription(), 100) }}</p>
                         <div class="mb-2">
-                            <span class="badge bg-primary">{{ ucfirst($outcome->getOutcomeType()) }}</span>
+                            <span class="badge bg-primary">{{ ucfirst($outcome->getOutcomeType()->getValue()) }}</span>
                             @if($outcome->isHighImpact())
                             <span class="badge bg-warning">High Impact</span>
                             @endif
                         </div>
                         <div class="text-muted small">
-                            <div><i class="fas fa-calendar me-1"></i>{{ $outcome->getDateAchieved()->format('M d, Y') }}</div>
-                            @if($outcome->getCommercializationStatus())
-                            <div><i class="fas fa-chart-line me-1"></i>{{ $outcome->getCommercializationStatus() }}</div>
+                            <div><i class="fas fa-calendar me-1"></i>
+                                @php
+                                    $dateAchieved = $outcome->getDateAchieved();
+                                    $formattedDate = $dateAchieved instanceof \Carbon\Carbon ? $dateAchieved->format('M d, Y') : \Carbon\Carbon::parse($dateAchieved)->format('M d, Y');
+                                @endphp
+                                {{ $formattedDate }}
+                            </div>
+                            @if($outcome->getCommercializationStatus()->getValue())
+                            <div><i class="fas fa-chart-line me-1"></i>{{ $outcome->getCommercializationStatus()->getValue() }}</div>
                             @endif
                         </div>
                     </div>

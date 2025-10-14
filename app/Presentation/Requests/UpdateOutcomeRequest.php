@@ -14,15 +14,15 @@ class UpdateOutcomeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'project_id' => 'required|exists:projects,project_id',
+            'project_id' => ['required', 'string'],
             'title' => 'required|string|max:255',
-            'description' => 'required|string|max:1000',
             'outcome_type' => 'required|string|in:publication,patent,product,prototype,certification,other',
-            'quality_certification' => 'nullable|string|max:255',
-            'impact' => 'nullable|string|max:1000',
-            'date_achieved' => 'required|date|before_or_equal:today',
+            'description' => 'required|string',
+            'date_achieved' => 'required|date',
             'commercialization_status' => 'nullable|string|in:Ready,In Progress,Commercialized,Not Applicable',
-            'artifact_link' => 'nullable|url|max:255',
+            'quality_certification' => 'nullable|string|max:255',
+            'impact' => 'nullable|string',
+            'artifact_link' => 'nullable|url|max:500',
         ];
     }
 
@@ -30,9 +30,11 @@ class UpdateOutcomeRequest extends FormRequest
     {
         return [
             'project_id.required' => 'Please select a project.',
-            'project_id.exists' => 'The selected project does not exist.',
-            'date_achieved.before_or_equal' => 'Date achieved cannot be in the future.',
-            'artifact_link.url' => 'Please provide a valid URL for the artifact link.',
+            'title.required' => 'Outcome title is required.',
+            'outcome_type.required' => 'Please select an outcome type.',
+            'description.required' => 'Outcome description is required.',
+            'date_achieved.required' => 'Date achieved is required.',
+            'artifact_link.url' => 'Artifact link must be a valid URL.',
         ];
     }
 }

@@ -76,15 +76,21 @@ class EloquentOutcomeRepository implements OutcomeRepositoryInterface
     {
         $model = OutcomeModel::find($outcome->getId()) ?? new OutcomeModel();
         
+        // Verify project exists before saving
+        $projectExists = \App\Models\Project::where('id', $outcome->getProjectId())->exists();
+        if (!$projectExists) {
+            throw new \DomainException("Project with ID {$outcome->getProjectId()} does not exist");
+        }
+        
         $model->fill([
             'id' => $outcome->getId(),
             'project_id' => $outcome->getProjectId(),
             'title' => $outcome->getTitle(),
             'description' => $outcome->getDescription(),
-            'outcome_type' => $outcome->getOutcomeType(),
+            'outcome_type' => $outcome->getOutcomeType()->getValue(),  // Extract value from value object
             'quality_certification' => $outcome->getQualityCertification(),
             'date_achieved' => $outcome->getDateAchieved(),
-            'commercialization_status' => $outcome->getCommercializationStatus(),
+            'commercialization_status' => $outcome->getCommercializationStatus()->getValue(),  // Extract value from value object
             'impact' => $outcome->getImpact(),
             'artifact_link' => $outcome->getArtifactLink(),
         ]);
@@ -108,14 +114,14 @@ class EloquentOutcomeRepository implements OutcomeRepositoryInterface
     private function mapToEntity(OutcomeModel $model): Outcome
     {
         return new Outcome(
-            id: (string) $model->getKey(),
+            id: (string) $model->id,
             title: $model->title,
             description: $model->description,
-            projectId: $model->project_id,
-            outcomeType: $model->outcome_type,
+            projectId: (string) $model->project_id,
+            outcomeType: new \App\Domain\ValueObjects\OutcomeType($model->outcome_type),
             qualityCertification: $model->quality_certification ?? '',
-            dateAchieved: Carbon::parse($model->date_achieved),
-            commercializationStatus: $model->commercialization_status ?? '',
+            dateAchieved: $model->date_achieved instanceof Carbon ? $model->date_achieved : Carbon::parse($model->date_achieved),
+            commercializationStatus: new \App\Domain\ValueObjects\CommercializationStatus($model->commercialization_status ?? ''),
             impact: $model->impact ?? '',
             artifactLink: $model->artifact_link ?? ''
         );

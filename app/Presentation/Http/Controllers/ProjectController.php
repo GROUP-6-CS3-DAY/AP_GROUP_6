@@ -76,9 +76,13 @@ class ProjectController extends BaseController
                 commercializationPlan: $request->validated('commercialization_plan')
             );
 
-            $this->createProjectUseCase->execute($dto);
+            $projectId = $this->createProjectUseCase->execute($dto);
 
             return redirect()->route('projects.index')->with('success', 'Project created successfully');
+        } catch (\DomainException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => $e->getMessage()]);
         } catch (\Exception $e) {
             return redirect()->back()
                 ->withInput()

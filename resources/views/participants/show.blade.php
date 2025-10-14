@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $participant->full_name . ' - Participant Details - InnoTrack')
+@section('title', $participant->getFullName() . ' - Participant Details - InnoTrack')
 
 @section('content')
 @php
@@ -10,10 +10,10 @@ use Illuminate\Support\Str;
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 mb-0">
-                <i class="fas fa-user me-2"></i>{{ $participant->full_name }}
+                <i class="fas fa-user me-2"></i>{{ $participant->getFullName() }}
             </h1>
             <div>
-                <a href="{{ route('participants.edit', $participant) }}" class="btn btn-warning me-2">
+                <a href="{{ route('participants.edit', $participant->getId()) }}" class="btn btn-warning me-2">
                     <i class="fas fa-edit me-1"></i>Edit Participant
                 </a>
                 <a href="{{ route('participants.index') }}" class="btn btn-outline-secondary">
@@ -37,12 +37,13 @@ use Illuminate\Support\Str;
                 <div class="row">
                     <div class="col-md-6">
                         <h6 class="text-muted">Full Name</h6>
-                        <p class="h5">{{ $participant->full_name }}</p>
+                        <p class="h5">{{ $participant->getFullName() }}</p>
                     </div>
                     <div class="col-md-6">
                         <h6 class="text-muted">Email</h6>
                         <p class="mb-0">
-                            <i class="fas fa-envelope me-1"></i>{{ $participant->email }}
+                            <i class="fas fa-envelope me-1"></i>{{ $participant->getEmail() }}
+                            <small class="text-muted d-block">Domain: {{ $participant->getEmailDomain() }}</small>
                         </p>
                     </div>
                 </div>
@@ -52,11 +53,11 @@ use Illuminate\Support\Str;
                 <div class="row">
                     <div class="col-md-6">
                         <h6 class="text-muted">Affiliation</h6>
-                        <span class="badge bg-secondary fs-6">{{ ucfirst($participant->affiliation) }}</span>
+                        <span class="badge bg-secondary fs-6">{{ $participant->getAffiliation()->getDisplayName() }}</span>
                     </div>
                     <div class="col-md-6">
-                        <h6 class="text-muted">Specialization</h6>
-                        <span class="badge bg-info fs-6">{{ ucfirst($participant->specialization) }}</span>
+                        <h6 class="text-muted">Institution</h6>
+                        <span class="badge bg-info fs-6">{{ strtoupper($participant->getInstitution()) }}</span>
                     </div>
                 </div>
 
@@ -64,13 +65,17 @@ use Illuminate\Support\Str;
 
                 <div class="row">
                     <div class="col-md-6">
-                        <h6 class="text-muted">Institution</h6>
-                        <p class="mb-0">{{ strtoupper($participant->institution) }}</p>
+                        <h6 class="text-muted">Specialization</h6>
+                        @if($participant->hasSpecialization())
+                            <span class="badge bg-primary fs-6">{{ $participant->getSpecialization()->getDisplayName() }}</span>
+                        @else
+                            <span class="text-muted">Not specified</span>
+                        @endif
                     </div>
                     <div class="col-md-6">
                         <h6 class="text-muted">Cross Skill Trained</h6>
-                        <span class="badge {{ $participant->cross_skill_trained ? 'bg-success' : 'bg-secondary' }}">
-                            {{ $participant->cross_skill_trained ? 'Yes' : 'No' }}
+                        <span class="badge {{ $participant->isCrossSkillTrained() ? 'bg-success' : 'bg-secondary' }} fs-6">
+                            {{ $participant->isCrossSkillTrained() ? 'Yes' : 'No' }}
                         </span>
                     </div>
                 </div>
@@ -81,68 +86,58 @@ use Illuminate\Support\Str;
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0">
-                    <i class="fas fa-project-diagram me-2"></i>Current Project
-                    <span class="badge bg-info ms-2">{{ $participant->project ? 1 : 0 }}</span>
+                    <i class="fas fa-project-diagram me-2"></i>Project Assignment
+                    <span class="badge {{ $participant->isAssignedToProject() ? 'bg-success' : 'bg-secondary' }} ms-2">
+                        {{ $participant->isAssignedToProject() ? 'Assigned' : 'Unassigned' }}
+                    </span>
                 </h5>
-                @if(!$participant->project && $availableProjects->count() > 0)
+                @if(!$participant->isAssignedToProject() && count($availableProjects) > 0)
                 <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#assignProjectModal">
                     <i class="fas fa-plus me-1"></i>Assign Project
                 </button>
                 @endif
             </div>
             <div class="card-body">
-                @if($participant->project)
-                <div class="table-responsive">
-                    <table class="table table-sm">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Project Name</th>
-                                <th>Status</th>
-                                <th>Description</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>
-                                    <a href="{{ route('projects.show', $participant->project) }}" class="text-decoration-none">
-                                        {{ $participant->project->title }}
-                                    </a>
-                                </td>
-                                <td>
-                                    <span class="badge bg-success">{{ ucfirst($participant->project->status ?? 'Active') }}</span>
-                                </td>
-                                <td>
-                                    {{ Str::limit($participant->project->description ?? 'N/A', 50) }}
-                                </td>
-                                <td>
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <a href="{{ route('projects.show', $participant->project) }}" class="btn btn-outline-primary btn-sm">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <form action="{{ route('participants.remove-project', [$participant->participant_id, $participant->project->project_id]) }}" 
-                                              method="POST" style="display:inline;">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to remove this participant from the project?')">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                @if($participant->isAssignedToProject())
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-project-diagram me-2"></i>Currently Assigned</h6>
+                    @php
+                        $assignedProject = collect($availableProjects)->firstWhere(fn($p) => $p->getId() === $participant->getProjectId());
+                    @endphp
+                    @if($assignedProject)
+                    <p class="mb-2"><strong>Project:</strong> {{ $assignedProject->getTitle() }}</p>
+                    <p class="mb-2"><strong>Description:</strong> {{ Str::limit($assignedProject->getDescription(), 100) }}</p>
+                    <div class="mt-3">
+                        <a href="{{ route('projects.show', $assignedProject->getId()) }}" class="btn btn-outline-primary btn-sm me-2">
+                            <i class="fas fa-eye me-1"></i>View Project
+                        </a>
+                        <form action="{{ route('participants.remove-project', ['participant' => $participant->getId(), 'project' => $assignedProject->getId()]) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                onclick="return confirm('Are you sure you want to remove this participant from the project?')">
+                                <i class="fas fa-times me-1"></i>Remove Assignment
+                            </button>
+                        </form>
+                    </div>
+                    @else
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Project reference exists but project not found. Please contact administrator.
+                    </div>
+                    @endif
                 </div>
                 @else
-                <div class="text-center py-3">
-                    <i class="fas fa-project-diagram fa-2x text-muted mb-2"></i>
-                    <p class="text-muted mb-0">No project assigned to this participant</p>
-                    @if($availableProjects->count() > 0)
-                    <button class="btn btn-success btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#assignProjectModal">
+                <div class="text-center py-4">
+                    <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
+                    <h6 class="text-muted">No Project Assignment</h6>
+                    <p class="text-muted">This participant is not currently assigned to any project.</p>
+                    @if(count($availableProjects) > 0)
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#assignProjectModal">
                         <i class="fas fa-plus me-1"></i>Assign to Project
                     </button>
                     @else
-                    <p class="text-muted mt-2"><small>No available projects to assign.</small></p>
+                    <p class="text-muted"><small>No available projects for assignment.</small></p>
                     @endif
                 </div>
                 @endif
@@ -160,58 +155,112 @@ use Illuminate\Support\Str;
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ route('participants.edit', $participant) }}" class="btn btn-warning">
+                    <a href="{{ route('participants.edit', $participant->getId()) }}" class="btn btn-warning">
                         <i class="fas fa-edit me-1"></i>Edit Participant
                     </a>
-                    @if(!$participant->project && $availableProjects->count() > 0)
+                    @if(!$participant->isAssignedToProject() && count($availableProjects) > 0)
                     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#assignProjectModal">
                         <i class="fas fa-plus me-1"></i>Assign Project
                     </button>
                     @endif
-                    @if($participant->project)
-                    <form action="{{ route('participants.remove-project', [$participant->participant_id, $participant->project->project_id]) }}" 
-                          method="POST" style="display:inline;">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this participant from the project?')">
+                    @if($participant->isAssignedToProject())
+                    @php
+                        $assignedProject = collect($availableProjects)->firstWhere(fn($p) => $p->getId() === $participant->getProjectId());
+                    @endphp
+                    @if($assignedProject)
+                    <form action="{{ route('participants.remove-project', ['participant' => $participant->getId(), 'project' => $assignedProject->getId()]) }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-outline-danger" 
+                            onclick="return confirm('Are you sure you want to remove this participant from the project?')">
                             <i class="fas fa-times me-1"></i>Remove from Project
                         </button>
                     </form>
+                    @endif
                     @endif
                 </div>
             </div>
         </div>
 
-       
-
-        <!-- Skills & Training -->
-        <div class="card">
+        <!-- Participant Profile -->
+        <div class="card mb-4">
             <div class="card-header">
                 <h6 class="card-title mb-0">
-                    <i class="fas fa-graduation-cap me-2"></i>Skills & Training
+                    <i class="fas fa-user-circle me-2"></i>Profile Summary
                 </h6>
             </div>
             <div class="card-body">
                 <div class="mb-3">
-                    <small class="text-muted">Specialization</small>
+                    <small class="text-muted">Participant ID</small>
+                    <div><code>{{ $participant->getId() }}</code></div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Affiliation</small>
                     <div>
-                        <span class="badge bg-primary">{{ ucfirst($participant->specialization) }}</span>
+                        <span class="badge bg-secondary">{{ $participant->getAffiliation()->getDisplayName() }}</span>
                     </div>
                 </div>
                 <div class="mb-3">
-                    <small class="text-muted">Cross Skill Training</small>
+                    <small class="text-muted">Institution</small>
                     <div>
-                        <span class="badge {{ $participant->cross_skill_trained ? 'bg-success' : 'bg-secondary' }}">
-                            {{ $participant->cross_skill_trained ? 'Completed' : 'Not Completed' }}
-                        </span>
+                        <span class="badge bg-info">{{ strtoupper($participant->getInstitution()) }}</span>
                     </div>
                 </div>
+                @if($participant->hasSpecialization())
+                <div class="mb-3">
+                    <small class="text-muted">Specialization</small>
+                    <div>
+                        <span class="badge bg-primary">{{ $participant->getSpecialization()->getDisplayName() }}</span>
+                    </div>
+                </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Skills & Capabilities -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>Skills & Capabilities
+                </h6>
+            </div>
+            <div class="card-body">
+                @if($participant->hasSpecialization())
+                <div class="mb-3">
+                    <small class="text-muted">Primary Specialization</small>
+                    <div>
+                        <span class="badge bg-primary">{{ $participant->getSpecialization()->getDisplayName() }}</span>
+                    </div>
+                </div>
+                @endif
+                
+                <div class="mb-3">
+                    <small class="text-muted">Cross-Skill Training Status</small>
+                    <div>
+                        <span class="badge {{ $participant->isCrossSkillTrained() ? 'bg-success' : 'bg-secondary' }}">
+                            {{ $participant->isCrossSkillTrained() ? 'Completed' : 'Not Completed' }}
+                        </span>
+                    </div>
+                    @if($participant->isCrossSkillTrained())
+                    <small class="text-success"><i class="fas fa-check-circle me-1"></i>Can work across multiple domains</small>
+                    @endif
+                </div>
+
+                @if($participant->hasSpecialization())
+                <div class="alert alert-info">
+                    <small>
+                        <i class="fas fa-info-circle me-1"></i>
+                        <strong>Skills Match:</strong> This participant can work on projects requiring {{ $participant->getSpecialization()->getDisplayName() }} skills{{ $participant->isCrossSkillTrained() ? ' and cross-functional work' : '' }}.
+                    </small>
+                </div>
+                @endif
             </div>
         </div>
     </div>
 </div>
 
 <!-- Assign Project Modal -->
-@if(!$participant->project && $availableProjects->count() > 0)
+@if(!$participant->isAssignedToProject() && count($availableProjects) > 0)
 <div class="modal fade" id="assignProjectModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -219,7 +268,7 @@ use Illuminate\Support\Str;
                 <h5 class="modal-title">Assign to Project</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('participants.add-project', $participant->participant_id) }}" method="POST">
+            <form action="{{ route('participants.add-project', $participant->getId()) }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
@@ -227,12 +276,12 @@ use Illuminate\Support\Str;
                         <select name="project_id" class="form-select" required>
                             <option value="">Choose a project...</option>
                             @foreach($availableProjects as $project)
-                                <option value="{{ $project->project_id }}">{{ $project->title }}</option>
+                                <option value="{{ $project->getId() }}">{{ $project->getTitle() }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="alert alert-info">
-                        <small>This will assign {{ $participant->full_name }} to the selected project.</small>
+                        <small>This will assign {{ $participant->getFullName() }} to the selected project.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -244,30 +293,6 @@ use Illuminate\Support\Str;
     </div>
 </div>
 @endif
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete Participant</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to delete the participant "<strong>{{ $participant->full_name }}</strong>"?</p>
-                <p class="text-danger"><small>This action cannot be undone.</small></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form action="{{ route('participants.destroy', $participant) }}" method="POST" class="d-inline">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-danger">Delete Participant</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('scripts')

@@ -46,12 +46,12 @@
                     <select class="form-select @error('outcome_type') is-invalid @enderror" 
                             id="outcome_type" name="outcome_type" required>
                         <option value="">Select type</option>
-                        <option value="publication" {{ old('outcome_type', $outcome->getOutcomeType()) == 'publication' ? 'selected' : '' }}>Publication</option>
-                        <option value="patent" {{ old('outcome_type', $outcome->getOutcomeType()) == 'patent' ? 'selected' : '' }}>Patent</option>
-                        <option value="product" {{ old('outcome_type', $outcome->getOutcomeType()) == 'product' ? 'selected' : '' }}>Product</option>
-                        <option value="prototype" {{ old('outcome_type', $outcome->getOutcomeType()) == 'prototype' ? 'selected' : '' }}>Prototype</option>
-                        <option value="certification" {{ old('outcome_type', $outcome->getOutcomeType()) == 'certification' ? 'selected' : '' }}>Certification</option>
-                        <option value="other" {{ old('outcome_type', $outcome->getOutcomeType()) == 'other' ? 'selected' : '' }}>Other</option>
+                        <option value="publication" {{ old('outcome_type', $outcome->getOutcomeType()->getValue()) == 'publication' ? 'selected' : '' }}>Publication</option>
+                        <option value="patent" {{ old('outcome_type', $outcome->getOutcomeType()->getValue()) == 'patent' ? 'selected' : '' }}>Patent</option>
+                        <option value="product" {{ old('outcome_type', $outcome->getOutcomeType()->getValue()) == 'product' ? 'selected' : '' }}>Product</option>
+                        <option value="prototype" {{ old('outcome_type', $outcome->getOutcomeType()->getValue()) == 'prototype' ? 'selected' : '' }}>Prototype</option>
+                        <option value="certification" {{ old('outcome_type', $outcome->getOutcomeType()->getValue()) == 'certification' ? 'selected' : '' }}>Certification</option>
+                        <option value="other" {{ old('outcome_type', $outcome->getOutcomeType()->getValue()) == 'other' ? 'selected' : '' }}>Other</option>
                     </select>
                     @error('outcome_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
@@ -66,30 +66,37 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-4">
                     <label class="form-label" for="quality_certification">Quality / Certification</label>
-                    <input type="text" id="quality_certification" name="quality_certification" class="form-control @error('quality_certification') is-invalid @enderror" value="{{ old('quality_certification', $outcome->getQualityCertification()) }}" required>
+                    <input type="text" id="quality_certification" name="quality_certification" class="form-control @error('quality_certification') is-invalid @enderror" value="{{ old('quality_certification', $outcome->getQualityCertification()) }}">
                     @error('quality_certification')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
                     <label class="form-label" for="date_achieved">Date Achieved</label>
-                    <input type="date" id="date_achieved" name="date_achieved" class="form-control @error('date_achieved') is-invalid @enderror" value="{{ old('date_achieved', $outcome->getDateAchieved()->format('Y-m-d')) }}" required>
+                    <input type="date" id="date_achieved" name="date_achieved" class="form-control @error('date_achieved') is-invalid @enderror" value="{{ old('date_achieved', $outcome->getDateAchieved() instanceof \Carbon\Carbon ? $outcome->getDateAchieved()->format('Y-m-d') : \Carbon\Carbon::parse($outcome->getDateAchieved())->format('Y-m-d')) }}" required>
                     @error('date_achieved')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <div class="col-md-4">
                     <label class="form-label" for="commercialization_status">Commercialization Status</label>
-                    <input type="text" id="commercialization_status" name="commercialization_status" class="form-control @error('commercialization_status') is-invalid @enderror" value="{{ old('commercialization_status', $outcome->getCommercializationStatus()) }}" required>
+                    <select class="form-select @error('commercialization_status') is-invalid @enderror" 
+                            id="commercialization_status" name="commercialization_status">
+                        <option value="">Select status</option>
+                        <option value="Ready" {{ old('commercialization_status', $outcome->getCommercializationStatus()->getValue()) == 'Ready' ? 'selected' : '' }}>Ready</option>
+                        <option value="In Progress" {{ old('commercialization_status', $outcome->getCommercializationStatus()->getValue()) == 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                        <option value="Commercialized" {{ old('commercialization_status', $outcome->getCommercializationStatus()->getValue()) == 'Commercialized' ? 'selected' : '' }}>Commercialized</option>
+                        <option value="Not Applicable" {{ old('commercialization_status', $outcome->getCommercializationStatus()->getValue()) == 'Not Applicable' ? 'selected' : '' }}>Not Applicable</option>
+                    </select>
                     @error('commercialization_status')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
             </div>
 
             <div class="mb-3">
                 <label class="form-label" for="impact">Impact</label>
-                <input type="text" id="impact" name="impact" class="form-control @error('impact') is-invalid @enderror" value="{{ old('impact', $outcome->getImpact()) }}" required>
+                <textarea id="impact" name="impact" rows="3" class="form-control @error('impact') is-invalid @enderror">{{ old('impact', $outcome->getImpact()) }}</textarea>
                 @error('impact')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 
             <div class="mb-3">
                 <label class="form-label" for="artifact_link">Artifact Link</label>
-                <input type="url" id="artifact_link" name="artifact_link" class="form-control @error('artifact_link') is-invalid @enderror" value="{{ old('artifact_link', $outcome->getArtifactLink()) }}" required>
+                <input type="url" id="artifact_link" name="artifact_link" class="form-control @error('artifact_link') is-invalid @enderror" value="{{ old('artifact_link', $outcome->getArtifactLink()) }}">
                 @error('artifact_link')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
 

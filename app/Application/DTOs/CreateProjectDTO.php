@@ -13,7 +13,6 @@ class CreateProjectDTO
         public readonly string $innovationFocus,
         public readonly string $prototypeStage,
         public readonly string $testingRequirements,
-        public readonly string $commercializationPlan,
-        public readonly ?array $technicalRequirements = null
+        public readonly string $commercializationPlan
     ) {}
 }

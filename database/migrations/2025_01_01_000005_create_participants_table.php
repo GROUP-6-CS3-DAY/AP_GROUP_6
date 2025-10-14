@@ -13,13 +13,23 @@ return new class extends Migration
     {
         if (!Schema::hasTable('participants')) {
             Schema::create('participants', function (Blueprint $table) {
-                $table->id('participant_id');
+                $table->id(); // Change to standard auto-incrementing ID
                 $table->string('full_name');
                 $table->string('email')->unique();
                 $table->string('affiliation');
-                $table->boolean('cross_skill_trained')->default(false);
+                $table->string('institution'); // Add missing institution field
                 $table->string('specialization')->nullable();
+                $table->boolean('cross_skill_trained')->default(false);
+                $table->unsignedBigInteger('project_id')->nullable(); // Add project relationship
                 $table->timestamps();
+                
+                // Add foreign key constraint
+                $table->foreign('project_id')->references('id')->on('projects')->onDelete('set null');
+                
+                // Add indexes
+                $table->index(['email']);
+                $table->index(['affiliation']);
+                $table->index(['project_id']);
             });
         }
     }

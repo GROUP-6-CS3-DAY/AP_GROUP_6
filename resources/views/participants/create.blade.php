@@ -3,6 +3,27 @@
 @section('title', 'Create Participant - InnoTrack')
 
 @section('content')
+
+<!-- Add error display at the top -->
+@if(session('error'))
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
+@if($errors->any())
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <h6 class="alert-heading">Please fix the following errors:</h6>
+    <ul class="mb-0">
+        @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -25,7 +46,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form action="{{ route('participants.store') }}" method="POST">
+                <form action="{{ route('participants.store') }}" method="POST" id="participantForm">
                     @csrf
 
                     <div class="row mb-3">
@@ -53,27 +74,31 @@
                             <select class="form-select @error('affiliation') is-invalid @enderror"
                                 id="affiliation" name="affiliation" required>
                                 <option value="">Select Affiliation</option>
-                                <option value="cs" {{ old('affiliation') == 'cs' ? 'selected' : '' }}>Computer Science</option>
-                                <option value="se" {{ old('affiliation') == 'se' ? 'selected' : '' }}>Software Engineering</option>
-                                <option value="engineering" {{ old('affiliation') == 'engineering' ? 'selected' : '' }}>Engineering</option>
-                                <option value="other" {{ old('affiliation') == 'other' ? 'selected' : '' }}>Other</option>
+                                @foreach($affiliations as $key => $value)
+                                <option value="{{ $key }}" {{ old('affiliation') == $key ? 'selected' : '' }}>
+                                    {{ $value }}
+                                </option>
+                                @endforeach
                             </select>
                             @error('affiliation')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         <div class="col-md-6">
-                            <label for="specialization" class="form-label">Specialization <span class="text-danger">*</span></label>
+                            <label for="specialization" class="form-label">Specialization</label>
                             <select class="form-select @error('specialization') is-invalid @enderror"
-                                id="specialization" name="specialization" required>
-                                <option value="">Select Specialization</option>
-                                <option value="software" {{ old('specialization') == 'software' ? 'selected' : '' }}>Software</option>
-                                <option value="hardware" {{ old('specialization') == 'hardware' ? 'selected' : '' }}>Hardware</option>
-                                <option value="business" {{ old('specialization') == 'business' ? 'selected' : '' }}>Business</option>
+                                id="specialization" name="specialization">
+                                <option value="">Select Specialization (Optional)</option>
+                                @foreach($specializations as $key => $value)
+                                <option value="{{ $key }}" {{ old('specialization') == $key ? 'selected' : '' }}>
+                                    {{ $value }}
+                                </option>
+                                @endforeach
                             </select>
                             @error('specialization')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <div class="form-text">Optional, but required if cross-skill training is enabled.</div>
                         </div>
                     </div>
 
@@ -83,11 +108,11 @@
                             <select class="form-select @error('institution') is-invalid @enderror"
                                 id="institution" name="institution" required>
                                 <option value="">Select Institution</option>
-                                <option value="scit" {{ old('institution') == 'scit' ? 'selected' : '' }}>SCIT</option>
-                                <option value="cedat" {{ old('institution') == 'cedat' ? 'selected' : '' }}>CEDAT</option>
-                                <option value="unipod" {{ old('institution') == 'unipod' ? 'selected' : '' }}>UniPod</option>
-                                <option value="uiri" {{ old('institution') == 'uiri' ? 'selected' : '' }}>UIRI</option>
-                                <option value="lwera" {{ old('institution') == 'lwera' ? 'selected' : '' }}>Lwera</option>
+                                @foreach($institutions as $key => $value)
+                                <option value="{{ $key }}" {{ old('institution') == $key ? 'selected' : '' }}>
+                                    {{ $value }}
+                                </option>
+                                @endforeach
                             </select>
                             @error('institution')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -98,24 +123,23 @@
                             <select class="form-select @error('project_id') is-invalid @enderror"
                                 id="project_id" name="project_id">
                                 <option value="">No project assignment</option>
-                                @if(isset($projects))
-    @foreach($projects as $project)
-        <option value="{{ $project->project_id }}" {{ old('project_id') == $project->project_id ? 'selected' : '' }}>
-            {{ $project->title }}
-        </option>
-    @endforeach
-@endif
+                                @foreach($projects as $project)
+                                <option value="{{ $project->getId() }}" {{ old('project_id') == $project->getId() ? 'selected' : '' }}>
+                                    {{ $project->getTitle() }}
+                                </option>
+                                @endforeach
                             </select>
                             @error('project_id')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                            <div class="form-text">Optional project assignment during creation.</div>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <div class="form-check">
+                        <div class="form-check form-switch">
                             <input class="form-check-input @error('cross_skill_trained') is-invalid @enderror"
-                                type="checkbox" name="cross_skill_trained" value="1" id="cross_skill_trained"
+                                type="checkbox" role="switch" name="cross_skill_trained" value="1" id="cross_skill_trained"
                                 {{ old('cross_skill_trained') ? 'checked' : '' }}>
                             <label class="form-check-label" for="cross_skill_trained">
                                 Cross Skill Trained
@@ -123,7 +147,7 @@
                             @error('cross_skill_trained')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">Check if the participant has cross-functional training across multiple domains.</div>
+                            <div class="form-text">Check if the participant has cross-functional training across multiple domains. Requires specialization to be selected.</div>
                         </div>
                     </div>
 
@@ -150,32 +174,42 @@
             <div class="card-body">
                 <h6>Affiliations</h6>
                 <ul class="list-unstyled small text-muted">
-                    <li><strong>Computer Science:</strong> CS students and professionals</li>
-                    <li><strong>Software Engineering:</strong> SE focused individuals</li>
-                    <li><strong>Engineering:</strong> General engineering disciplines</li>
-                    <li><strong>Other:</strong> Non-technical or interdisciplinary</li>
+                    @foreach($affiliations as $key => $value)
+                    <li><strong>{{ $value }}:</strong> {{ $key == 'cs' ? 'Computer Science students and professionals' : 
+                        ($key == 'ee' ? 'Electrical Engineering focused individuals' : 
+                        ($key == 'me' ? 'Mechanical Engineering disciplines' : 
+                        ($key == 'ce' ? 'Civil Engineering professionals' : 'Other disciplines or interdisciplinary'))) }}</li>
+                    @endforeach
                 </ul>
 
                 <h6 class="mt-3">Specializations</h6>
                 <ul class="list-unstyled small text-muted">
-                    <li><strong>Software:</strong> Programming and software development</li>
-                    <li><strong>Hardware:</strong> Electronics and physical systems</li>
-                    <li><strong>Business:</strong> Entrepreneurship and business development</li>
+                    @foreach($specializations as $key => $value)
+                    <li><strong>{{ $value }}:</strong> {{ $key == 'software' ? 'Programming and software development' : 
+                        ($key == 'hardware' ? 'Electronics and physical systems' : 
+                        ($key == 'research' ? 'Research & Development activities' : 
+                        ($key == 'testing' ? 'Testing & Quality Assurance' : 'Project Management'))) }}</li>
+                    @endforeach
                 </ul>
 
                 <h6 class="mt-3">Institutions</h6>
                 <ul class="list-unstyled small text-muted">
-                    <li><strong>SCIT:</strong> School of Computing and IT</li>
-                    <li><strong>CEDAT:</strong> College of Engineering</li>
-                    <li><strong>UniPod:</strong> University Innovation Hub</li>
-                    <li><strong>UIRI:</strong> Uganda Industrial Research Institute</li>
-                    <li><strong>Lwera:</strong> Lwera Electronics Laboratory</li>
+                    @foreach($institutions as $key => $value)
+                    <li><strong>{{ $value }}:</strong> {{ $key == 'scit' ? 'School of Computing and IT' : 'Other institutions' }}</li>
+                    @endforeach
                 </ul>
 
                 <div class="alert alert-info mt-3">
                     <small>
                         <i class="fas fa-lightbulb me-1"></i>
-                        <strong>Tip:</strong> Cross-skill training indicates participants who can work across different domains (software/hardware/business).
+                        <strong>Business Rule:</strong> Cross-skill training requires a specialization to be selected first.
+                    </small>
+                </div>
+
+                <div class="alert alert-warning mt-3">
+                    <small>
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <strong>Note:</strong> Email addresses must be unique across all participants.
                     </small>
                 </div>
             </div>
@@ -186,32 +220,195 @@
 
 @push('scripts')
 <script>
-    // Form validation enhancement
     document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
+        const form = document.getElementById('participantForm');
         const emailField = document.getElementById('email');
+        const specializationField = document.getElementById('specialization');
+        const crossSkillField = document.getElementById('cross_skill_trained');
 
-        // Email validation
-        emailField.addEventListener('blur', function() {
-            const email = this.value.trim();
-            if (email && !isValidEmail(email)) {
-                this.classList.add('is-invalid');
-                let feedback = this.parentNode.querySelector('.invalid-feedback');
-                if (!feedback) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    this.parentNode.appendChild(feedback);
-                }
-                feedback.textContent = 'Please enter a valid email address.';
+        // Debug: Log form data before submission
+        form.addEventListener('submit', function(e) {
+            console.log('=== FORM SUBMISSION DEBUG ===');
+            console.log('Full Name:', document.getElementById('full_name').value);
+            console.log('Email:', emailField.value);
+            console.log('Affiliation:', document.getElementById('affiliation').value);
+            console.log('Institution:', document.getElementById('institution').value);
+            console.log('Specialization:', specializationField.value);
+            console.log('Cross Skill Trained:', crossSkillField.checked);
+            console.log('Project ID:', document.getElementById('project_id').value);
+            
+            // Log form data as FormData would send it
+            const formData = new FormData(form);
+            console.log('FormData entries:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}: ${value}`);
+            }
+            console.log('=== END DEBUG ===');
+
+            // Validate business rules
+            let valid = true;
+            let errors = [];
+
+            // Check required fields
+            const fullName = document.getElementById('full_name').value.trim();
+            const email = emailField.value.trim();
+            const affiliation = document.getElementById('affiliation').value;
+            const institution = document.getElementById('institution').value;
+
+            if (!fullName) {
+                errors.push('Full name is required.');
+                showFieldError(document.getElementById('full_name'), 'Full name is required.');
+                valid = false;
             } else {
-                this.classList.remove('is-invalid');
+                clearFieldError(document.getElementById('full_name'));
+            }
+
+            if (!email) {
+                errors.push('Email is required.');
+                showFieldError(emailField, 'Email is required.');
+                valid = false;
+            } else if (!isValidEmail(email)) {
+                errors.push('Please enter a valid email address.');
+                showFieldError(emailField, 'Please enter a valid email address.');
+                valid = false;
+            } else {
+                clearFieldError(emailField);
+            }
+
+            if (!affiliation) {
+                errors.push('Affiliation is required.');
+                showFieldError(document.getElementById('affiliation'), 'Affiliation is required.');
+                valid = false;
+            } else {
+                clearFieldError(document.getElementById('affiliation'));
+            }
+
+            if (!institution) {
+                errors.push('Institution is required.');
+                showFieldError(document.getElementById('institution'), 'Institution is required.');
+                valid = false;
+            } else {
+                clearFieldError(document.getElementById('institution'));
+            }
+
+            // Check cross-skill training business rule
+            if (crossSkillField.checked && !specializationField.value) {
+                errors.push('Specialization is required when cross-skill training is selected.');
+                showFieldError(specializationField, 'Specialization is required when cross-skill training is selected.');
+                valid = false;
+            } else {
+                clearFieldError(specializationField);
+            }
+
+            if (!valid) {
+                e.preventDefault();
+                console.error('Form validation failed:', errors);
+                alert('Please fix the following errors:\n' + errors.join('\n'));
+                return false;
+            }
+
+            console.log('Form validation passed, submitting...');
+        });
+
+        // Real-time validation
+        crossSkillField.addEventListener('change', function() {
+            validateCrossSkillSpecialization();
+        });
+
+        specializationField.addEventListener('change', function() {
+            validateCrossSkillSpecialization();
+        });
+
+        emailField.addEventListener('blur', function() {
+            validateEmail();
+        });
+
+        // Real-time field validation
+        document.getElementById('full_name').addEventListener('blur', function() {
+            if (!this.value.trim()) {
+                showFieldError(this, 'Full name is required.');
+            } else {
+                clearFieldError(this);
             }
         });
+
+        document.getElementById('affiliation').addEventListener('change', function() {
+            if (!this.value) {
+                showFieldError(this, 'Please select an affiliation.');
+            } else {
+                clearFieldError(this);
+            }
+        });
+
+        document.getElementById('institution').addEventListener('change', function() {
+            if (!this.value) {
+                showFieldError(this, 'Please select an institution.');
+            } else {
+                clearFieldError(this);
+            }
+        });
+
+        function validateCrossSkillSpecialization() {
+            if (crossSkillField.checked && !specializationField.value) {
+                showFieldError(specializationField, 'Specialization is required when cross-skill training is selected.');
+                return false;
+            } else {
+                clearFieldError(specializationField);
+                return true;
+            }
+        }
+
+        function validateEmail() {
+            const email = emailField.value.trim();
+            if (email && !isValidEmail(email)) {
+                showFieldError(emailField, 'Please enter a valid email address.');
+                return false;
+            } else {
+                clearFieldError(emailField);
+                return true;
+            }
+        }
 
         function isValidEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email);
         }
+
+        function showFieldError(field, message) {
+            field.classList.add('is-invalid');
+            // Remove any existing custom feedback first
+            clearFieldError(field);
+            // Add new feedback
+            let feedback = document.createElement('div');
+            feedback.className = 'invalid-feedback js-validation-error';
+            feedback.textContent = message;
+            field.parentNode.appendChild(feedback);
+        }
+
+        function clearFieldError(field) {
+            field.classList.remove('is-invalid');
+            // Only remove JavaScript-generated feedback, not server-side validation errors
+            const jsErrors = field.parentNode.querySelectorAll('.js-validation-error');
+            jsErrors.forEach(error => error.remove());
+        }
     });
 </script>
+@endpush
+
+@push('styles')
+<style>
+    .form-check-input:checked {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+    
+    .alert {
+        font-size: 0.875em;
+    }
+    
+    .form-text {
+        font-size: 0.8em;
+        color: #6c757d;
+    }
+</style>
 @endpush

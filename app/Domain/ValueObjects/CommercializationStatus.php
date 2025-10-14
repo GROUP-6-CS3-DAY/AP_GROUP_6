@@ -4,12 +4,18 @@ namespace App\Domain\ValueObjects;
 
 class CommercializationStatus
 {
-    private const VALID_STATUSES = ['not_applicable', 'not_ready', 'ready', 'in_progress', 'commercialized'];
+    private const VALID_STATUSES = ['Not Applicable', 'Ready', 'In Progress', 'Commercialized', ''];
     
     private string $value;
 
     public function __construct(string $value)
     {
+        // Allow empty string for optional status
+        if (empty($value)) {
+            $this->value = '';
+            return;
+        }
+        
         if (!in_array($value, self::VALID_STATUSES)) {
             throw new \InvalidArgumentException("Invalid commercialization status: {$value}");
         }
@@ -25,27 +31,27 @@ class CommercializationStatus
     public function getDisplayName(): string
     {
         return match($this->value) {
-            'not_applicable' => 'Not Applicable',
-            'not_ready' => 'Not Ready',
-            'ready' => 'Ready',
-            'in_progress' => 'In Progress',
-            'commercialized' => 'Commercialized',
+            'Not Applicable' => 'Not Applicable',
+            'Ready' => 'Ready',
+            'In Progress' => 'In Progress',
+            'Commercialized' => 'Commercialized',
+            '' => 'Not Set',
+            default => $this->value
         };
     }
 
     public function isCommercializable(): bool
     {
-        return in_array($this->value, ['ready', 'in_progress', 'commercialized']);
+        return in_array($this->value, ['Ready', 'In Progress', 'Commercialized']);
     }
 
     public static function getAllOptions(): array
     {
         return [
-            'not_applicable' => 'Not Applicable',
-            'not_ready' => 'Not Ready',
-            'ready' => 'Ready',
-            'in_progress' => 'In Progress',
-            'commercialized' => 'Commercialized'
+            'Not Applicable' => 'Not Applicable',
+            'Ready' => 'Ready',
+            'In Progress' => 'In Progress',
+            'Commercialized' => 'Commercialized'
         ];
     }
 }
