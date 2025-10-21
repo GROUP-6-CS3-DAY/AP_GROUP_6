@@ -84,31 +84,31 @@ use Illuminate\Support\Str;
                     @foreach($programs as $program)
                     <tr>
                         <td>
-                            <strong>{{ $program->name }}</strong>
+                            <strong>{{ $program->getName() }}</strong>
                         </td>
                         <td>
-                            {{ $program->national_alignment }}
+                            {{ $program->getNationalAlignment() }}
                         </td>
                         <td>
-                            <span class="badge bg-info">{{ $focusAreas[$program->focus_areas[0] ?? ''] ?? ($program->focus_areas[0] ?? 'N/A') }}</span>
+                            <span class="badge bg-info">{{ $program->getFocusAreasAsString() }}</span>
                         </td>
                         <td>
-                            <span class="badge bg-warning">{{ $phases[$program->phases[0] ?? ''] ?? ($program->phases[0] ?? 'N/A') }}</span>
+                            <span class="badge bg-warning">{{ $program->getPhasesAsString() }}</span>
                         </td>
                         <td>
-                            <small class="text-muted">{{ Str::limit($program->description, 80) }}</small>
+                            <small class="text-muted">{{ Str::limit($program->getDescription(), 80) }}</small>
                         </td>
                         <td>
                             <div class="btn-group" role="group">
-                                <a href="{{ route('programs.show', $program) }}"
+                                <a href="{{ route('programs.show', $program->getId()) }}"
                                     class="btn btn-sm btn-outline-primary" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('programs.edit', $program) }}"
+                                <a href="{{ route('programs.edit', $program->getId()) }}"
                                     class="btn btn-sm btn-outline-warning" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('programs.destroy', $program) }}"
+                                <form action="{{ route('programs.destroy', $program->getId()) }}"
                                     method="POST" class="d-inline"
                                     onsubmit="return confirm('Are you sure you want to delete this program?')">
                                     @csrf

@@ -24,6 +24,7 @@ class CreateProgramUseCase
         if ($existingProgram) {
             throw new \DomainException('Program.Name already exists');
         }
+        
 
         $program = new Program(
             id: Str::uuid()->toString(),

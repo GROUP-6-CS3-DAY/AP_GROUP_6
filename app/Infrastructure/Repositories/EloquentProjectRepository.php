@@ -163,21 +163,51 @@ class EloquentProjectRepository implements ProjectRepositoryInterface
 
     private function mapToEntity(ProjectModel $model): Project
     {
+        // Map participants
+        $participants = $model->participants ? $model->participants->map(function($participantModel) {
+            return new \App\Domain\Entities\Participant(
+                id: (string) $participantModel->id,
+                fullName: $participantModel->full_name,
+                email: $participantModel->email,
+                affiliation: new \App\Domain\ValueObjects\ParticipantAffiliation($participantModel->affiliation),
+                institution: $participantModel->institution,
+                specialization: $participantModel->specialization ? new \App\Domain\ValueObjects\ParticipantSpecialization($participantModel->specialization) : null,
+                crossSkillTrained: (bool) $participantModel->cross_skill_trained,
+                projectId: (string) $participantModel->project_id
+            );
+        })->toArray() : [];
+
+        // Map outcomes
+        $outcomes = $model->outcomes ? $model->outcomes->map(function($outcomeModel) {
+            return new \App\Domain\Entities\Outcome(
+                id: (string) $outcomeModel->id,
+                title: $outcomeModel->title,
+                description: $outcomeModel->description,
+                projectId: (string) $outcomeModel->project_id,
+                outcomeType: new \App\Domain\ValueObjects\OutcomeType($outcomeModel->outcome_type),
+                qualityCertification: $outcomeModel->quality_certification ?? '',
+                dateAchieved: \Carbon\Carbon::parse($outcomeModel->date_achieved),
+                commercializationStatus: new \App\Domain\ValueObjects\CommercializationStatus($outcomeModel->commercialization_status ?? ''),
+                impact: $outcomeModel->impact ?? '',
+                artifactLink: $outcomeModel->artifact_link ?? ''
+            );
+        })->toArray() : [];
+
         return new Project(
-            id: (string) $model->id,  // Use ->id instead of ->getKey()
-            programId: $model->program_id,
-            facilityId: $model->facility_id,
+            id: (string) $model->id,
+            programId: (string) $model->program_id,
+            facilityId: (string) $model->facility_id,
             title: $model->title,
             natureOfProject: $model->nature_of_project,
             description: $model->description,
-            innovationFocus: new InnovationFocus($model->innovation_focus),
-            prototypeStage: new PrototypeStage($model->prototype_stage),
+            innovationFocus: new \App\Domain\ValueObjects\InnovationFocus($model->innovation_focus),
+            prototypeStage: new \App\Domain\ValueObjects\PrototypeStage($model->prototype_stage),
             testingRequirements: $model->testing_requirements,
             commercializationPlan: $model->commercialization_plan,
-            status: new ProjectStatus($model->status ?? 'planning'),
-            participants: $model->participants ? json_decode($model->participants, true) : [],
-            outcomes: $model->outcomes ? json_decode($model->outcomes, true) : [],
-            technicalRequirements: $model->technical_requirements ? json_decode($model->technical_requirements, true) : []
+            status: new \App\Domain\ValueObjects\ProjectStatus($model->status ?? 'planning'),
+            participants: $participants,
+            outcomes: $outcomes,
+            technicalRequirements: json_decode($model->technical_requirements ?? '[]', true)
         );
     }
 }

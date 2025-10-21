@@ -18,13 +18,13 @@
 
 <div class="card">
     <div class="card-body">
-        <form action="{{ route('programs.update', $program) }}" method="POST">
+        <form action="{{ route('programs.update', $program->getId()) }}" method="POST">
             @csrf
             @method('PUT')
 
             <div class="mb-3">
                 <label for="name" class="form-label">Name</label>
-                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $program->name) }}" required>
+                <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $program->getName()) }}" required>
                 @error('name')
                 <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -32,7 +32,7 @@
 
             <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
-                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="4" required>{{ old('description', $program->description) }}</textarea>
+                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="4" required>{{ old('description', $program->getDescription()) }}</textarea>
                 @error('description')
                 <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -40,7 +40,7 @@
 
             <div class="mb-3">
                 <label for="national_alignment" class="form-label">National Alignment</label>
-                <input type="text" class="form-control @error('national_alignment') is-invalid @enderror" id="national_alignment" name="national_alignment" value="{{ old('national_alignment', $program->national_alignment) }}" required>
+                <input type="text" class="form-control @error('national_alignment') is-invalid @enderror" id="national_alignment" name="national_alignment" value="{{ old('national_alignment', $program->getNationalAlignment()) }}" required>
                 @error('national_alignment')
                 <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -52,7 +52,7 @@
                     <select class="form-select @error('focus_areas') is-invalid @enderror" id="focus_areas" name="focus_areas" required>
                         <option value="">Select focus area</option>
                         @foreach($focusAreas as $key => $value)
-                        <option value="{{ $key }}" {{ old('focus_areas', $program->focus_areas) == $key ? 'selected' : '' }}>{{ $value }}</option>
+                        <option value="{{ $key }}" {{ old('focus_areas', $program->getFocusAreasAsString()) == $key ? 'selected' : '' }}>{{ $value }}</option>
                         @endforeach
                     </select>
                     @error('focus_areas')
@@ -64,7 +64,7 @@
                     <select class="form-select @error('phases') is-invalid @enderror" id="phases" name="phases" required>
                         <option value="">Select phase</option>
                         @foreach($phases as $key => $value)
-                        <option value="{{ $key }}" {{ old('phases', $program->phases) == $key ? 'selected' : '' }}>{{ $value }}</option>
+                        <option value="{{ $key }}" {{ old('phases', $program->getPhasesAsString()) == $key ? 'selected' : '' }}>{{ $value }}</option>
                         @endforeach
                     </select>
                     @error('phases')

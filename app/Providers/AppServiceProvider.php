@@ -61,6 +61,53 @@ class AppServiceProvider extends ServiceProvider
                 );
             }
         );
+
+        // Register Program Use Cases
+        $this->app->bind(
+            \App\Application\UseCases\CreateProgramUseCase::class,
+            function ($app) {
+                return new \App\Application\UseCases\CreateProgramUseCase(
+                    $app->make(\App\Domain\Repositories\ProgramRepositoryInterface::class)
+                );
+            }
+        );
+
+        $this->app->bind(
+            \App\Application\UseCases\UpdateProgramUseCase::class,
+            function ($app) {
+                return new \App\Application\UseCases\UpdateProgramUseCase(
+                    $app->make(\App\Domain\Repositories\ProgramRepositoryInterface::class)
+                );
+            }
+        );
+
+        $this->app->bind(
+            \App\Application\UseCases\DeleteProgramUseCase::class,
+            function ($app) {
+                return new \App\Application\UseCases\DeleteProgramUseCase(
+                    $app->make(\App\Domain\Repositories\ProgramRepositoryInterface::class)
+                );
+            }
+        );
+
+        // Register new use cases
+        $this->app->bind(
+            \App\Application\UseCases\GetProgramWithProjectsUseCase::class,
+            function ($app) {
+                return new \App\Application\UseCases\GetProgramWithProjectsUseCase(
+                    $app->make(\App\Domain\Repositories\ProgramRepositoryInterface::class)
+                );
+            }
+        );
+
+        $this->app->bind(
+            \App\Application\UseCases\GetProjectWithDetailsUseCase::class,
+            function ($app) {
+                return new \App\Application\UseCases\GetProjectWithDetailsUseCase(
+                    $app->make(\App\Domain\Repositories\ProjectRepositoryInterface::class)
+                );
+            }
+        );
     }
     
 

@@ -23,9 +23,7 @@ class ProjectController extends BaseController
         private ProjectRepositoryInterface $projectRepository,
         private ProgramRepositoryInterface $programRepository,
         private FacilityRepositoryInterface $facilityRepository,
-        private CreateProjectUseCase $createProjectUseCase,
-        private UpdateProjectUseCase $updateProjectUseCase,
-        private DeleteProjectUseCase $deleteProjectUseCase
+        private \App\Application\UseCases\GetProjectWithDetailsUseCase $getProjectWithDetailsUseCase
     ) {}
 
     /**
@@ -95,16 +93,13 @@ class ProjectController extends BaseController
      */
     public function show(string $id)
     {
-        $project = $this->projectRepository->findById($id);
+        $project = $this->getProjectWithDetailsUseCase->execute($id);
         
         if (!$project) {
             abort(404, 'Project not found');
         }
 
-        $innovationFocus = InnovationFocus::getAllOptions();
-        $prototypeStages = PrototypeStage::getAllOptions();
-
-        return view('projects.show', compact('project', 'innovationFocus', 'prototypeStages'));
+        return view('projects.show', compact('project'));
     }
 
     /**

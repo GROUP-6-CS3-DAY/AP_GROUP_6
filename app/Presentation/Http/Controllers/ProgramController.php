@@ -3,35 +3,34 @@
 namespace App\Presentation\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-use App\Models\Program;
+use App\Application\UseCases\CreateProgramUseCase;
+use App\Application\UseCases\UpdateProgramUseCase;
+use App\Application\UseCases\DeleteProgramUseCase;
+use App\Application\DTOs\CreateProgramDTO;
+use App\Application\DTOs\UpdateProgramDTO;
+use App\Domain\Repositories\ProgramRepositoryInterface;
 
 class ProgramController extends Controller
 {
+    public function __construct(
+        private ProgramRepositoryInterface $programRepository,
+        private CreateProgramUseCase $createProgramUseCase,
+        private UpdateProgramUseCase $updateProgramUseCase,
+        private DeleteProgramUseCase $deleteProgramUseCase,
+        private \App\Application\UseCases\GetProgramWithProjectsUseCase $getProgramWithProjectsUseCase
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = Program::query();
-
-        // Search functionality
-        if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
-        }
-
-        // Focus areas filter - using LIKE for string fields
-        if ($request->filled('focus_areas')) {
-            $query->where('focus_areas', $request->focus_areas);
-        }
-
-        // Phases filter - using LIKE for string fields
-        if ($request->filled('phases')) {
-            $query->where('phases', $request->phases);
-        }
-
-        $programs = $query->paginate(15)->appends($request->query());
+        // Use repository for listing instead of Eloquent model directly
+        $filters = $request->only(['search', 'focus_areas', 'phases']);
+        $result = $this->programRepository->findWithFilters($filters, 15);
+        
+        // Extract pagination object from the result array
+        $programs = $result['pagination'];
         
         // Define focus areas and phases for filter dropdowns
         $focusAreas = [
@@ -93,26 +92,56 @@ class ProgramController extends Controller
             'phases' => 'required|string',
         ]);
 
-        // Store as single strings to match migration
-        Program::create($validated);
+        try {
+            $dto = new CreateProgramDTO(
+                name: $validated['name'],
+                description: $validated['description'],
+                nationalAlignment: $validated['national_alignment'],
+                focusAreas: explode(',', $validated['focus_areas']),
+                phases: explode(',', $validated['phases'])
+            );
 
-        return redirect()->route('programs.index')->with('success', 'Program created successfully');
+            $programId = $this->createProgramUseCase->execute($dto);
+
+            return redirect()->route('programs.show', $programId)
+                ->with('success', 'Program created successfully');
+
+        } catch (\DomainException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['name' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to create program: ' . $e->getMessage());
+        }
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Program $program)
+    public function show(string $id)
     {
-        $program->load('projects');
+        $program = $this->getProgramWithProjectsUseCase->execute($id);
+        
+        if (!$program) {
+            abort(404, 'Program not found');
+        }
+
         return view('programs.show', compact('program'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Program $program)
+    public function edit(string $id)
     {
+        $program = $this->programRepository->findById($id);
+        
+        if (!$program) {
+            abort(404, 'Program not found');
+        }
+
         // Define focus areas and phases for dropdowns
         $focusAreas = [
             'research' => 'Research',
@@ -139,7 +168,7 @@ class ProgramController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Program $program)
+    public function update(Request $request, string $id)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -149,19 +178,48 @@ class ProgramController extends Controller
             'phases' => 'required|string',
         ]);
 
-        // Store as single strings to match migration
-        $program->update($validated);
+        try {
+            $dto = new UpdateProgramDTO(
+                name: $validated['name'],
+                description: $validated['description'],
+                nationalAlignment: $validated['national_alignment'],
+                focusAreas: explode(',', $validated['focus_areas']),
+                phases: explode(',', $validated['phases'])
+            );
 
-        return redirect()->route('programs.index')->with('success', 'Program updated successfully');
+            $this->updateProgramUseCase->execute($id, $dto);
+
+            return redirect()->route('programs.show', $id)
+                ->with('success', 'Program updated successfully');
+
+        } catch (\DomainException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['name' => $e->getMessage()]);
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to update program: ' . $e->getMessage());
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Program $program)
+    public function destroy(string $id)
     {
-        $program->delete();
+        try {
+            $this->deleteProgramUseCase->execute($id);
+            
+            return redirect()->route('programs.index')
+                ->with('success', 'Program deleted successfully');
 
-        return redirect()->route('programs.index')->with('success', 'Program deleted successfully');
+        } catch (\DomainException $e) {
+            return redirect()->back()
+                ->with('error', $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to delete program: ' . $e->getMessage());
+        }
     }
 }
