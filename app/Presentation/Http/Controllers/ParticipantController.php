@@ -175,7 +175,7 @@ class ParticipantController extends Controller
             
             return view('participants.show', compact('participant', 'availableProjects'));
         } catch (ParticipantNotFoundException $e) {
-            return redirect()->route('participants.index')->with('error', 'Participant not found');
+            return redirect()->route('participants.index');
         } catch (\Exception $e) {
             Log::error('Participant show failed: ' . $e->getMessage());
             return redirect()->route('participants.index')->with('error', 'Failed to retrieve participant details');

@@ -162,7 +162,7 @@ class FacilityController extends Controller
             $facility = $this->getFacility->execute($id);
             return view('facilities.show', compact('facility'));
         } catch (FacilityNotFoundException $e) {
-            return redirect()->route('facilities.index')->with('error', 'Facility not found');
+            return redirect()->route('facilities.index');
         } catch (\Exception $e) {
             Log::error('Facility show failed: '.$e->getMessage());
             return redirect()->route('facilities.index')->with('error', 'Failed to retrieve facility details');
@@ -187,7 +187,7 @@ class FacilityController extends Controller
             
             return view('facilities.edit', compact('facility', 'facilityTypes', 'capabilities'));
         } catch (FacilityNotFoundException $e) {
-            return redirect()->route('facilities.index')->with('error', 'Facility not found');
+            return redirect()->route('facilities.index');
         }
     }
 

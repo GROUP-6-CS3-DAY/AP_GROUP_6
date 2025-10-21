@@ -153,10 +153,10 @@ class Program
         }
     }
 
-    public function getProjectCount(): int
-    {
-        return count($this->projects);
-    }
+    // public function getProjectCount(): int
+    // {
+    //     return count($this->projects);
+    // }
 
     public function getFocusAreasAsString(): string
     {

@@ -89,8 +89,8 @@ use Illuminate\Support\Str;
                             <span class="badge bg-secondary">{{ $project->getPrototypeStage()->getDisplayName() }}</span>
                         </div>
                         <div class="text-muted small">
-                            <div>Participants: {{ $project->getParticipantCount() }}</div>
-                            <div>Outcomes: {{ $project->getOutcomeCount() }}</div>
+                            <div>Participants: {{ is_countable($project->getParticipants()) ? count($project->getParticipants()) : 0 }}</div>
+                            <div>Outcomes: {{ is_countable($project->getOutcomes()) ? count($project->getOutcomes()) : 0 }}</div>
                         </div>
                     </div>
                     <div class="card-footer bg-transparent">

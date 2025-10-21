@@ -106,3 +106,10 @@ Route::post('participants/{participant}/add-project', [ParticipantController::cl
     ->name('participants.add-project');
 Route::delete('participants/{participant}/remove-project/{project}', [ParticipantController::class, 'removeProject'])
     ->name('participants.remove-project');
+
+// Add this debug route temporarily
+Route::get('/debug/project/{id}', function($id) {
+    $repo = app(\App\Infrastructure\Repositories\EloquentProjectRepository::class);
+    $debug = $repo->debugProjectRelationships($id);
+    return response()->json($debug, 200, [], JSON_PRETTY_PRINT);
+})->name('debug.project');

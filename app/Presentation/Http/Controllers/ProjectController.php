@@ -23,6 +23,9 @@ class ProjectController extends BaseController
         private ProjectRepositoryInterface $projectRepository,
         private ProgramRepositoryInterface $programRepository,
         private FacilityRepositoryInterface $facilityRepository,
+        private CreateProjectUseCase $createProjectUseCase,
+        private UpdateProjectUseCase $updateProjectUseCase,
+        private DeleteProjectUseCase $deleteProjectUseCase,
         private \App\Application\UseCases\GetProjectWithDetailsUseCase $getProjectWithDetailsUseCase
     ) {}
 
@@ -93,12 +96,18 @@ class ProjectController extends BaseController
      */
     public function show(string $id)
     {
+        // Use the dedicated use case for loading project with details
         $project = $this->getProjectWithDetailsUseCase->execute($id);
         
         if (!$project) {
             abort(404, 'Project not found');
         }
 
+        // Debug the project to verify participants and outcomes
+        // $participantCount = $project->getParticipantCount();
+        // $outcomeCount = $project->getOutcomeCount();
+        // logger()->debug("Project in controller: {$project->getTitle()}, Participants: {$participantCount}, Outcomes: {$outcomeCount}");
+        
         return view('projects.show', compact('project'));
     }
 

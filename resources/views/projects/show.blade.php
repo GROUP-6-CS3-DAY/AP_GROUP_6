@@ -3,6 +3,9 @@
 @section('title', $project->getTitle() . ' - InnoTrack')
 
 @section('content')
+@php
+use Illuminate\Support\Str;
+@endphp
 <div class="row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -67,7 +70,7 @@
                 </a>
             </div>
             <div class="card-body">
-                @if($project->getParticipantCount() > 0)
+                @if($project->hasParticipants())
                 <div class="row">
                     @foreach($project->getParticipants() as $participant)
                     <div class="col-md-6 mb-3">
@@ -83,9 +86,11 @@
                                         <p class="card-text small text-muted mb-1">{{ $participant->getEmail() }}</p>
                                         <div>
                                             <span class="badge bg-secondary">{{ $participant->getAffiliation()->getDisplayName() }}</span>
+                                            
                                             @if($participant->hasSpecialization())
                                             <span class="badge bg-info">{{ $participant->getSpecialization()->getDisplayName() }}</span>
                                             @endif
+                                            
                                             @if($participant->isCrossSkillTrained())
                                             <span class="badge bg-success">Cross-Skilled</span>
                                             @endif
@@ -125,7 +130,7 @@
                 </a>
             </div>
             <div class="card-body">
-                @if($project->getOutcomeCount() > 0)
+                @if($project->hasOutcomes())
                 <div class="row">
                     @foreach($project->getOutcomes() as $outcome)
                     <div class="col-md-12 mb-3">
@@ -141,20 +146,18 @@
                                         <p class="card-text small mb-2">{{ Str::limit($outcome->getDescription(), 100) }}</p>
                                         <div class="mb-2">
                                             <span class="badge bg-primary">{{ ucfirst($outcome->getOutcomeType()->getValue()) }}</span>
+                                            
                                             @if($outcome->getCommercializationStatus()->getValue())
                                             <span class="badge bg-info">{{ $outcome->getCommercializationStatus()->getValue() }}</span>
                                             @endif
+                                            
                                             @if($outcome->isHighImpact())
                                             <span class="badge bg-warning">High Impact</span>
                                             @endif
                                         </div>
                                         <small class="text-muted">
                                             <i class="fas fa-calendar me-1"></i>
-                                            @php
-                                                $dateAchieved = $outcome->getDateAchieved();
-                                                $formattedDate = $dateAchieved instanceof \Carbon\Carbon ? $dateAchieved->format('M d, Y') : \Carbon\Carbon::parse($dateAchieved)->format('M d, Y');
-                                            @endphp
-                                            {{ $formattedDate }}
+                                            {{ $outcome->getDateAchieved()->format('M d, Y') }}
                                         </small>
                                     </div>
                                     <div class="btn-group btn-group-sm">
