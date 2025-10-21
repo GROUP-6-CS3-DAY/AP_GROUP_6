@@ -45,6 +45,7 @@ class Program
     public function getFocusAreas(): array { return $this->focusAreas; }
     public function getPhases(): array { return $this->phases; }
     public function getProjects(): array { return $this->projects; }
+    public function getProjectCount(): int { return count($this->projects); }
 
     // Business logic methods
     public function update(array $data): void
@@ -177,4 +178,5 @@ class Program
     {
         return $this->isActive() && !empty($this->nationalAlignment);
     }
+
 }

@@ -41,14 +41,6 @@ class Project
         array $outcomes = [],
         array $technicalRequirements = []
     ) {
-        logger()->info("Project Entity: Creating project", [
-            'id' => $id,
-            'title' => $title,
-            'participants_count' => count($participants),
-            'outcomes_count' => count($outcomes),
-            'participants_types' => array_map(fn($p) => get_class($p), $participants),
-            'outcomes_types' => array_map(fn($o) => get_class($o), $outcomes)
-        ]);
 
         $this->validateRequiredAssociations($programId, $facilityId);
         
@@ -67,11 +59,6 @@ class Project
         $this->outcomes = $outcomes; // Now expects array of Outcome entities
         $this->technicalRequirements = $technicalRequirements;
 
-        logger()->info("Project Entity: Project created successfully", [
-            'id' => $this->id,
-            'final_participants_count' => count($this->participants),
-            'final_outcomes_count' => count($this->outcomes)
-        ]);
     }
 
     // Getters
@@ -89,10 +76,6 @@ class Project
     public function hasParticipants(): bool { return !empty($this->participants); }
     public function hasOutcomes(): bool { return !empty($this->outcomes); }
     public function getOutcomes(): array { 
-        logger()->debug("Project Entity: getOutcomes() called", [
-            'project_id' => $this->id,
-            'outcomes_count' => count($this->outcomes)
-        ]);
         
         return $this->outcomes; 
     }
@@ -101,10 +84,6 @@ class Project
     // Simplified getParticipants method
     public function getParticipants(): array
     {
-        logger()->debug("Project Entity: getParticipants() called", [
-            'project_id' => $this->id,
-            'participants_count' => count($this->participants)
-        ]);
         
         return $this->participants;
     }
@@ -194,15 +173,15 @@ class Project
         }
     }
 
-    public function addParticipant(string $participantId): void
-    {
-        // This method now needs to work with participant IDs for business logic
-        $participantIds = array_map(fn($p) => $p->getId(), $this->participants);
-        if (!in_array($participantId, $participantIds)) {
-            // Note: In a real implementation, you'd need to load the participant entity
-            // This is a simplified version for business logic validation
-        }
-    }
+    // public function addParticipant(string $participantId): void
+    // {
+    //     // This method now needs to work with participant IDs for business logic
+    //     $participantIds = array_map(fn($p) => $p->getId(), $this->participants);
+    //     if (!in_array($participantId, $participantIds)) {
+    //         // Note: In a real implementation, you'd need to load the participant entity
+    //         // This is a simplified version for business logic validation
+    //     }
+    // }
 
     public function removeParticipant(string $participantId): void
     {
@@ -214,13 +193,13 @@ class Project
         $this->validateTeamAssignment();
     }
 
-    public function addOutcome(string $outcomeId): void
-    {
-        $outcomeIds = array_map(fn($o) => $o->getId(), $this->outcomes);
-        if (!in_array($outcomeId, $outcomeIds)) {
-            // Note: In a real implementation, you'd need to load the outcome entity
-        }
-    }
+    // public function addOutcome(string $outcomeId): void
+    // {
+    //     $outcomeIds = array_map(fn($o) => $o->getId(), $this->outcomes);
+    //     if (!in_array($outcomeId, $outcomeIds)) {
+    //         // Note: In a real implementation, you'd need to load the outcome entity
+    //     }
+    // }
 
     public function canAdvanceToNextStage(): bool
     {

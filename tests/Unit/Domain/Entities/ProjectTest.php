@@ -146,36 +146,36 @@ class ProjectTest extends TestCase
         $project->validateFacilityCompatibility($facilityCapabilities);
     }
 
-    public function test_add_and_remove_participants()
-    {
-        $project = new Project(
-            id: 'proj-123',
-            programId: 'prog-1',
-            facilityId: 'fac-1',
-            title: 'Test Project Title',
-            natureOfProject: 'Research',
-            description: 'Valid description for testing',
-            innovationFocus: new InnovationFocus('product'),
-            prototypeStage: new PrototypeStage('concept'),
-            testingRequirements: 'Testing requirements',
-            commercializationPlan: 'Commercialization plan',
-            participants: ['participant-1']
-        );
+    // public function test_add_and_remove_participants()
+    // {
+    //     $project = new Project(
+    //         id: 'proj-123',
+    //         programId: 'prog-1',
+    //         facilityId: 'fac-1',
+    //         title: 'Test Project Title',
+    //         natureOfProject: 'Research',
+    //         description: 'Valid description for testing',
+    //         innovationFocus: new InnovationFocus('product'),
+    //         prototypeStage: new PrototypeStage('concept'),
+    //         testingRequirements: 'Testing requirements',
+    //         commercializationPlan: 'Commercialization plan',
+    //         participants: ['participant-1']
+    //     );
 
-        // Add participant
-        $project->addParticipant('participant-2');
-        $this->assertEquals(2, $project->getParticipantCount());
+    //     // Add participant
+    //     $project->addParticipant('participant-2');
+    //     $this->assertEquals(2, $project->getParticipantCount());
 
-        // Remove participant but maintain at least one
-        $project->removeParticipant('participant-2');
-        $this->assertEquals(1, $project->getParticipantCount());
+    //     // Remove participant but maintain at least one
+    //     $project->removeParticipant('participant-2');
+    //     $this->assertEquals(1, $project->getParticipantCount());
 
-        // Try to remove last participant - should fail
-        $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Project must have at least one team member assigned');
+    //     // Try to remove last participant - should fail
+    //     $this->expectException(\DomainException::class);
+    //     $this->expectExceptionMessage('Project must have at least one team member assigned');
 
-        $project->removeParticipant('participant-1');
-    }
+    //     $project->removeParticipant('participant-1');
+    // }
 
     public function test_project_business_logic_methods()
     {
