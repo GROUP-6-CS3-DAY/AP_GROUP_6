@@ -21,23 +21,19 @@ class DeleteProgramUseCaseTest extends TestCase
 
     public function test_can_delete_program_without_projects()
     {
-        $programId = 'prog-123';
+        $programId = 'program-123';
         
-        $program = new Program(
-            id: $programId,
-            name: 'Test Program',
-            description: 'Test description here',
-            nationalAlignment: 'NDPIII',
-            focusAreas: ['AI'],
-            phases: ['planning'],
-            projects: [] // No projects
-        );
+        $mockProgram = $this->createMock(Program::class);
+        $mockProgram->method('canBeDeleted')->willReturn(true);
+        $mockProgram->method('isActive')->willReturn(false); // Not active
+        $mockProgram->method('canAcceptProjects')->willReturn(false); // Cannot accept projects
+        $mockProgram->method('getProjectCount')->willReturn(0);
 
         $this->mockRepository
             ->expects($this->once())
             ->method('findById')
             ->with($programId)
-            ->willReturn($program);
+            ->willReturn($mockProgram);
 
         $this->mockRepository
             ->expects($this->once())
@@ -49,30 +45,24 @@ class DeleteProgramUseCaseTest extends TestCase
 
     public function test_cannot_delete_program_with_associated_projects()
     {
-        $programId = 'prog-123';
+        $programId = 'program-123';
         
-        $program = new Program(
-            id: $programId,
-            name: 'Test Program',
-            description: 'Test description here',
-            nationalAlignment: 'NDPIII',
-            focusAreas: ['AI'],
-            phases: ['planning'],
-            projects: ['project-1', 'project-2'] // Has projects
-        );
+        $mockProgram = $this->createMock(Program::class);
+        $mockProgram->method('canBeDeleted')->willReturn(false);
+        $mockProgram->method('getProjectCount')->willReturn(2);
 
         $this->mockRepository
             ->expects($this->once())
             ->method('findById')
             ->with($programId)
-            ->willReturn($program);
+            ->willReturn($mockProgram);
 
         $this->mockRepository
             ->expects($this->never())
             ->method('delete');
 
         $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Program has Projects; archive or reassign before delete');
+        $this->expectExceptionMessage('Cannot delete program with active projects');
 
         $this->useCase->execute($programId);
     }

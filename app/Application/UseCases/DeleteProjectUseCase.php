@@ -18,10 +18,10 @@ class DeleteProjectUseCase
         $project = $this->projectRepository->findById($projectId);
         
         if (!$project) {
-            throw new \Exception('Project not found');
+            throw new \DomainException('Project not found');
         }
 
-        // Business rule validations before deletion
+        // Deletion guards: Validate all business rules before deletion
         $this->validateProjectCanBeDeleted($project);
 
         $this->projectRepository->delete($projectId);
@@ -29,25 +29,30 @@ class DeleteProjectUseCase
 
     private function validateProjectCanBeDeleted($project): void
     {
-        // Business rule: Cannot delete projects with outcomes
+        // Deletion guard: Cannot delete projects with outcomes
         if ($project->getOutcomeCount() > 0) {
             throw new \DomainException('Cannot delete project with existing outcomes. Remove all outcomes first.');
         }
 
-        // Business rule: Cannot delete active projects
+        // Deletion guard: Cannot delete active projects
         if ($project->getStatus()->getValue() === 'active') {
             throw new \DomainException('Cannot delete active project. Change project status first.');
         }
 
-        // Business rule: Cannot delete completed projects
+        // Deletion guard: Cannot delete completed projects
         if ($project->getStatus()->getValue() === 'completed') {
             throw new \DomainException('Cannot delete completed project. Completed projects should be archived instead.');
         }
 
-        // Business rule: Projects with participants should be handled carefully
+        // Deletion guard: Projects with participants require participant removal first
         if ($project->getParticipantCount() > 0) {
-            // You might want to warn but allow deletion, or require participant removal first
-            // For now, we'll allow deletion but could add a warning in the UI
+            throw new \DomainException('Cannot delete project with assigned participants. Remove all team members first.');
+        }
+
+        // Deletion guard: Only planning or cancelled projects can be deleted
+        $allowedStatuses = ['planning', 'cancelled', 'on_hold'];
+        if (!in_array($project->getStatus()->getValue(), $allowedStatuses)) {
+            throw new \DomainException('Only projects in planning, cancelled, or on-hold status can be deleted.');
         }
     }
 }

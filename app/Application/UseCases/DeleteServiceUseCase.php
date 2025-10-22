@@ -19,11 +19,35 @@ class DeleteServiceUseCase
             throw new ServiceNotFoundException("Service with ID {$serviceId} not found");
         }
 
-        // Check delete guard - service cannot be deleted if referenced by project testing requirements
-        if ($this->serviceRepository->isReferencedByProjectTestingRequirements($serviceId)) {
-            throw new \DomainException('Service in use by Project testing requirements');
-        }
+        // Deletion guards
+        $this->validateServiceCanBeDeleted($service, $serviceId);
 
         $this->serviceRepository->delete($serviceId);
+    }
+
+    private function validateServiceCanBeDeleted($service, string $serviceId): void
+    {
+        // Deletion guard: Service cannot be deleted if referenced by project testing requirements
+        if ($this->serviceRepository->isReferencedByProjectTestingRequirements($serviceId)) {
+            throw new \DomainException('Cannot delete service that is referenced by active project testing requirements. Remove from projects first.');
+        }
+
+        // Deletion guard: Cannot delete services with active bookings/usage
+        if ($this->serviceRepository->hasActiveBookings($serviceId)) {
+            throw new \DomainException('Cannot delete service with active bookings or ongoing usage. Cancel all bookings first.');
+        }
+
+        // Deletion guard: Check service status
+        if (method_exists($service, 'getStatus')) {
+            $restrictedStatuses = ['in_use', 'booked', 'reserved'];
+            if (in_array($service->getStatus()->getValue(), $restrictedStatuses)) {
+                throw new \DomainException('Cannot delete service with status: ' . $service->getStatus()->getValue() . '. Change status first.');
+            }
+        }
+
+        // Deletion guard: Check if service is critical/core service
+        if (method_exists($service, 'isCritical') && $service->isCritical()) {
+            throw new \DomainException('Cannot delete critical services. Contact system administrator.');
+        }
     }
 }

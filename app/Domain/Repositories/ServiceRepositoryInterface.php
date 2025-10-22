@@ -13,4 +13,5 @@ interface ServiceRepositoryInterface
     public function delete(string $id): void;
     public function findByNameAndFacility(string $name, string $facilityId): ?Service;
     public function isReferencedByProjectTestingRequirements(string $serviceId): bool;
+    public function hasActiveBookings(string $serviceId): bool;
 }

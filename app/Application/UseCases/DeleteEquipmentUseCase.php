@@ -23,12 +23,22 @@ class DeleteEquipmentUseCase
         $equipment = $this->equipmentRepository->findById($equipmentId);
         
         if (!$equipment) {
-            throw new \Exception('Equipment not found');
+            throw new \DomainException('Equipment not found');
         }
 
-        // Business rule: Equipment cannot be deleted if referenced by active projects
+        // Deletion guard: Equipment cannot be deleted if referenced by active projects
         $activeProjectsInFacility = $this->projectRepository->findActiveProjectsByFacilityId($equipment->getFacilityId());
         $equipment->validateDeletionSafety($activeProjectsInFacility);
+
+        // Additional deletion guard: Check equipment status
+        if ($equipment->getStatus()->getValue() === 'in_use') {
+            throw new \DomainException('Cannot delete equipment that is currently in use. Change status first.');
+        }
+
+        // Deletion guard: Check if equipment is operational
+        if ($equipment->getStatus()->getValue() === 'operational') {
+            throw new \DomainException('Cannot delete operational equipment. Mark as decommissioned or under_maintenance first.');
+        }
 
         $this->equipmentRepository->delete($equipmentId);
     }
